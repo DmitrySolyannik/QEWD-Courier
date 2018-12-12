@@ -24,57 +24,10 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  5 December 2018
+  12 December 2018
 
 */
 
-'use strict'
+'use strict';
 
-const validUrl = require('valid-url');
-const { BadRequestError } = require('../shared/errors');
-const debug = require('debug')('ripple-cdr-openehr:commands:feeds:create');
-
-class CreateFeedCommand {
-  constructor(ctx, session) {
-    this.ctx = ctx;
-    this.session = session;
-  }
-
-  async execute(payload) {
-    debug('payload: %j', payload);
-
-    if (!payload.author || payload.author === '') {
-      throw new BadRequestError('Author missing or empty');
-    }
-
-    if (!payload.name || payload.name === '') {
-      throw new BadRequestError('Feed name missing or empty');
-    }
-
-    if (!payload.landingPageUrl || payload.landingPageUrl === '') {
-      throw new BadRequestError('Landing page URL missing or empty');
-    }
-
-    if (!validUrl.isWebUri(payload.landingPageUrl)) {
-      throw new BadRequestError('Landing page URL is invalid');
-    }
-
-    if (!payload.rssFeedUrl || payload.rssFeedUrl === '') {
-      throw new BadRequestError('RSS Feed URL missing or empty');
-    }
-
-    if (!validUrl.isWebUri(payload.rssFeedUrl)) {
-      throw new BadRequestError('RSS Feed URL is invalid');
-    }
-
-    const feed = {
-      ...payload,
-      email: this.session.email
-    };
-    debug('creating a new feed: %j', feed);
-
-    return await this.ctx.services.feedService(feed);
-  }
-}
-
-module.exports = CreateFeedCommand;
+require('jasmine-spy-matchers');

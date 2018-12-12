@@ -24,14 +24,15 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  5 December 2018
+  12 December 2018
 
 */
 
 'use strict';
 
 const request = require('request');
-const config = require('./config');
+const config = require('../config');
+const debug = require('debug')('ripple-cdr-openehr:services:ehr-rest');
 
 function requestAsync(options) {
   return new Promise((resolve, reject) => {
@@ -43,7 +44,7 @@ function requestAsync(options) {
   });
 }
 
-class EhrRestService() {
+class EhrRestService {
   constructor(ctx, host, hostConfig) {
     this.ctx = ctx;
     this.host = host;
@@ -122,4 +123,4 @@ class EhrRestService() {
   }
 }
 
-module.exports = OpenEhrService;
+module.exports = EhrRestService;

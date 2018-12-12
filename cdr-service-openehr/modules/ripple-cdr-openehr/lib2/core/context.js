@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  5 December 2018
+  12 December 2018
 
 */
 
@@ -33,9 +33,11 @@
 const DbRegistry = require('./db');
 const ServiceRegistry = require('./services');
 const OpenEhrRegistry = require('./openehr');
+const debug = require('debug')('ripple-cdr-openehr:core:context');
 
 class ExecutionContext {
   constructor(q, req) {
+    debug('initialize');
     this.worker = q;
     this.userDefined = q.userDefined;
     this.qewdSession = q.qewdSessionByJWT.call(q, req);
@@ -45,6 +47,8 @@ class ExecutionContext {
   }
 
   get defaultHost() {
+    debug('getting default host');
+
     return this.userDefined.defaultPostHost || 'ethercis';
   }
 }

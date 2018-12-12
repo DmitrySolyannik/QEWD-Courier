@@ -24,42 +24,18 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  5 December 2018
+  12 December 2018
 
 */
 
 'use strict';
 
-const debug = require('debug')('ripple-cdr-openehr:db:state');
+const SpecReporter = require('jasmine-spec-reporter').SpecReporter;
 
-class StateDb {
-  constructor(ctx) {
-    this.ctx = ctx;
+jasmine.getEnv().clearReporters();
+jasmine.getEnv().addReporter(new SpecReporter({
+  spec: {
+    displayPending: true,
+    displayStacktrace: true
   }
-
-  static create(ctx) {
-    return new StateDb(ctx);
-  }
-
-  async get(patientId) {
-    const { qewdSession } = this.ctx;
-
-    if (qewdSession.data.$('record_status').exists) {
-      return qewdSession.data.$('record_status').getDocument();
-    }
-
-    return null;
-  }
-
-  async insert(patientId, state) {
-    const { qewdSession } = this.ctx;
-    qewdSession.data.$('record_status').setDocument(state);
-  }
-
-  async update(patientId, state) {
-    const { qewdSession } = this.ctx;
-    qewdSession.data.$('record_status').setDocument(state);
-  }
-}
-
-module.exports = StateDb;
+}));

@@ -24,42 +24,30 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  5 December 2018
+  12 December 2018
 
 */
 
 'use strict';
 
-const debug = require('debug')('ripple-cdr-openehr:db:state');
+const { lazyLoadAdapter } = require('../../lib2/shared/utils');
+const debug = require('debug')('ripple-cdr-openehr:mocks:services');
 
-class StateDb {
-  constructor(ctx) {
-    this.ctx = ctx;
+class ServiceRegistryMock {
+  initialise(id) {
+    debug('lazy load initialisation for %s mock', id);
+
+    const Service = require(`../../lib2/services/${id}`);
+    const methods = Reflect
+      .ownKeys(Service.prototype)
+      .filter(x => x !== 'constructor')
+
+    return jasmine.createSpyObj(id, methods);
   }
 
-  static create(ctx) {
-    return new StateDb(ctx);
-  }
-
-  async get(patientId) {
-    const { qewdSession } = this.ctx;
-
-    if (qewdSession.data.$('record_status').exists) {
-      return qewdSession.data.$('record_status').getDocument();
-    }
-
-    return null;
-  }
-
-  async insert(patientId, state) {
-    const { qewdSession } = this.ctx;
-    qewdSession.data.$('record_status').setDocument(state);
-  }
-
-  async update(patientId, state) {
-    const { qewdSession } = this.ctx;
-    qewdSession.data.$('record_status').setDocument(state);
+  static create() {
+    return lazyLoadAdapter(new ServiceRegistryMock());
   }
 }
 
-module.exports = StateDb;
+module.exports = ServiceRegistryMock;

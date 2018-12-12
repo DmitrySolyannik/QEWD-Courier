@@ -24,15 +24,14 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  5 December 2018
+  12 December 2018
 
 */
 
-const CreateFeedCommand = require('../commands/feeds/create');
+const CreateFeedCommand = require('../commands/createFeed');
 const { getResponseError } = require('../errors');
 
 /**
- *
  * @param  {Object} args
  * @param  {Function} finished
  */

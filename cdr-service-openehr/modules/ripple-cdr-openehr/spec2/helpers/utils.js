@@ -24,42 +24,24 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  5 December 2018
+  12 December 2018
 
 */
 
 'use strict';
 
-const debug = require('debug')('ripple-cdr-openehr:db:state');
+exports.clone = function (obj) {
+  return JSON.parse(JSON.stringify(obj));
+};
 
-class StateDb {
-  constructor(ctx) {
-    this.ctx = ctx;
-  }
+exports.__revert__ = function (obj) {
+  obj.__revert__();
+  delete obj.__revert__;
+};
 
-  static create(ctx) {
-    return new StateDb(ctx);
-  }
+exports.rfc3986 = function (str) {
+  return str.replace(/[!'()*]/g, function (c) {
+    return '%' + c.charCodeAt(0).toString(16).toUpperCase();
+  });
+};
 
-  async get(patientId) {
-    const { qewdSession } = this.ctx;
-
-    if (qewdSession.data.$('record_status').exists) {
-      return qewdSession.data.$('record_status').getDocument();
-    }
-
-    return null;
-  }
-
-  async insert(patientId, state) {
-    const { qewdSession } = this.ctx;
-    qewdSession.data.$('record_status').setDocument(state);
-  }
-
-  async update(patientId, state) {
-    const { qewdSession } = this.ctx;
-    qewdSession.data.$('record_status').setDocument(state);
-  }
-}
-
-module.exports = StateDb;

@@ -24,13 +24,15 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  5 December 2018
+  12 December 2018
 
 */
 
 'use strict';
 
-class EhrSessionDb() {
+const debug = require('debug')('ripple-cdr-openehr:db:ehr-session');
+
+class EhrSessionDb {
   constructor(ctx) {
     this.ctx = ctx;
   }

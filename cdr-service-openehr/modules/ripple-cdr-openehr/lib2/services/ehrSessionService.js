@@ -24,22 +24,22 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  5 December 2018
+  12 December 2018
 
 */
 
 'use strict';
 
-const { EhrSessionError } = require('../shared/errors');
+const { EhrSessionError } = require('../errors');
 const debug = require('debug')('ripple-cdr-openehr:services:ehr-session');
 
-class EhrSessionService() {
+class EhrSessionService {
   constructor(ctx) {
     this.ctx = ctx;
   }
 
   static create(ctx) {
-    return new SessionService(ctx);
+    return new EhrSessionService(ctx);
   }
 
   /**

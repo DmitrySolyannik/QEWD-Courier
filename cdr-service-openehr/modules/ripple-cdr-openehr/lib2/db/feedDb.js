@@ -24,13 +24,15 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  5 December 2018
+  12 December 2018
 
 */
 
 'use strict';
 
-class FeedDb() {
+const debug = require('debug')('ripple-cdr-openehr:db:feed');
+
+class FeedDb {
   constructor(ctx) {
     this.ctx = ctx;
     this.phrFeeds = ctx.worker.db.use('PHRFeeds');

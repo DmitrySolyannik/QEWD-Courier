@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  5 December 2018
+  12 December 2018
 
 */
 
@@ -40,13 +40,13 @@ function isNumeric(n) {
 function isPatientIdValid(patientId) {
   if (!patientId || patientId === '') {
     return {
-      error: new PatientIdInvalidError(`patientId ${patientId} must be defined`);
+      error: new PatientIdInvalidError(`patientId ${patientId} must be defined`)
     };
   }
 
   if (!isNumeric(patientId)) {
     return {
-      error: new PatientIdInvalidError(`patientId ${patientId} is invalid`);
+      error: new PatientIdInvalidError(`patientId ${patientId} is invalid`)
     };
   }
 
@@ -57,5 +57,5 @@ function isPatientIdValid(patientId) {
 
 module.exports = {
   isNumeric,
-  validatePatientId
+  isPatientIdValid
 };

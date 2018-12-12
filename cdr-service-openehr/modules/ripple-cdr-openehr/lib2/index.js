@@ -47,7 +47,6 @@ module.exports = {
     debug('beforeMicroServiceHandler');
 
     const authorized = this.jwt.handlers.validateRestRequest.call(this, req, finished);
-
     if (authorized) {
       const role = req.session.role
       debug('role: %s', role);
@@ -73,7 +72,6 @@ module.exports = {
       debug('workerResponseHandlers|restRequest: path = %s', message.path);
 
       if (message.path === '/api/openehr/check') {
-
         /*
           So at this point, during the /api/initialise process before login,
           we know the NHS Number exists on OpenEHR

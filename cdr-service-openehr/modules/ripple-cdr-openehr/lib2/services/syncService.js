@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  5 December 2018
+  12 December 2018
 
 */
 
@@ -32,7 +32,7 @@
 
 const debug = require('debug')('ripple-cdr-openehr:services:sync');
 
-class SyncService() {
+class SyncService {
   constructor(ctx) {
     this.ctx = ctx;
     this.stateDb = ctx.db.stateDb;
@@ -45,17 +45,17 @@ class SyncService() {
   async getState(patientId) {
     debug('get state for %s patient', patientId);
 
-    return await this.stateDb.get();
+    return await this.stateDb.get(patientId);
   }
 
   async createState(patientId, state) {
     debug('create state for %s patient with data %j ', patientId, state);
-    await this.stateDb.insert(state);
+    await this.stateDb.insert(patientId, state);
   }
 
   async updateState(patientId, state) {
     debug('update state for %s patient with data %j', patientId, state);
-    await this.stateDb.update(state);
+    await this.stateDb.update(patientId, state);
   }
 }
 

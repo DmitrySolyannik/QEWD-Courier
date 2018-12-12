@@ -24,15 +24,16 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  5 December 2018
+  12 December 2018
 
 */
 
 'use strict';
 
 const uuid = require('uuid/v4');
+const debug = require('debug')('ripple-cdr-openehr:services:feed');
 
-class FeedService() {
+class FeedService {
   constructor(ctx) {
     this.ctx = ctx;
   }

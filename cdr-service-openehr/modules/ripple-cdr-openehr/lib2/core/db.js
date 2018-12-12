@@ -24,21 +24,25 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  5 December 2018
+  12 December 2018
 
 */
 
 'use strict';
 
 const { lazyLoadAdapter } = require('../shared/utils');
+const debug = require('debug')('ripple-cdr-openehr:core:db');
 
 class DbRegistry {
   constructor(ctx) {
+    debug('initialize');
     this.ctx = ctx;
   }
 
   initialise(id) {
-    const Db = require(`./${id}`);
+    debug('lazy load initialisation for %s', id);
+
+    const Db = require(`../db/${id}`);
 
     if (!Db.create) {
       throw new Error(`${id} db does not support lazy load initialisation.`)

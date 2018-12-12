@@ -24,42 +24,25 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  5 December 2018
+  12 December 2018
 
 */
 
 'use strict';
 
-const debug = require('debug')('ripple-cdr-openehr:db:state');
+const ExecutionContext = require('../../lib2/core/context');
+const WorkerMock = require('./worker');
+const ServiceRegistryMock = require('./services');
+const debug = require('debug')('ripple-cdr-openehr:mocks:context');
 
-class StateDb {
-  constructor(ctx) {
-    this.ctx = ctx;
-  }
+class ExecutionContextMock extends ExecutionContext {
+  constructor(q) {
+    super(q || new WorkerMock())
 
-  static create(ctx) {
-    return new StateDb(ctx);
-  }
-
-  async get(patientId) {
-    const { qewdSession } = this.ctx;
-
-    if (qewdSession.data.$('record_status').exists) {
-      return qewdSession.data.$('record_status').getDocument();
-    }
-
-    return null;
-  }
-
-  async insert(patientId, state) {
-    const { qewdSession } = this.ctx;
-    qewdSession.data.$('record_status').setDocument(state);
-  }
-
-  async update(patientId, state) {
-    const { qewdSession } = this.ctx;
-    qewdSession.data.$('record_status').setDocument(state);
+    debug('execution mock initialization');
+    this.qewdSession = this.worker.sessions.create('mock');
+    this.services = ServiceRegistryMock.create();
   }
 }
 
-module.exports = StateDb;
+module.exports = ExecutionContextMock;

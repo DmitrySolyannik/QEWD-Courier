@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  5 December 2018
+  12 December 2018
 
 */
 
@@ -32,8 +32,6 @@ const CheckNhsNumberCommand = require('../commands/checkNhsNumber');
 const { getResponseError } = require('../errors');
 
 /**
- * GET /api/openehr/check
- *
  * @param  {Object} args
  * @param  {Function} finished
  */

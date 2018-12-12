@@ -32,7 +32,7 @@
 
 const debug = require('debug')('ripple-cdr-openehr:services:nhs-number');
 
-class NhsNumberService() {
+class NhsNumberService {
   constructor(ctx) {
     this.ctx = ctx;
   }

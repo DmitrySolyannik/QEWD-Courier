@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  5 December 2018
+  12 December 2018
 
 */
 
@@ -37,7 +37,7 @@ function lazyLoadAdapter(target) {
 
   return new Proxy(target, {
     get: (obj, prop) => {
-      if (Reflect.has(obj, prop)) {
+      if (typeof prop === 'symbol' || prop === 'inspect' || Reflect.has(obj, prop)) {
         return Reflect.get(obj, prop);
       }
 

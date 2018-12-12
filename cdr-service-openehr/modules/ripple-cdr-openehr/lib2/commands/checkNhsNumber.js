@@ -24,12 +24,12 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  5 December 2018
+  12 December 2018
 
 */
 
 const { SyncStatus } = require('../shared/enums');
-const { isPatientIdValid } = require('../utils/validation');
+const { isPatientIdValid } = require('../shared/validation');
 const debug = require('debug')('ripple-cdr-openehr:commands:check-nhs-number');
 
 class CheckNhsNumberCommand {
@@ -80,14 +80,15 @@ class CheckNhsNumberCommand {
     };
     await syncService.createState(patientId, initialSyncState);
 
-    const { nhsNumberService, ehrSessionSerivce, feedService } = this.ctx.services;
+    const { nhsNumberService, ehrSessionService } = this.ctx.services;
     const host = this.ctx.defaultHost;
-    const ehrSession = await ehrSessionSerivce.start(host);
+    const ehrSession = await ehrSessionService.start(host);
+
     const { created } = await nhsNumberService.check(host, ehrSession.id, patientId);
 
-    // see index.js for workerResponseHandler that is invoked when this has completed
-    // where it will next fetch any new heading data from Discovery and
-    // write it into EtherCIS record
+    // // see index.js for workerResponseHandler that is invoked when this has completed
+    // // where it will next fetch any new heading data from Discovery and
+    // // write it into EtherCIS record
 
     if (created) {
       debug('add the standard feed to this user session');
@@ -100,7 +101,7 @@ class CheckNhsNumberCommand {
       };
       debug('standard feed: %j', feed);
 
-      await this.feedService.create(feed);
+      await this.ctx.services.feedService.create(feed);
     }
 
     syncState = await syncService.getState(patientId);
@@ -111,7 +112,7 @@ class CheckNhsNumberCommand {
     return {
       status: SyncStatus.LOADING,
       new_patient: created,
-      responseNo: syncState.requestNo
+      responseNo: syncState.requestNo,
       nhsNumber: patientId
     };
   }
