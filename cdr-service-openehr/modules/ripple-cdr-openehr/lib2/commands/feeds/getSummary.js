@@ -24,42 +24,29 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  5 December 2018
+  14 December 2018
 
 */
 
 'use strict';
 
-const debug = require('debug')('ripple-cdr-openehr:db:state');
+const debug = require('debug')('ripple-cdr-openehr:commands:feeds:get-summary');
 
-class StateDb {
-  constructor(ctx) {
+class GetFeedsSummaryCommand {
+  constructor(ctx, session) {
     this.ctx = ctx;
+    this.session = session;
+    this.phrFeedService = this.ctx.services.phrFeedService;
   }
 
-  static create(ctx) {
-    return new StateDb(ctx);
-  }
+  /**
+   * @return {Promise.<Object[]>}
+   */
+  async execute() {
+    debug('execute get feeds summary');
 
-  async get(patientId) {
-    const { qewdSession } = this.ctx;
-
-    if (qewdSession.data.$('record_status').exists) {
-      return qewdSession.data.$('record_status').getDocument();
-    }
-
-    return null;
-  }
-
-  async insert(patientId, state) {
-    const { qewdSession } = this.ctx;
-    qewdSession.data.$('record_status').setDocument(state);
-  }
-
-  async update(patientId, state) {
-    const { qewdSession } = this.ctx;
-    qewdSession.data.$('record_status').setDocument(state);
+    return await this.phrFeedService.getByEmail(this.session.email);
   }
 }
 
-module.exports = StateDb;
+module.exports = GetFeedsSummaryCommand;

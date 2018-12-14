@@ -31,23 +31,23 @@
 'use strict';
 
 const { lazyLoadAdapter } = require('../../lib2/shared/utils');
-const debug = require('debug')('ripple-cdr-openehr:mocks:services');
+const debug = require('debug')('ripple-cdr-openehr:mocks:db');
 
-class ServiceRegistryMock {
+class DbRegistryMock {
   initialise(id) {
     debug('lazy load initialisation for %s mock', id);
 
-    const Service = require(`../../lib2/services/${id}`);
+    const Db = require(`../../lib2/db/${id}`);
     const methods = Reflect
-      .ownKeys(Service.prototype)
+      .ownKeys(Db.prototype)
       .filter(x => x !== 'constructor');
 
     return jasmine.createSpyObj(id, methods);
   }
 
   static create() {
-    return lazyLoadAdapter(new ServiceRegistryMock());
+    return lazyLoadAdapter(new DbRegistryMock());
   }
 }
 
-module.exports = ServiceRegistryMock;
+module.exports = DbRegistryMock;

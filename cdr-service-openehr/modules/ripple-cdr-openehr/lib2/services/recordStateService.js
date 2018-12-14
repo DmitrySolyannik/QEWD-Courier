@@ -30,24 +30,53 @@
 
 'use strict';
 
-const { lazyLoadAdapter } = require('../../lib2/shared/utils');
-const debug = require('debug')('ripple-cdr-openehr:mocks:services');
+const debug = require('debug')('ripple-cdr-openehr:services:record-state');
 
-class ServiceRegistryMock {
-  initialise(id) {
-    debug('lazy load initialisation for %s mock', id);
-
-    const Service = require(`../../lib2/services/${id}`);
-    const methods = Reflect
-      .ownKeys(Service.prototype)
-      .filter(x => x !== 'constructor');
-
-    return jasmine.createSpyObj(id, methods);
+class RecordStateService {
+  constructor(ctx) {
+    this.ctx = ctx;
+    this.recordStateDb = ctx.db.recordStateDb;
   }
 
-  static create() {
-    return lazyLoadAdapter(new ServiceRegistryMock());
+  static create(ctx) {
+    return new RecordStateService(ctx);
+  }
+
+  /**
+   * Gets record state by patient id
+   *
+   * @param  {string|int} patientId
+   * @return {Promise.<Object>}
+   */
+  async getByPatientId(patientId) {
+    debug('get state for %s patient', patientId);
+
+    return await this.recordStateDb.get(patientId);
+  }
+
+  /**
+   * Creates record state for patient id
+   *
+   * @param  {string|int} patientId
+   * @param  {Object} state
+   * @return {Promise}
+   */
+  async create(patientId, state) {
+    debug('create state for %s patient with data %j ', patientId, state);
+    await this.recordStateDb.insert(patientId, state);
+  }
+
+  /**
+   * Updates existing record state for patient id
+   *
+   * @param  {string|int} patientId
+   * @param  {Object} state
+   * @return {Promise}
+   */
+  async update(patientId, state) {
+    debug('update state for %s patient with data %j', patientId, state);
+    await this.recordStateDb.update(patientId, state);
   }
 }
 
-module.exports = ServiceRegistryMock;
+module.exports = RecordStateService;

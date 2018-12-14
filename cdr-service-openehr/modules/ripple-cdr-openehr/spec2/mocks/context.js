@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 December 2018
+  14 December 2018
 
 */
 
@@ -33,15 +33,17 @@
 const ExecutionContext = require('../../lib2/core/context');
 const WorkerMock = require('./worker');
 const ServiceRegistryMock = require('./services');
+const DbRegistryMock = require('./db');
 const debug = require('debug')('ripple-cdr-openehr:mocks:context');
 
 class ExecutionContextMock extends ExecutionContext {
   constructor(q) {
-    super(q || new WorkerMock())
+    super(q || new WorkerMock());
 
-    debug('execution mock initialization');
+    debug('mock initialization');
     this.qewdSession = this.worker.sessions.create('mock');
     this.services = ServiceRegistryMock.create();
+    this.db = DbRegistryMock.create();
   }
 }
 

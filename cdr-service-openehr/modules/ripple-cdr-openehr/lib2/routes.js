@@ -24,23 +24,30 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  5 December 2018
+  14 December 2018
 
 */
 
 'use strict';
 
 const checkNhsNumber = require('./handlers/checkNhsNumber');
-const postFeed = require('./handlers/postFeed');
+
+const createFeed = require('./handlers/feeds/createFeed');
+const updateFeed = require('./handlers/feeds/updateFeed');
+const getFeedSummary = require('./handlers/feeds/getSummary');
+const getFeedDetail = require('./handlers/feeds/getDetail');
 
 module.exports = {
   '/api/openehr/check': {
     GET: checkNhsNumber
   },
   '/api/feeds': {
-    POST: postFeed
+    GET: getFeedSummary,
+    POST: createFeed
+  },
+  '/api/feeds/:sourceId': {
+    GET: getFeedDetail,
+    PUT: updateFeed
   }
 };
-
-
 

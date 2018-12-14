@@ -24,49 +24,28 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 December 2018
+  14 December 2018
 
 */
 
-'use strict';
+const CreateFeedCommand = require('../../commands/feeds/create');
+const { getResponseError } = require('../../errors');
 
-const uuid = require('uuid/v4');
-const debug = require('debug')('ripple-cdr-openehr:services:feed');
+/**
+ * @param  {Object} args
+ * @param  {Function} finished
+ */
+module.exports = async function (args, finished) {
+  try {
+    const command = new CreateFeedCommand(args.req.ctx, args.session);
+    const responseObj = await command.execute(args.req.body);
 
-class FeedService {
-  constructor(ctx) {
-    this.ctx = ctx;
+    finished(responseObj);
+  } catch (err) {
+    const responseError = getResponseError(err);
+
+    finished(responseError);
   }
+};
 
-  static create(ctx) {
-    return new FeedService(ctx);
-  }
 
-  async create(feed) {
-    const { feedDb } = this.ctx.db;
-
-    const feedFoundByName = await feedDb.getByName(feed.email, feed.name)
-    if (feedFoundByName) {
-      return feedFoundByName.sourceId;
-    }
-
-    const feedFoundByUrl = await feedDb.getByLandingPageUrl(feed.email, feed.landingPageUrl)
-    if (feedFoundByUrl) {
-      return feedFoundByUrl.sourceId;
-    }
-
-    const sourceId = uuid();
-    const now = new Date().getTime();
-    const newFeed = {
-      ...feed,
-      sourceId,
-      dateCreated: now
-    };
-
-    await feedDb.insert(newFeed);
-
-    return sourceId;
-  }
-}
-
-module.exports = FeedService;

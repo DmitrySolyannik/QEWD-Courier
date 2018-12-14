@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 December 2018
+  14 December 2018
 
 */
 
@@ -35,15 +35,23 @@ const debug = require('debug')('ripple-cdr-openehr:db:ehr-session');
 class EhrSessionDb {
   constructor(ctx) {
     this.ctx = ctx;
+    this.ctx.qewdSession = ctx.qewdSession;
   }
 
   static create(ctx) {
     return new EhrSessionDb(ctx);
   }
 
+  /**
+   * Inserts a new ehr session
+   *
+   * @param  {string} host
+   * @param  {Object} ehrSession
+   * @return {Promise}
+   */
   async insert(host, ehrSession) {
-    const { qewdSession } = this.ctx;
-    qewdSession.data.$(['openEHR', 'sessions', host]).setDocument(ehrSession);
+    debug('insert ehr session %j for %s host', ehrSession, host);
+    this.qewdSession.data.$(['openEHR', 'sessions', host]).setDocument(ehrSession);
   }
 }
 

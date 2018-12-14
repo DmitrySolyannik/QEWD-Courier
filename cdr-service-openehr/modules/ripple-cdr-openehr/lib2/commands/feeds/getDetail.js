@@ -24,68 +24,34 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 December 2018
+  14 December 2018
 
 */
 
 'use strict';
 
-const debug = require('debug')('ripple-cdr-openehr:db:feed');
+const { BadRequestError } = require('../../errors');
+const debug = require('debug')('ripple-cdr-openehr:commands:feeds:get-detail');
 
-class FeedDb {
+class GetFeedDetailCommand {
   constructor(ctx) {
     this.ctx = ctx;
-    this.phrFeeds = ctx.worker.db.use('PHRFeeds');
+    this.phrFeedService = this.ctx.services.phrFeedService;
   }
 
-  static create(ctx) {
-    return new FeedDb(ctx);
-  }
+  /**
+   * @param  {string} sourceId
+   * @return {Promise.<Object>}
+   */
+  async execute(sourceId) {
+    debug('sourceId: %s', sourceId);
 
-  async getByName(email, name) {
-    let feed = null;
-
-    const feedsByEmail = this.phrFeeds.$(['byEmail', email]);
-    const feedsBySourceId = this.phrFeeds.$('bySourceId');
-
-    if (feedsByEmail.exists) {
-      feedsByEmail.forEachChild((sourceId) => {
-        const data = feedsBySourceId.$(sourceId).getDocument();
-        if (data.name === name) {
-          feed = data;
-
-          return true; // stop loop
-        }
-      });
+    if (!sourceId || sourceId === '') {
+      throw new BadRequestError('Missing or empty sourceId');
     }
 
-    return feed;
-  }
-
-  async getByLandingPageUrl(email, landingPageUrl) {
-    let feed = null;
-
-    const feedsByEmail = this.phrFeeds.$(['byEmail', email]);
-    const feedsBySourceId = this.phrFeeds.$('bySourceId');
-
-    if (feedsByEmail.exists) {
-      feedsByEmail.forEachChild((sourceId) => {
-        const data = feedsBySourceId.$(sourceId).getDocument();
-        if (data.landingPageUrl === landingPageUrl) {
-          feed = data;
-
-          return true; // stop loop
-        }
-      });
-    }
-
-    return feed;
-  }
-
-  async insert(feed) {
-    this.phrFeeds.$(['byEmail', feed.email, feed.sourceId]).value = 'true';
-    this.phrFeeds.$(['bySourceId', feed.sourceId]).setDocument(feed);
+    return await this.phrFeedService.getBySourceId(sourceId);
   }
 }
 
-module.exports = FeedDb;
+module.exports = GetFeedDetailCommand;

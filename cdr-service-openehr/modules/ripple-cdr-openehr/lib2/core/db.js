@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 December 2018
+  14 December 2018
 
 */
 
@@ -45,7 +45,7 @@ class DbRegistry {
     const Db = require(`../db/${id}`);
 
     if (!Db.create) {
-      throw new Error(`${id} db does not support lazy load initialisation.`)
+      throw new Error(`${id} db does not support lazy load initialisation.`);
     }
 
     return Db.create(this.ctx);

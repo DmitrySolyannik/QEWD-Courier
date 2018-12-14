@@ -24,14 +24,14 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 December 2018
+  14 December 2018
 
 */
 
 'use strict';
 
-const { PatientIdInvalidError } = require('../errors');
-
+const validUrl = require('valid-url');
+const { BadRequestError } = require('../errors');
 
 function isNumeric(n) {
   return !isNaN(parseFloat(n)) && isFinite(n);
@@ -39,23 +39,46 @@ function isNumeric(n) {
 
 function isPatientIdValid(patientId) {
   if (!patientId || patientId === '') {
-    return {
-      error: new PatientIdInvalidError(`patientId ${patientId} must be defined`)
-    };
+    throw new BadRequestError(`patientId ${patientId} must be defined`);
   }
 
   if (!isNumeric(patientId)) {
-    return {
-      error: new PatientIdInvalidError(`patientId ${patientId} is invalid`)
-    };
+    throw new BadRequestError(`patientId ${patientId} is invalid`);
   }
 
-  return {
-    ok: true
+  return true;
+}
+
+function isFeedPayloadValid(payload) {
+  if (!payload.author || payload.author === '') {
+    throw new BadRequestError('Author missing or empty');
   }
+
+  if (!payload.name || payload.name === '') {
+    throw new BadRequestError('Feed name missing or empty');
+  }
+
+  if (!payload.landingPageUrl || payload.landingPageUrl === '') {
+    throw new BadRequestError('Landing page URL missing or empty');
+  }
+
+  if (!validUrl.isWebUri(payload.landingPageUrl)) {
+    throw new BadRequestError('Landing page URL is invalid');
+  }
+
+  if (!payload.rssFeedUrl || payload.rssFeedUrl === '') {
+    throw new BadRequestError('RSS Feed URL missing or empty');
+  }
+
+  if (!validUrl.isWebUri(payload.rssFeedUrl)) {
+    throw new BadRequestError('RSS Feed URL is invalid');
+  }
+
+  return true;
 }
 
 module.exports = {
   isNumeric,
-  isPatientIdValid
+  isPatientIdValid,
+  isFeedPayloadValid
 };

@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 December 2018
+  14 December 2018
 
 */
 
@@ -52,6 +52,8 @@ class EhrRestService {
   }
 
   async startSession() {
+    debug('start session');
+
     const options = {
       url: `${this.hostConfig.url}/rest/v1/session`,
       method: 'POST',
@@ -70,6 +72,8 @@ class EhrRestService {
   }
 
   async stopSession(ehrSessionId) {
+    debug('stop session: %s', ehrSessionId);
+
     const options = {
       url: `${this.hostConfig.url}/rest/v1/session`,
       method: 'DELETE',
@@ -83,6 +87,8 @@ class EhrRestService {
   }
 
   async getEhr(ehrSessionId, nhsNumber) {
+    debug('get ehr: sessionId = %s, nhsNumber = %s', ehrSessionId, nhsNumber);
+
     const options = {
       url: `${this.hostConfig.url}/rest/v1/ehr`,
       method: 'GET',
@@ -100,6 +106,8 @@ class EhrRestService {
   }
 
   async createEhr(ehrSessionId, nhsNumber) {
+    debug('create ehr: sessionId = %s, nhsNumber = %s', ehrSessionId, nhsNumber);
+
     const options = {
       url: `${this.hostConfig.url}/rest/v1/ehr`,
       method: 'POST',

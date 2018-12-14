@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  5 December 2018
+  14 December 2018
 
 */
 
@@ -39,7 +39,7 @@ const Heading = Object.freeze({
   TOP_3_THINGS: 'top3Things'
 });
 
-const SyncStatus = Object.freeze({
+const RecordStatus = Object.freeze({
   LOADING: 'loading_data',
   READY: 'ready'
 });
@@ -51,6 +51,6 @@ const Role = Object.freeze({
 module.exports = {
   ExtraHeading,
   Heading,
-  SyncStatus,
+  RecordStatus,
   Role
-}
+};

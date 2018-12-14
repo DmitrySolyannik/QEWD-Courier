@@ -24,11 +24,11 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  5 December 2018
+  14 December 2018
 
 */
 
-'use strict'
+'use strict';
 
 function EhrSessionError(message, userMessage, reason, meta, statusCode, code) {
   this.message = message || 'Unable to establish a session';

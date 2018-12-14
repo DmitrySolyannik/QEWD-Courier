@@ -30,24 +30,18 @@
 
 'use strict';
 
-const { lazyLoadAdapter } = require('../../lib2/shared/utils');
-const debug = require('debug')('ripple-cdr-openehr:mocks:services');
-
-class ServiceRegistryMock {
-  initialise(id) {
-    debug('lazy load initialisation for %s mock', id);
-
-    const Service = require(`../../lib2/services/${id}`);
-    const methods = Reflect
-      .ownKeys(Service.prototype)
-      .filter(x => x !== 'constructor');
-
-    return jasmine.createSpyObj(id, methods);
-  }
-
-  static create() {
-    return lazyLoadAdapter(new ServiceRegistryMock());
-  }
+function FeedNotFoundError(message, userMessage, reason, meta, statusCode, code) {
+  this.message = message || 'Feed not found';
+  this.stack = new Error().stack;
+  this.errorType = this.name;
+  this.statusCode = statusCode || 400;
+  this.code = code || 'NotFound';
+  this.userMessage = userMessage || message;
+  this.meta = meta;
+  this.reason = reason;
 }
 
-module.exports = ServiceRegistryMock;
+FeedNotFoundError.prototype = Object.create(Error.prototype);
+FeedNotFoundError.prototype.name = 'FeedNotFoundError';
+
+module.exports = FeedNotFoundError;

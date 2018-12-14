@@ -24,28 +24,39 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 December 2018
+  14 December 2018
 
 */
 
-const CreateFeedCommand = require('../commands/createFeed');
-const { getResponseError } = require('../errors');
+'use strict';
 
-/**
- * @param  {Object} args
- * @param  {Function} finished
- */
-module.exports = async function (args, finished) {
-  try {
-    const command = new CreateFeedCommand(args.req.ctx, args.session);
-    const responseObj = await command.execute(args.req.body);
+const { isFeedPayloadValid } = require('../../shared/validation');
+const debug = require('debug')('ripple-cdr-openehr:commands:feeds:create');
 
-    finished(responseObj);
-  } catch (err) {
-    const responseError = getResponseError(err);
-
-    finished(responseError);
+class CreateFeedCommand {
+  constructor(ctx, session) {
+    this.ctx = ctx;
+    this.session = session;
+    this.phrFeedService = this.ctx.services.phrFeedService;
   }
-};
 
+  /**
+   * @param  {Object} payload
+   * @return {Promise.<Object>}
+   */
+  async execute(payload) {
+    debug('payload: %j', payload);
 
+    isFeedPayloadValid(payload);
+
+    const feed = {
+      ...payload,
+      email: this.session.email
+    };
+    debug('create a new feed: %j', feed);
+
+    return await this.phrFeedService.create(feed);
+  }
+}
+
+module.exports = CreateFeedCommand;

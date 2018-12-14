@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 December 2018
+  14 December 2018
 
 */
 
@@ -46,7 +46,7 @@ class OpenEhrRegistry {
     const hostConfig = this.ctx.userDefined.openehr[host];
 
     if (!hostConfig) {
-      throw new Error(`Config for ${host} host is not defined.`)
+      throw new Error(`Config for ${host} host is not defined.`);
     }
 
     return new EhrRestService(this.ctx, host, hostConfig);

@@ -24,39 +24,62 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 December 2018
+  14 December 2018
 
 */
 
 'use strict';
 
-const debug = require('debug')('ripple-cdr-openehr:services:sync');
+const debug = require('debug')('ripple-cdr-openehr:db:record-state');
 
-class SyncService {
+class RecordStateDb {
   constructor(ctx) {
     this.ctx = ctx;
-    this.stateDb = ctx.db.stateDb;
+    this.qewdSession = this.ctx.qewdSession;
   }
 
   static create(ctx) {
-    return new SyncService(ctx);
+    return new RecordStateDb(ctx);
   }
 
-  async getState(patientId) {
-    debug('get state for %s patient', patientId);
+  /**
+   * Gets record state by patient id
+   *
+   * @param  {string|int} patientId
+   * @return {Promise.<Object|null>}
+   */
+  async get(patientId) {
+    debug('gets record state by patient id %s', patientId);
+    const node = this.qewdSession.data.$('record_status');
 
-    return await this.stateDb.get(patientId);
+    return node.exists ?
+      node.getDocument() :
+      null;
   }
 
-  async createState(patientId, state) {
-    debug('create state for %s patient with data %j ', patientId, state);
-    await this.stateDb.insert(patientId, state);
+  /**
+   * Inserts a new record state by patient id
+   *
+   * @param  {string|int} patientId
+   * @param  {Object} recordState
+   * @return {Promise.<Object|null>}
+   */
+  async insert(patientId, recordState) {
+    debug('inserts a new record state %j for patient id %s', recordState, patientId);
+    this.qewdSession.data.$('record_status').setDocument(recordState);
   }
 
-  async updateState(patientId, state) {
-    debug('update state for %s patient with data %j', patientId, state);
-    await this.stateDb.update(patientId, state);
+  /**
+   * Updates an existing record state by patient id
+   *
+   * @param  {string|int} patientId
+   * @param  {Object} recordState
+   * @return {Promise.<Object|null>}
+   */
+  async update(patientId, recordState) {
+    debug('updates record state %j for patient id %s', recordState, patientId);
+    this.qewdSession.data.$('record_status').setDocument(recordState);
   }
 }
 
-module.exports = SyncService;
+module.exports = RecordStateDb;

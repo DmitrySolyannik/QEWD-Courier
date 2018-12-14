@@ -24,11 +24,11 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 December 2018
+  14 December 2018
 
 */
 
-const { SyncStatus } = require('../shared/enums');
+const { RecordStatus } = require('../shared/enums');
 const { isPatientIdValid } = require('../shared/validation');
 const debug = require('debug')('ripple-cdr-openehr:commands:check-nhs-number');
 
@@ -36,49 +36,49 @@ class CheckNhsNumberCommand {
   constructor(ctx, session) {
     this.ctx = ctx;
     this.session = session;
+    this.recordStateService = this.ctx.services.recordStateService;
   }
 
+  /**
+   * @return {Promise.<Object>}
+   */
   async execute() {
-    let syncState = null;
+    let recordState = null;
 
     const patientId = this.session.nhsNumber;
     debug('patientId: %s', patientId);
 
-    const validationResult = isPatientIdValid(patientId)
-    if (validationResult.error) {
-      throw validationResult.error;
-    }
+    isPatientIdValid(patientId);
 
-    const { syncService } = this.ctx.services;
-    syncState = await syncService.getState(patientId);
-    debug('sync state: %j', syncState);
+    recordState = await this.recordStateService.getByPatientId(patientId);
+    debug('record state: %j', recordState);
 
-    if (syncState) {
-      syncState.requestNo = syncState.requestNo + 1;
-      await syncService.updateState(patientId, syncState);
+    if (recordState) {
+      recordState.requestNo = recordState.requestNo + 1;
+      await this.recordStateService.update(patientId, recordState);
 
-      if (syncState.status === SyncStatus.LOADING) {
+      if (recordState.status === RecordStatus.LOADING) {
         return {
-          status: syncState.status,
-          new_patient: syncState.new_patient,
-          responseNo: syncState.requestNo,
+          status: recordState.status,
+          new_patient: recordState.new_patient,
+          responseNo: recordState.requestNo,
           nhsNumber: patientId
         };
       }
 
       return {
-        status: SyncStatus.READY,
+        status: RecordStatus.READY,
         nhsNumber: patientId
       };
     }
 
     debug('first time this API has been called in this user session');
-    const initialSyncState = {
-      status: SyncStatus.LOADING,
+    const initialRecordStateState = {
+      status: RecordStatus.LOADING,
       new_patient: 'not_known_yet',
       requestNo: 1
     };
-    await syncService.createState(patientId, initialSyncState);
+    await this.recordStateService.create(patientId, initialRecordStateState);
 
     const { nhsNumberService, ehrSessionService } = this.ctx.services;
     const host = this.ctx.defaultHost;
@@ -101,18 +101,18 @@ class CheckNhsNumberCommand {
       };
       debug('standard feed: %j', feed);
 
-      await this.ctx.services.feedService.create(feed);
+      await this.ctx.services.phrFeedService.create(feed);
     }
 
-    syncState = await syncService.getState(patientId);
-    debug('sync state: %j', syncState);
-    syncState.new_patient = created;
-    await syncService.updateState(patientId, syncState);
+    recordState = await this.recordStateService.getByPatientId(patientId);
+    debug('record state: %j', recordState);
+    recordState.new_patient = created;
+    await this.recordStateService.update(patientId, recordState);
 
     return {
-      status: SyncStatus.LOADING,
+      status: RecordStatus.LOADING,
       new_patient: created,
-      responseNo: syncState.requestNo,
+      responseNo: recordState.requestNo,
       nhsNumber: patientId
     };
   }

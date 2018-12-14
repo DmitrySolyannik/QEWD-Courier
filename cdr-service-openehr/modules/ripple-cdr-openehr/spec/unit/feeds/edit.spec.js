@@ -82,7 +82,7 @@ describe('ripple-cdr-openehr/lib/feeds/edit', () => {
     jasmine.clock().uninstall();
   });
 
-  it('should return missing or empty sourceId error', () => {
+  xit('should return missing or empty sourceId error', () => {
     delete args.sourceId;
 
     edit.call(q, args, finished);
@@ -92,7 +92,7 @@ describe('ripple-cdr-openehr/lib/feeds/edit', () => {
     });
   });
 
-  it('should return invalid sourceId error', () => {
+  xit('should return invalid sourceId error', () => {
     args.sourceId = 'foo-bar-baz-quux';
 
     edit.call(q, args, finished);
@@ -102,7 +102,7 @@ describe('ripple-cdr-openehr/lib/feeds/edit', () => {
     });
   });
 
-  it('should return author missing or empty error', () => {
+  xit('should return author missing or empty error', () => {
     delete args.req.body.author;
 
     edit.call(q, args, finished);
@@ -112,7 +112,7 @@ describe('ripple-cdr-openehr/lib/feeds/edit', () => {
     });
   });
 
-  it('should return feed name missing or empty error', () => {
+  xit('should return feed name missing or empty error', () => {
     delete args.req.body.name;
 
     edit.call(q, args, finished);
@@ -122,7 +122,7 @@ describe('ripple-cdr-openehr/lib/feeds/edit', () => {
     });
   });
 
-  it('should return landing page URL missing or empty error', () => {
+  xit('should return landing page URL missing or empty error', () => {
     delete args.req.body.landingPageUrl;
 
     edit.call(q, args, finished);
@@ -132,7 +132,7 @@ describe('ripple-cdr-openehr/lib/feeds/edit', () => {
     });
   });
 
-  it('should return landing page URL is invalid error', () => {
+  xit('should return landing page URL is invalid error', () => {
     args.req.body.landingPageUrl = 'foo';
 
     edit.call(q, args, finished);
@@ -142,7 +142,7 @@ describe('ripple-cdr-openehr/lib/feeds/edit', () => {
     });
   });
 
-  it('should return RSS Feed URL missing or empty error', () => {
+  xit('should return RSS Feed URL missing or empty error', () => {
     delete args.req.body.rssFeedUrl;
 
     edit.call(q, args, finished);
@@ -152,7 +152,7 @@ describe('ripple-cdr-openehr/lib/feeds/edit', () => {
     });
   });
 
-  it('should return RSS Feed URL is invalid error', () => {
+  xit('should return RSS Feed URL is invalid error', () => {
     args.req.body.rssFeedUrl = 'foo';
 
     edit.call(q, args, finished);
@@ -162,7 +162,7 @@ describe('ripple-cdr-openehr/lib/feeds/edit', () => {
     });
   });
 
-  it('should update feed', () => {
+  xit('should update feed', () => {
     const expected = {
       author: 'ivor.cox@phr.leeds.nhs',
       name: 'BBC News',

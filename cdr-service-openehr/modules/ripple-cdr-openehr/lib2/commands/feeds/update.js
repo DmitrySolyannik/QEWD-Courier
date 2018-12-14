@@ -24,24 +24,50 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  5 December 2018
+  14 December 2018
 
 */
 
-'use strict'
+'use strict';
 
-function PatientIdInvalidError(message, userMessage, reason, meta, statusCode, code) {
-  this.message = message || 'patientId is invalid';
-  this.stack = new Error().stack;
-  this.errorType = this.name;
-  this.statusCode = statusCode || 400;
-  this.code = code || 'BadRequest';
-  this.userMessage = userMessage || this.message;
-  this.meta = meta;
-  this.reason = reason;
+const { BadRequestError } = require('../../errors');
+const { isFeedPayloadValid } = require('../../shared/validation');
+const debug = require('debug')('ripple-cdr-openehr:commands:feeds:update');
+
+class UpdateFeedCommand {
+  constructor(ctx, session) {
+    this.ctx = ctx;
+    this.session = session;
+    this.phrFeedService = this.ctx.services.phrFeedService;
+  }
+
+  /**
+   * @param  {string} sourceId
+   * @param  {Object} payload
+   * @return {Promise.<Object>}
+   */
+  async execute(sourceId, payload) {
+    debug('sourceId: %s, payload: %j', sourceId, payload);
+
+    if (!sourceId || sourceId === '') {
+      throw new BadRequestError('Missing or empty sourceId');
+    }
+
+    const feed = await this.phrFeedService.getBySourceId(sourceId);
+
+    isFeedPayloadValid(payload);
+
+    const updatedFeed = {
+      ...payload,
+      email: this.session.email
+    };
+
+    await this.phrFeedService.update(feed.sourceId, updatedFeed);
+
+    return {
+      sourceId: feed.sourceId
+    };
+  }
 }
 
-PatientIdInvalidError.prototype = Object.create(Error.prototype);
-PatientIdInvalidError.prototype.name = 'PatientIdInvalidError';
-
-module.exports = PatientIdInvalidError;
+module.exports = UpdateFeedCommand;

@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  5 December 2018
+  14 December 2018
 
 */
 
@@ -32,7 +32,7 @@
 
 const BadRequestError = require('./BadRequestError');
 const EhrSessionError = require('./EhrSessionError');
-const PatientIdInvalidError = require('./PatientIdInvalidError');
+const FeedNotFoundError = require('./FeedNotFoundError');
 
 function qewdifyError(err) {
   return {
@@ -41,7 +41,7 @@ function qewdifyError(err) {
 }
 
 function getResponseError(err = new Error('Unknown error')) {
-  const resultError = err.error ? err : qewdifyError(err)
+  const resultError = err.error ? err : qewdifyError(err);
 
   return resultError;
 }
@@ -49,7 +49,7 @@ function getResponseError(err = new Error('Unknown error')) {
 module.exports = {
   BadRequestError,
   EhrSessionError,
-  PatientIdInvalidError,
+  FeedNotFoundError,
   getResponseError,
   qewdifyError
 };

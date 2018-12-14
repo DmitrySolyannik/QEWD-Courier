@@ -28,26 +28,24 @@
 
 */
 
-'use strict';
+const UpdateFeedCommand = require('../../commands/feeds/update');
+const { getResponseError } = require('../../errors');
 
-const { lazyLoadAdapter } = require('../../lib2/shared/utils');
-const debug = require('debug')('ripple-cdr-openehr:mocks:services');
+/**
+ * @param  {Object} args
+ * @param  {Function} finished
+ */
+module.exports = async function (args, finished) {
+  try {
+    const command = new UpdateFeedCommand(args.req.ctx, args.session);
+    const responseObj = await command.execute(args.sourceId, args.req.body);
 
-class ServiceRegistryMock {
-  initialise(id) {
-    debug('lazy load initialisation for %s mock', id);
+    finished(responseObj);
+  } catch (err) {
+    const responseError = getResponseError(err);
 
-    const Service = require(`../../lib2/services/${id}`);
-    const methods = Reflect
-      .ownKeys(Service.prototype)
-      .filter(x => x !== 'constructor');
-
-    return jasmine.createSpyObj(id, methods);
+    finished(responseError);
   }
+};
 
-  static create() {
-    return lazyLoadAdapter(new ServiceRegistryMock());
-  }
-}
 
-module.exports = ServiceRegistryMock;

@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  5 December 2018
+  14 December 2018
 
 */
 
@@ -33,7 +33,7 @@
 const router = require('qewd-router');
 const routes = require('./routes');
 const DiscoveryService = require('./services/discoveryService');
-const { ExtraHeading, Heading, SyncStatus, Role } = require('./shared/enums');
+const { ExtraHeading, Heading, RecordStatus, Role } = require('./shared/enums');
 const ExecutionContext = require('./core/context');
 const debug = require('debug')('ripple-cdr-openehr');
 
@@ -48,7 +48,7 @@ module.exports = {
 
     const authorized = this.jwt.handlers.validateRestRequest.call(this, req, finished);
     if (authorized) {
-      const role = req.session.role
+      const role = req.session.role;
       debug('role: %s', role);
 
       if (req.path.startsWith('/api/my/') && role !== Role.PHR_USER) {
@@ -65,10 +65,10 @@ module.exports = {
     }
 
     return authorized;
-  }
+  },
 
   workerResponseHandlers: {
-    restRequest(message, send) {
+    restRequest(message, send) { // eslint-disable-line no-unused-vars
       debug('workerResponseHandlers|restRequest: path = %s', message.path);
 
       if (message.path === '/api/openehr/check') {
@@ -100,7 +100,7 @@ module.exports = {
         debug('message: %j', message);
 
         // Discovery data has been synced?
-        if (message.status === SyncStatus.READY) return;
+        if (message.status === RecordStatus.READY) return;
 
         // Discovery data syncing already started by request 1
         if (message.responseNo > 1) return;

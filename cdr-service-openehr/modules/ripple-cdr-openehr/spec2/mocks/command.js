@@ -24,12 +24,12 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 December 2018
+  14 December 2018
 
 */
 
 'use strict';
 
 module.exports = function () {
-  return jasmine.createSpyObj(['execute'])
+  return jasmine.createSpyObj(['execute']);
 };

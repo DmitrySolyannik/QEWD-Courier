@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  5 December 2018
+  14 December 2018
 
 */
 
@@ -86,8 +86,8 @@ class DiscoveryService {
    * @param  {string} jwt
    * @return {Promise.<Object>}
    */
-  mergeDiscoveryData(patientId, data, jwt) {
-    debug('merge discovery data: heading = %s, data = %j', patientId, data);
+  mergeDiscoveryData(heading, data, jwt) {
+    debug('merge discovery data: heading = %s, data = %j', heading, data);
 
     return new Promise((resolve, reject) => {
       const token = this.q.jwt.handlers.getProperty('uid', jwt);
@@ -107,7 +107,7 @@ class DiscoveryService {
         token: token
       };
 
-      debug('message: %j', message);
+      debug('message: %j', messageObj);
 
       this.q.handleMessage(messageObj, (responseObj) => {
         // heading has been merged into EtherCIS
@@ -130,7 +130,7 @@ class DiscoveryService {
 
     try {
       const discoveryData = await this.getDiscoveryData(patientId, heading, jwt);
-      await this.mergeDiscoveryData(heading, discoveryData, jwt)
+      await this.mergeDiscoveryData(heading, discoveryData, jwt);
     } catch (err) {
       debug('sync|err: %j', err);
     }

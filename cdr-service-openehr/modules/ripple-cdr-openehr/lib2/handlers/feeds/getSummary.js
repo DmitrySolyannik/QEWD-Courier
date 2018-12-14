@@ -24,57 +24,28 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 December 2018
+  14 December 2018
 
 */
 
-'use strict'
+const GetFeedsSummaryCommand = require('../../commands/feeds/getSummary');
+const { getResponseError } = require('../../errors');
 
-const validUrl = require('valid-url');
-const { BadRequestError } = require('../errors');
-const debug = require('debug')('ripple-cdr-openehr:commands:create-feed');
+/**
+ * @param  {Object} args
+ * @param  {Function} finished
+ */
+module.exports = async function (args, finished) {
+  try {
+    const command = new GetFeedsSummaryCommand(args.req.ctx, args.session);
+    const responseObj = await command.execute();
 
-class CreateFeedCommand {
-  constructor(ctx, session) {
-    this.ctx = ctx;
-    this.session = session;
+    finished(responseObj);
+  } catch (err) {
+    const responseError = getResponseError(err);
+
+    finished(responseError);
   }
+};
 
-  async execute(payload) {
-    debug('payload: %j', payload);
 
-    if (!payload.author || payload.author === '') {
-      throw new BadRequestError('Author missing or empty');
-    }
-
-    if (!payload.name || payload.name === '') {
-      throw new BadRequestError('Feed name missing or empty');
-    }
-
-    if (!payload.landingPageUrl || payload.landingPageUrl === '') {
-      throw new BadRequestError('Landing page URL missing or empty');
-    }
-
-    if (!validUrl.isWebUri(payload.landingPageUrl)) {
-      throw new BadRequestError('Landing page URL is invalid');
-    }
-
-    if (!payload.rssFeedUrl || payload.rssFeedUrl === '') {
-      throw new BadRequestError('RSS Feed URL missing or empty');
-    }
-
-    if (!validUrl.isWebUri(payload.rssFeedUrl)) {
-      throw new BadRequestError('RSS Feed URL is invalid');
-    }
-
-    const feed = {
-      ...payload,
-      email: this.session.email
-    };
-    debug('creating a new feed: %j', feed);
-
-    return await this.ctx.services.feedService(feed);
-  }
-}
-
-module.exports = CreateFeedCommand;

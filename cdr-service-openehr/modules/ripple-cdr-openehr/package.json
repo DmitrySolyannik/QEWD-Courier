@@ -5,6 +5,7 @@
   "license": "Apache-2.0",
   "scripts": {
     "lint": "jshint lib2 spec2 index.js",
+    "lint2": "eslint lib2 spec2",
     "test": "jasmine --config=spec/support/jasmine.json",
     "test2": "jasmine --config=spec2/support/jasmine.json",
     "coverage": "nyc --reporter=html --reporter=text jasmine --config=spec/support/jasmine.json",
@@ -26,6 +27,7 @@
   },
   "devDependencies": {
     "coveralls": "^3.0.0",
+    "eslint": "^5.10.0",
     "ewd-document-store": "^1.23.0",
     "ewd-memory-globals": "killmenot/ewd-memory-globals",
     "ewd-session": "^2.19.0",

@@ -31,15 +31,15 @@
 'use strict';
 
 const mockery = require('mockery');
-const CommandMock = require('../../mocks/command');
-const ContextMock = require('../../mocks/context');
+const CommandMock = require('../../../mocks/command');
+const ContextMock = require('../../../mocks/context');
 
-describe('ripple-cdr-openehr/lib/handlers/checkNhsNumber', () => {
+describe('ripple-cdr-openehr/lib/handlers/feeds/getDetail', () => {
   let args;
   let finished;
 
   let command;
-  let CheckNhsNumberCommand;
+  let GetFeedDetailCommand;
 
   let handler;
 
@@ -55,6 +55,7 @@ describe('ripple-cdr-openehr/lib/handlers/checkNhsNumber', () => {
 
   beforeEach(() => {
     args = {
+      sourceId: 'eaf394a9-5e05-49c0-9c69-c710c77eda76',
       req: {
         ctx: new ContextMock()
       },
@@ -66,11 +67,11 @@ describe('ripple-cdr-openehr/lib/handlers/checkNhsNumber', () => {
     finished = jasmine.createSpy();
 
     command = new CommandMock();
-    CheckNhsNumberCommand = jasmine.createSpy().and.returnValue(command);
-    mockery.registerMock('../commands/checkNhsNumber', CheckNhsNumberCommand);
+    GetFeedDetailCommand = jasmine.createSpy().and.returnValue(command);
+    mockery.registerMock('../../commands/feeds/getDetail', GetFeedDetailCommand);
 
-    delete require.cache[require.resolve('../../../lib2/handlers/checkNhsNumber')];
-    handler = require('../../../lib2/handlers/checkNhsNumber');
+    delete require.cache[require.resolve('../../../../lib2/handlers/feeds/getDetail')];
+    handler = require('../../../../lib2/handlers/feeds/getDetail');
   });
 
   afterEach(() => {
@@ -79,17 +80,20 @@ describe('ripple-cdr-openehr/lib/handlers/checkNhsNumber', () => {
 
   it('should return response object', async () => {
     const responseObj = {
-      status: 'loading_data',
-      new_patient: true,
-      responseNo: 1,
-      nhsNumber: 9999999000
+      author: 'ivor.cox@phr.leeds.nhs',
+      name: 'BBC News',
+      landingPageUrl: 'https://www.bbc.co.uk/news',
+      rssFeedUrl: 'https://www.bbc.co.uk/rss',
+      email: 'jane.doe@example.org',
+      sourceId: 'eaf394a9-5e05-49c0-9c69-c710c77eda76',
+      dateCreated: 1514764800000
     };
     command.execute.and.resolveValue(responseObj);
 
     await handler(args, finished);
 
-    expect(CheckNhsNumberCommand).toHaveBeenCalledWith(args.req.ctx, args.session);
-    expect(command.execute).toHaveBeenCalled();
+    expect(GetFeedDetailCommand).toHaveBeenCalledWith(args.req.ctx);
+    expect(command.execute).toHaveBeenCalledWith(args.sourceId);
 
     expect(finished).toHaveBeenCalledWith(responseObj);
   });
@@ -99,8 +103,8 @@ describe('ripple-cdr-openehr/lib/handlers/checkNhsNumber', () => {
 
     await handler(args, finished);
 
-    expect(CheckNhsNumberCommand).toHaveBeenCalledWith(args.req.ctx, args.session);
-    expect(command.execute).toHaveBeenCalled();
+    expect(GetFeedDetailCommand).toHaveBeenCalledWith(args.req.ctx);
+    expect(command.execute).toHaveBeenCalledWith(args.sourceId);
 
     expect(finished).toHaveBeenCalledWith({
       error: 'custom error'
