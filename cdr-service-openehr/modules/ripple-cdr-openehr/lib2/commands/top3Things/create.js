@@ -30,36 +30,38 @@
 
 'use strict';
 
-const checkNhsNumber = require('./handlers/checkNhsNumber');
+const { isPatientIdValid, isTop3ThingsPayloadValid } = require('../../shared/validation');
+const debug = require('debug')('ripple-cdr-openehr:commands:top3things:get-detail');
 
-const createFeed = require('./handlers/feeds/createFeed');
-const updateFeed = require('./handlers/feeds/updateFeed');
-const getFeedSummary = require('./handlers/feeds/getSummary');
-const getFeedDetail = require('./handlers/feeds/getDetail');
-
-const getTop3ThingsSummary = require('./handlers/top3Things/getSummary');
-const getTop3ThingsDetail = require('./handlers/top3Things/getDetail');
-const createTop3Things = require('./handlers/top3Things/create');
-
-module.exports = {
-  '/api/openehr/check': {
-    GET: checkNhsNumber
-  },
-  '/api/feeds': {
-    GET: getFeedSummary,
-    POST: createFeed
-  },
-  '/api/feeds/:sourceId': {
-    GET: getFeedDetail,
-    PUT: updateFeed
-  },
-  '/api/patients/:patientId/top3Things': {
-    POST: createTop3Things,
-    GET: getTop3ThingsSummary
-  },
-  '/api/patients/:patientId/top3Things/:sourceId': {
-    PUT: createTop3Things,
-    GET: getTop3ThingsDetail
+class CreateTop3ThingsCommand {
+  constructor(ctx, session) {
+    this.ctx = ctx;
+    this.session = session;
+    this.top3ThingsService = this.ctx.services.top3ThingsService;
   }
-};
 
+  /**
+   * @param  {string} patientId
+   * @param  {Object} payload
+   * @return {Promise.<Object[]>}
+   */
+  async execute(patientId, payload) {
+    debug('patientId: %s, payload: %j', patientId, payload);
+
+    // override patientId for PHR Users - only allowed to see their own data
+    if (this.session.role === 'phrUser') {
+      patientId = this.session.nhsNumber;
+    }
+
+    isPatientIdValid(patientId);
+    isTop3ThingsPayloadValid(payload);
+
+    const sourceId = await this.top3ThingsService.create(patientId, payload);
+
+    return {
+      sourceId
+    };
+  }
+}
+
+module.exports = CreateTop3ThingsCommand;

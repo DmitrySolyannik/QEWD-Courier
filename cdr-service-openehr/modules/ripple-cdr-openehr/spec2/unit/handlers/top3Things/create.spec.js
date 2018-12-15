@@ -24,97 +24,92 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  19 July 2018
+  15 December 2018
 
 */
 
 'use strict';
 
-const Worker = require('../../mocks/worker');
-const getTop3ThingsDetail = require('../../../lib/top3Things/getTop3ThingsDetail');
+const mockery = require('mockery');
+const CommandMock = require('../../../mocks/command');
+const ContextMock = require('../../../mocks/context');
 
-describe('ripple-cdr-openehr/lib/top3Things/getTop3ThingsDetail', () => {
-  let q;
+describe('ripple-cdr-openehr/lib/handlers/top3Things/create', () => {
   let args;
   let finished;
 
-  function seeds() {
-    const top3Things = q.db.use('Top3Things');
+  let command;
+  let CreateTop3ThingsCommand;
 
-    top3Things.$(['byPatient', 9999999000, 'latest']).value = 'ce437b97-4f6e-4c96-89bb-0b58b29a79cb';
-    top3Things.$(['byPatient', 9434765919, 'latest']).value = '';
+  let handler;
 
-    top3Things.$(['bySourceId', 'ce437b97-4f6e-4c96-89bb-0b58b29a79cb']).setDocument({
-      date: 1519851600000,
-      data: {
-        name1: 'foo1',
-        description1: 'baz1',
-        name2: 'foo2',
-        description2: 'baz2',
-        name3: 'foo3',
-        description3: 'baz3'
-      }
+  beforeAll(() => {
+    mockery.enable({
+      warnOnUnregistered: false
     });
-  }
+  });
+
+  afterAll(() => {
+    mockery.disable();
+  });
 
   beforeEach(() => {
-    q = new Worker();
-
     args = {
-      patientId: 9999999000,
+      patientId: 9999999111,
+      req: {
+        ctx: new ContextMock(),
+        body: {
+          name1: 'foo1',
+          description1: 'baz1',
+          name2: 'foo2',
+          description2: 'baz2',
+          name3: 'foo3',
+          description3: 'baz3'
+        }
+      },
       session: {
-        nhsNumber: 9434765919,
-        role: 'IDCR'
+        nhsNumber: 9999999000,
+        role: 'phrUser'
       }
     };
     finished = jasmine.createSpy();
 
-    seeds();
+    command = new CommandMock();
+    CreateTop3ThingsCommand = jasmine.createSpy().and.returnValue(command);
+    mockery.registerMock('../../commands/top3Things/create', CreateTop3ThingsCommand);
+
+    delete require.cache[require.resolve('../../../../lib2/handlers/top3Things/create')];
+    handler = require('../../../../lib2/handlers/top3Things/create');
   });
 
   afterEach(() => {
-    q.db.reset();
+    mockery.deregisterAll();
   });
 
-  xit('should return invalid or missing patientId error', () => {
-    args.patientId = 'foo';
-
-    getTop3ThingsDetail.call(q, args, finished);
-
-    expect(finished).toHaveBeenCalledWith({
-      error: 'patientId foo is invalid'
-    });
-  });
-
-  xit('should return emply list', () => {
-    args.patientId = 9434765919;
-
-    getTop3ThingsDetail.call(q, args, finished);
-
-    expect(finished).toHaveBeenCalledWith([]);
-  });
-
-  xit('should return top 3 things detail', () => {
-    getTop3ThingsDetail.call(q, args, finished);
-
-    expect(finished).toHaveBeenCalledWith({
-      source: 'QEWDDB',
+  it('should return response object', async () => {
+    const responseObj = {
       sourceId: 'ce437b97-4f6e-4c96-89bb-0b58b29a79cb',
-      dateCreated: 1519851600000,
-      name1: 'foo1',
-      description1: 'baz1',
-      name2: 'foo2',
-      description2: 'baz2',
-      name3: 'foo3',
-      description3: 'baz3'
-    });
+    };
+    command.execute.and.resolveValue(responseObj);
+
+    await handler(args, finished);
+
+    expect(CreateTop3ThingsCommand).toHaveBeenCalledWith(args.req.ctx, args.session);
+    expect(command.execute).toHaveBeenCalledWith(args.patientId, args.req.body);
+
+    expect(finished).toHaveBeenCalledWith(responseObj);
   });
 
-  xit('should override patientId for PHR users', () => {
-    args.session.role = 'phrUser';
+  it('should return error object', async () => {
+    command.execute.and.rejectValue(new Error('custom error'));
 
-    getTop3ThingsDetail.call(q, args, finished);
+    await handler(args, finished);
 
-    expect(finished).toHaveBeenCalledWith([]);
+    expect(CreateTop3ThingsCommand).toHaveBeenCalledWith(args.req.ctx, args.session);
+    expect(command.execute).toHaveBeenCalledWith(args.patientId, args.req.body);
+
+    expect(finished).toHaveBeenCalledWith({
+      error: 'custom error'
+    });
   });
 });

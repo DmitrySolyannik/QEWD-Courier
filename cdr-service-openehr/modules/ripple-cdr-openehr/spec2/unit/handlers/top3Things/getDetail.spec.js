@@ -24,29 +24,66 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  19 July 2018
+  15 December 2018
 
 */
 
 'use strict';
 
-const Worker = require('../../mocks/worker');
-const getTop3ThingsDetail = require('../../../lib/top3Things/getTop3ThingsDetail');
+const mockery = require('mockery');
+const CommandMock = require('../../../mocks/command');
+const ContextMock = require('../../../mocks/context');
 
-describe('ripple-cdr-openehr/lib/top3Things/getTop3ThingsDetail', () => {
-  let q;
+describe('ripple-cdr-openehr/lib/handlers/top3Things/getDetail', () => {
   let args;
   let finished;
 
-  function seeds() {
-    const top3Things = q.db.use('Top3Things');
+  let command;
+  let GetTop3ThingsDetailCommand;
 
-    top3Things.$(['byPatient', 9999999000, 'latest']).value = 'ce437b97-4f6e-4c96-89bb-0b58b29a79cb';
-    top3Things.$(['byPatient', 9434765919, 'latest']).value = '';
+  let handler;
 
-    top3Things.$(['bySourceId', 'ce437b97-4f6e-4c96-89bb-0b58b29a79cb']).setDocument({
-      date: 1519851600000,
-      data: {
+  beforeAll(() => {
+    mockery.enable({
+      warnOnUnregistered: false
+    });
+  });
+
+  afterAll(() => {
+    mockery.disable();
+  });
+
+  beforeEach(() => {
+    args = {
+      patientId: 9999999111,
+      req: {
+        ctx: new ContextMock()
+      },
+      session: {
+        nhsNumber: 9999999000,
+        role: 'phrUser'
+      }
+    };
+    finished = jasmine.createSpy();
+
+    command = new CommandMock();
+    GetTop3ThingsDetailCommand = jasmine.createSpy().and.returnValue(command);
+    mockery.registerMock('../../commands/top3Things/getDetail', GetTop3ThingsDetailCommand);
+
+    delete require.cache[require.resolve('../../../../lib2/handlers/top3Things/getDetail')];
+    handler = require('../../../../lib2/handlers/top3Things/getDetail');
+  });
+
+  afterEach(() => {
+    mockery.deregisterAll();
+  });
+
+  it('should return response object', async () => {
+    const responseObj = [
+      {
+        source: 'QEWDDB',
+        sourceId: 'ce437b97-4f6e-4c96-89bb-0b58b29a79cb',
+        dateCreated: 1519851600000,
         name1: 'foo1',
         description1: 'baz1',
         name2: 'foo2',
@@ -54,67 +91,27 @@ describe('ripple-cdr-openehr/lib/top3Things/getTop3ThingsDetail', () => {
         name3: 'foo3',
         description3: 'baz3'
       }
-    });
-  }
+    ];
+    command.execute.and.resolveValue(responseObj);
 
-  beforeEach(() => {
-    q = new Worker();
+    await handler(args, finished);
 
-    args = {
-      patientId: 9999999000,
-      session: {
-        nhsNumber: 9434765919,
-        role: 'IDCR'
-      }
-    };
-    finished = jasmine.createSpy();
+    expect(GetTop3ThingsDetailCommand).toHaveBeenCalledWith(args.req.ctx, args.session);
+    expect(command.execute).toHaveBeenCalledWith(args.patientId);
 
-    seeds();
+    expect(finished).toHaveBeenCalledWith(responseObj);
   });
 
-  afterEach(() => {
-    q.db.reset();
-  });
+  it('should return error object', async () => {
+    command.execute.and.rejectValue(new Error('custom error'));
 
-  xit('should return invalid or missing patientId error', () => {
-    args.patientId = 'foo';
+    await handler(args, finished);
 
-    getTop3ThingsDetail.call(q, args, finished);
+    expect(GetTop3ThingsDetailCommand).toHaveBeenCalledWith(args.req.ctx, args.session);
+    expect(command.execute).toHaveBeenCalledWith(args.patientId);
 
     expect(finished).toHaveBeenCalledWith({
-      error: 'patientId foo is invalid'
+      error: 'custom error'
     });
-  });
-
-  xit('should return emply list', () => {
-    args.patientId = 9434765919;
-
-    getTop3ThingsDetail.call(q, args, finished);
-
-    expect(finished).toHaveBeenCalledWith([]);
-  });
-
-  xit('should return top 3 things detail', () => {
-    getTop3ThingsDetail.call(q, args, finished);
-
-    expect(finished).toHaveBeenCalledWith({
-      source: 'QEWDDB',
-      sourceId: 'ce437b97-4f6e-4c96-89bb-0b58b29a79cb',
-      dateCreated: 1519851600000,
-      name1: 'foo1',
-      description1: 'baz1',
-      name2: 'foo2',
-      description2: 'baz2',
-      name3: 'foo3',
-      description3: 'baz3'
-    });
-  });
-
-  xit('should override patientId for PHR users', () => {
-    args.session.role = 'phrUser';
-
-    getTop3ThingsDetail.call(q, args, finished);
-
-    expect(finished).toHaveBeenCalledWith([]);
   });
 });

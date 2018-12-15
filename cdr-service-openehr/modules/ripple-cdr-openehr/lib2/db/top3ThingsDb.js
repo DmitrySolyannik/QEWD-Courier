@@ -30,36 +30,69 @@
 
 'use strict';
 
-const checkNhsNumber = require('./handlers/checkNhsNumber');
+const debug = require('debug')('ripple-cdr-openehr:db:top3-things');
 
-const createFeed = require('./handlers/feeds/createFeed');
-const updateFeed = require('./handlers/feeds/updateFeed');
-const getFeedSummary = require('./handlers/feeds/getSummary');
-const getFeedDetail = require('./handlers/feeds/getDetail');
-
-const getTop3ThingsSummary = require('./handlers/top3Things/getSummary');
-const getTop3ThingsDetail = require('./handlers/top3Things/getDetail');
-const createTop3Things = require('./handlers/top3Things/create');
-
-module.exports = {
-  '/api/openehr/check': {
-    GET: checkNhsNumber
-  },
-  '/api/feeds': {
-    GET: getFeedSummary,
-    POST: createFeed
-  },
-  '/api/feeds/:sourceId': {
-    GET: getFeedDetail,
-    PUT: updateFeed
-  },
-  '/api/patients/:patientId/top3Things': {
-    POST: createTop3Things,
-    GET: getTop3ThingsSummary
-  },
-  '/api/patients/:patientId/top3Things/:sourceId': {
-    PUT: createTop3Things,
-    GET: getTop3ThingsDetail
+class Top3ThingsDb {
+  constructor(ctx) {
+    this.ctx = ctx;
+    this.top3Things = ctx.worker.db.use('Top3Things');
   }
-};
 
+  static create(ctx) {
+    return new Top3ThingsDb(ctx);
+  }
+
+  /**
+   * Gets latest source id
+   *
+   * @param  {string|int} patientId
+   * @return {Promise.<string>}
+   */
+  async getLatestSourceId(patientId) {
+    debug('patientId: %s', patientId);
+
+    return this.top3Things.$(['byPatient', patientId, 'latest']).value;
+  }
+
+  /**
+   * Sets latest source id
+   *
+   * @param  {string|int} patientId
+   * @param  {string} sourceId
+   * @return {Promise.<string>}
+   */
+  async setLatestSourceId(patientId, sourceId) {
+    debug('patientId: %s, sourceId: %s', patientId, sourceId);
+
+    this.top3Things.$(['byPatient', patientId, 'latest']).value = sourceId;
+  }
+
+  /**
+   * Gets top3 things by source id
+   *
+   * @param  {string} sourceId
+   * @return {Promise.<Object>}
+   */
+  async getBySourceId(sourceId) {
+    debug('sourceId: %s', sourceId);
+
+    return this.top3Things.$(['bySourceId', sourceId]).getDocument();
+  }
+
+  /**
+   * Inserts a new top3 things
+   *
+   * @param  {string|int} patientId
+   * @param  {string} sourceId
+   * @param  {Object} top3Things
+   * @return {Promise.<Object>}
+   */
+  async insert(patientId, sourceId, top3Things) {
+    debug('patientId: %s, sourceId: %s, top3Things: %j', patientId, sourceId, top3Things);
+
+    this.top3Things.$(['bySourceId', sourceId]).setDocument(top3Things);
+    this.top3Things.$(['byPatient', patientId, 'byDate', top3Things.date]).value = sourceId;
+  }
+}
+
+module.exports = Top3ThingsDb;

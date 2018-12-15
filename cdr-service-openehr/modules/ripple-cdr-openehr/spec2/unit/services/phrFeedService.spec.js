@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  14 December 2018
+  15 December 2018
 
 */
 
@@ -35,7 +35,7 @@ const { uuidV4Regex } = require('../../helpers/utils');
 const { FeedNotFoundError } = require('../../../lib2/errors');
 const PhrFeedService = require('../../../lib2/services/phrFeedService');
 
-fdescribe('ripple-cdr-openehr/lib/services/PhrFeedService', () => {
+describe('ripple-cdr-openehr/lib/services/phrFeedService', () => {
   let ctx;
   let phrFeedService;
 
@@ -57,7 +57,7 @@ fdescribe('ripple-cdr-openehr/lib/services/PhrFeedService', () => {
   });
 
   describe('#getBySourceId', () => {
-    it('should return null', async () => {
+    it('should throw invalid sourceId error', async () => {
       phrFeedDb.getBySourceId.and.resolveValue();
 
       const sourceId = 'eaf394a9-5e05-49c0-9c69-c710c77eda76';
@@ -204,5 +204,4 @@ fdescribe('ripple-cdr-openehr/lib/services/PhrFeedService', () => {
       expect(actual).toMatch(uuidV4Regex);
     });
   });
-
 });

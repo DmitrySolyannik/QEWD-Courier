@@ -28,38 +28,24 @@
 
 */
 
-'use strict';
+const GetTop3ThingsSummaryCommand = require('../../commands/top3Things/getSummary');
+const { getResponseError } = require('../../errors');
 
-const checkNhsNumber = require('./handlers/checkNhsNumber');
+/**
+ * @param  {Object} args
+ * @param  {Function} finished
+ */
+module.exports = async function (args, finished) {
+  try {
+    const command = new GetTop3ThingsSummaryCommand(args.req.ctx, args.session);
+    const responseObj = await command.execute(args.patientId);
 
-const createFeed = require('./handlers/feeds/createFeed');
-const updateFeed = require('./handlers/feeds/updateFeed');
-const getFeedSummary = require('./handlers/feeds/getSummary');
-const getFeedDetail = require('./handlers/feeds/getDetail');
+    finished(responseObj);
+  } catch (err) {
+    const responseError = getResponseError(err);
 
-const getTop3ThingsSummary = require('./handlers/top3Things/getSummary');
-const getTop3ThingsDetail = require('./handlers/top3Things/getDetail');
-const createTop3Things = require('./handlers/top3Things/create');
-
-module.exports = {
-  '/api/openehr/check': {
-    GET: checkNhsNumber
-  },
-  '/api/feeds': {
-    GET: getFeedSummary,
-    POST: createFeed
-  },
-  '/api/feeds/:sourceId': {
-    GET: getFeedDetail,
-    PUT: updateFeed
-  },
-  '/api/patients/:patientId/top3Things': {
-    POST: createTop3Things,
-    GET: getTop3ThingsSummary
-  },
-  '/api/patients/:patientId/top3Things/:sourceId': {
-    PUT: createTop3Things,
-    GET: getTop3ThingsDetail
+    finished(responseError);
   }
 };
+
 

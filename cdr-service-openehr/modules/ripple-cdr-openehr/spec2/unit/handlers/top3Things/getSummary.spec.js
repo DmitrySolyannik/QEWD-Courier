@@ -24,97 +24,91 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  19 July 2018
+  15 December 2018
 
 */
 
 'use strict';
 
-const Worker = require('../../mocks/worker');
-const getTop3ThingsDetail = require('../../../lib/top3Things/getTop3ThingsDetail');
+const mockery = require('mockery');
+const CommandMock = require('../../../mocks/command');
+const ContextMock = require('../../../mocks/context');
 
-describe('ripple-cdr-openehr/lib/top3Things/getTop3ThingsDetail', () => {
-  let q;
+describe('ripple-cdr-openehr/lib/handlers/top3Things/getSummary', () => {
   let args;
   let finished;
 
-  function seeds() {
-    const top3Things = q.db.use('Top3Things');
+  let command;
+  let GetTop3ThingsSummaryCommand;
 
-    top3Things.$(['byPatient', 9999999000, 'latest']).value = 'ce437b97-4f6e-4c96-89bb-0b58b29a79cb';
-    top3Things.$(['byPatient', 9434765919, 'latest']).value = '';
+  let handler;
 
-    top3Things.$(['bySourceId', 'ce437b97-4f6e-4c96-89bb-0b58b29a79cb']).setDocument({
-      date: 1519851600000,
-      data: {
-        name1: 'foo1',
-        description1: 'baz1',
-        name2: 'foo2',
-        description2: 'baz2',
-        name3: 'foo3',
-        description3: 'baz3'
-      }
+  beforeAll(() => {
+    mockery.enable({
+      warnOnUnregistered: false
     });
-  }
+  });
+
+  afterAll(() => {
+    mockery.disable();
+  });
 
   beforeEach(() => {
-    q = new Worker();
-
     args = {
-      patientId: 9999999000,
+      patientId: 9999999111,
+      req: {
+        ctx: new ContextMock()
+      },
       session: {
-        nhsNumber: 9434765919,
-        role: 'IDCR'
+        nhsNumber: 9999999000,
+        role: 'phrUser'
       }
     };
     finished = jasmine.createSpy();
 
-    seeds();
+    command = new CommandMock();
+    GetTop3ThingsSummaryCommand = jasmine.createSpy().and.returnValue(command);
+    mockery.registerMock('../../commands/top3Things/getSummary', GetTop3ThingsSummaryCommand);
+
+    delete require.cache[require.resolve('../../../../lib2/handlers/top3Things/getSummary')];
+    handler = require('../../../../lib2/handlers/top3Things/getSummary');
   });
 
   afterEach(() => {
-    q.db.reset();
+    mockery.deregisterAll();
   });
 
-  xit('should return invalid or missing patientId error', () => {
-    args.patientId = 'foo';
+  it('should return response object', async () => {
+    const responseObj = [
+      {
+        source: 'QEWDDB',
+        sourceId: 'ce437b97-4f6e-4c96-89bb-0b58b29a79cb',
+        dateCreated: 1519851600000,
+        name1: 'foo1',
+        name2: 'foo2',
+        name3: 'foo3'
+      }
+    ];
+    command.execute.and.resolveValue(responseObj);
 
-    getTop3ThingsDetail.call(q, args, finished);
+    await handler(args, finished);
+
+    expect(GetTop3ThingsSummaryCommand).toHaveBeenCalledWith(args.req.ctx, args.session);
+    expect(command.execute).toHaveBeenCalledWith(args.patientId);
+
+    expect(finished).toHaveBeenCalledWith(responseObj);
+  });
+
+  it('should return error object', async () => {
+    command.execute.and.rejectValue(new Error('custom error'));
+
+    await handler(args, finished);
+
+    expect(GetTop3ThingsSummaryCommand).toHaveBeenCalledWith(args.req.ctx, args.session);
+    expect(command.execute).toHaveBeenCalledWith(args.patientId);
 
     expect(finished).toHaveBeenCalledWith({
-      error: 'patientId foo is invalid'
+      error: 'custom error'
     });
-  });
-
-  xit('should return emply list', () => {
-    args.patientId = 9434765919;
-
-    getTop3ThingsDetail.call(q, args, finished);
-
-    expect(finished).toHaveBeenCalledWith([]);
-  });
-
-  xit('should return top 3 things detail', () => {
-    getTop3ThingsDetail.call(q, args, finished);
-
-    expect(finished).toHaveBeenCalledWith({
-      source: 'QEWDDB',
-      sourceId: 'ce437b97-4f6e-4c96-89bb-0b58b29a79cb',
-      dateCreated: 1519851600000,
-      name1: 'foo1',
-      description1: 'baz1',
-      name2: 'foo2',
-      description2: 'baz2',
-      name3: 'foo3',
-      description3: 'baz3'
-    });
-  });
-
-  xit('should override patientId for PHR users', () => {
-    args.session.role = 'phrUser';
-
-    getTop3ThingsDetail.call(q, args, finished);
-
-    expect(finished).toHaveBeenCalledWith([]);
   });
 });

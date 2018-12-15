@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  14 December 2018
+  15 December 2018
 
 */
 
@@ -77,8 +77,39 @@ function isFeedPayloadValid(payload) {
   return true;
 }
 
+function isTop3ThingsPayloadValid(payload) {
+  if (!payload.name1 || payload.name1 === '') {
+    throw new BadRequestError('You must specify at least 1 Top Thing');
+  }
+
+  if (!payload.description1 || payload.description1 === '') {
+    throw new BadRequestError('You must specify at least 1 Top Thing');
+  }
+
+  if (!payload.name2 || payload.name2 === '') {
+    if (payload.description2 && payload.description2 !== '') {
+      throw new BadRequestError('A Description for the 2nd Top Thing was defined, but its summary name was not defined');
+    }
+    payload.name2 = '';
+    payload.description2 = '';
+  } else {
+    payload.description2 = payload.description2 || '';
+  }
+
+  if (!payload.name3 || payload.name3 === '') {
+    if (payload.description3 && payload.description3 !== '') {
+      throw new BadRequestError('A Description for the 3rd Top Thing was defined, but its summary name was not defined');
+    }
+    payload.name3 = '';
+    payload.description3 = '';
+  } else {
+    payload.description3 = payload.description3 || '';
+  }
+}
+
 module.exports = {
   isNumeric,
   isPatientIdValid,
-  isFeedPayloadValid
+  isFeedPayloadValid,
+  isTop3ThingsPayloadValid
 };
