@@ -24,14 +24,14 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  14 December 2018
+  16 December 2018
 
 */
 
 'use strict';
 
 const ExecutionContextMock = require('../../../mocks/context');
-const { BadRequestError, FeedNotFoundError } = require('../../../../lib2/errors');
+const { BadRequestError, NotFoundError } = require('../../../../lib2/errors');
 const UpdateFeedCommand = require('../../../../lib2/commands/feeds/update');
 
 describe('ripple-cdr-openehr/lib/commands/feeds/update', () => {
@@ -80,12 +80,12 @@ describe('ripple-cdr-openehr/lib/commands/feeds/update', () => {
   });
 
   it('should throw invalid sourceId error', async () => {
-    phrFeedService.getBySourceId.and.rejectValue(new FeedNotFoundError('Invalid sourceId'));
+    phrFeedService.getBySourceId.and.rejectValue(new NotFoundError('Invalid sourceId'));
 
     const command = new UpdateFeedCommand(ctx, session);
     const actual = command.execute(sourceId, payload);
 
-    await expectAsync(actual).toBeRejectedWith(new FeedNotFoundError('Invalid sourceId'));
+    await expectAsync(actual).toBeRejectedWith(new NotFoundError('Invalid sourceId'));
   });
 
   it('should throw author missing or empty error', async () => {

@@ -24,62 +24,73 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  14 December 2018
+  16 December 2018
 
 */
 
 'use strict';
 
-const debug = require('debug')('ripple-cdr-openehr:db:record-state');
+const { logger } = require('../core');
+const debug = require('debug')('ripple-cdr-openehr:services:status');
 
-class RecordStateDb {
+class StatusService {
   constructor(ctx) {
     this.ctx = ctx;
-    this.qewdSession = this.ctx.qewdSession;
+    this.statusCache = ctx.cache.statusCache;
   }
 
   static create(ctx) {
-    return new RecordStateDb(ctx);
+    return new StatusService(ctx);
+  }
+
+  async check() {
+    logger.info('services/statusService|check');
+
+    const state = await this.statusCache.get();
+    debug('state: %j', state);
+
+    if (!state) return null;
+
+    state.requestNo = state.requestNo + 1;
+    await this.statusCache.set(state);
+
+    return state;
   }
 
   /**
-   * Gets record state by patient id
+   * Gets status record
    *
-   * @param  {string|int} patientId
-   * @return {Promise.<Object|null>}
+   * @return {Promise.<Object>}
    */
-  async get(patientId) {
-    debug('gets record state by patient id %s', patientId);
-    const node = this.qewdSession.data.$('record_status');
+  async get() {
+    logger.info('services/statusService|get');
 
-    return node.exists ?
-      node.getDocument() :
-      null;
+    return await this.statusCache.get();
   }
 
   /**
-   * Inserts a new record state by patient id
+   * Creates a new status record
    *
-   * @param  {string|int} patientId
-   * @param  {Object} recordState
-   * @return {Promise.<Object|null>}
+   * @param  {Object} state
+   * @return {Promise}
    */
-  async insert(patientId, recordState) {
-    debug('inserts a new record state %j for patient id %s', recordState, patientId);
-    this.qewdSession.data.$('record_status').setDocument(recordState);
+  async create(state) {
+    logger.info('services/statusService|create', { state });
+
+    await this.statusCache.set(state);
   }
 
   /**
-   * Updates an existing record state by patient id
+   * Updates existing status record
    *
-   * @param  {string|int} patientId
-   * @param  {Object} recordState
-   * @return {Promise.<Object|null>}
+   * @param  {Object} state
+   * @return {Promise}
    */
-  async update(patientId, recordState) {
-    debug('updates record state %j for patient id %s', recordState, patientId);
-    this.qewdSession.data.$('record_status').setDocument(recordState);
+  async update(state) {
+    logger.info('services/statusService|update', { state });
+
+    await this.statusCache.set(state);
   }
 }
 
-module.exports = RecordStateDb;
+module.exports = StatusService;

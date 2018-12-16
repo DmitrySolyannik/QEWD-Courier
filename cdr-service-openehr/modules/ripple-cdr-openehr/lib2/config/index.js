@@ -24,14 +24,18 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  5 December 2018
+  16 December 2018
 
 */
 
 'use strict';
 
+const headings = require('./headings');
+const logging = require('./logging');
 const openehr = require('./openehr');
 
 module.exports = {
+  headings,
+  logging,
   openehr
 };

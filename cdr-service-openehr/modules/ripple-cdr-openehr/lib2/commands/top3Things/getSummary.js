@@ -37,7 +37,6 @@ class GetTop3ThingsSummaryCommand {
   constructor(ctx, session) {
     this.ctx = ctx;
     this.session = session;
-    this.top3ThingsService = this.ctx.services.top3ThingsService;
   }
 
   /**
@@ -54,7 +53,10 @@ class GetTop3ThingsSummaryCommand {
 
     isPatientIdValid(patientId);
 
-    return await this.top3ThingsService.getLatestSummaryByPatientId(patientId);
+    const { top3ThingsService } = this.ctx.services;
+    const responseObj = await top3ThingsService.getLatestSummaryByPatientId(patientId);
+
+    return responseObj;
   }
 }
 

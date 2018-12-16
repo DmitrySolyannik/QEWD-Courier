@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  15 December 2018
+  16 December 2018
 
 */
 
@@ -105,11 +105,22 @@ function isTop3ThingsPayloadValid(payload) {
   } else {
     payload.description3 = payload.description3 || '';
   }
+
+  return true;
+}
+
+function isHeadingValid(headingsConfig, heading) {
+  if (!heading || !headingsConfig[heading]) {
+    throw new BadRequestError(`Invalid or missing heading: ${heading}`);
+  }
+
+  return true;
 }
 
 module.exports = {
   isNumeric,
   isPatientIdValid,
   isFeedPayloadValid,
-  isTop3ThingsPayloadValid
+  isTop3ThingsPayloadValid,
+  isHeadingValid
 };

@@ -31,7 +31,7 @@
 'use strict';
 
 const uuid = require('uuid/v4');
-const debug = require('debug')('ripple-cdr-openehr:services:top3-things');
+const { logger } = require('../core');
 
 class Top3ThingsService {
   constructor(ctx) {
@@ -50,7 +50,7 @@ class Top3ThingsService {
    * @return {Promise.<Object[]>}
    */
   async getLatestSummaryByPatientId(patientId) {
-    debug('patientId: %s', patientId);
+    logger.info('services/top3ThingsService|getLatestSummaryByPatientId', { patientId });
 
     const sourceId = await this.top3ThingsDb.getLatestSourceId(patientId);
     if (!sourceId) {
@@ -78,7 +78,7 @@ class Top3ThingsService {
    * @return {Promise.<Object[]>}
    */
   async getLatestDetailByPatientId(patientId) {
-    debug('patientId: %s', patientId);
+    logger.info('services/top3ThingsService|getLatestDetailByPatientId', { patientId });
 
     const sourceId = await this.top3ThingsDb.getLatestSourceId(patientId);
     if (!sourceId) {
@@ -108,7 +108,7 @@ class Top3ThingsService {
    * @return {string}
    */
   async create(patientId, data) {
-    debug('patientId: %s, data: %j', patientId, data);
+    logger.info('services/top3ThingsService|create', { patientId, data });
 
     const sourceId = uuid();
     const now = new Date().getTime();

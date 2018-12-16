@@ -24,11 +24,61 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 December 2018
+  16 December 2018
 
 */
 
 'use strict';
+
+// const path = require('path');
+// const fs = require('fs');
+const traverse = require('traverse');
+const { isNumeric } = require('./validation');
+
+function buildSourceId(host, compositionId) {
+  return `${host}-${compositionId.split('::')[0]}`;
+}
+
+function flatten(obj) {
+  const flatObj = {};
+
+  traverse(obj).map(function (node) {
+    if (this.isLeaf) {
+      let flatPath = '';
+      let slash = '';
+      let colon = '';
+
+      const lastPathIndex = this.path.length - 1;
+      const pathArr = this.path;
+
+      pathArr.forEach(function (path, index) {
+        if (isNumeric(path)) {
+          flatPath = flatPath + colon + path;
+        } else {
+          if (index === lastPathIndex && path[0] === '|' && isNumeric(pathArr[index -1])) {
+            slash = '';
+          }
+          flatPath = flatPath + slash + path;
+        }
+
+        slash = '/';
+        colon = ':';
+      });
+
+      flatObj[flatPath] = node;
+    }
+  });
+
+  return flatObj;
+}
+
+function handleResponse(responseObj, successHandler, errorHandler) {
+  if (responseObj.error) {
+    errorHandler(responseObj);
+  } else {
+    successHandler(responseObj.message);
+  }
+}
 
 function lazyLoadAdapter(target) {
   if (!target.initialise) {
@@ -48,15 +98,25 @@ function lazyLoadAdapter(target) {
   });
 }
 
-function handleResponse(responseObj, successHandler, errorHandler) {
-  if (responseObj.error) {
-    errorHandler(responseObj);
-  } else {
-    successHandler(responseObj.message);
-  }
-}
+// function loadAqlFile(heading)
+
+// function getTextFromFile(fileName) {
+//   var text = '';
+//   if (fs.existsSync(fileName)) {
+//     text = fs.readFileSync(fileName).toString().split(/\r?\n/).join(' ');
+//   }
+//   return text;
+// }
+
+// function loadAQLFile(headingName) {
+//   var aqlFile = path.join(__dirname, '/../headings/' + headingName + '.aql');
+//   console.log('loading aqlFile ' + aqlFile);
+//   return getTextFromFile(aqlFile);
+// }
 
 module.exports = {
-  lazyLoadAdapter,
-  handleResponse
+  buildSourceId,
+  flatten,
+  handleResponse,
+  lazyLoadAdapter
 };

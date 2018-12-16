@@ -37,7 +37,6 @@ class CreateFeedCommand {
   constructor(ctx, session) {
     this.ctx = ctx;
     this.session = session;
-    this.phrFeedService = this.ctx.services.phrFeedService;
   }
 
   /**
@@ -54,8 +53,10 @@ class CreateFeedCommand {
       email: this.session.email
     };
     debug('create a new feed: %j', feed);
+    const { phrFeedService } = this.ctx.services;
+    const responseObj = await phrFeedService.create(feed);
 
-    return await this.phrFeedService.create(feed);
+    return responseObj;
   }
 }
 

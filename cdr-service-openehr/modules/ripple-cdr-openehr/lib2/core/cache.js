@@ -24,35 +24,86 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  14 December 2018
+  16 December 2018
 
 */
 
 'use strict';
 
-const debug = require('debug')('ripple-cdr-openehr:db:ehr-session');
+const { lazyLoadAdapter } = require('../shared/utils');
+const logger = require('./logger');
 
-class EhrSessionDb {
+const transform = (key) => Array.isArray(key) ? key : key.split(':');
+
+class CacheRegistry {
   constructor(ctx) {
     this.ctx = ctx;
-    this.ctx.qewdSession = ctx.qewdSession;
+  }
+
+  initialise(id) {
+    logger.info('core/cache|initialise', { id });
+
+    const Cache = require(`../cache/${id}`);
+
+    if (!Cache.create) {
+      throw new Error(`${id} cache class does not support lazy load initialisation.`);
+    }
+
+    return Cache.create(this.ctx);
+  }
+
+  exists(key) {
+    logger.debug('core/cache|exists', { key });
+
+    const subs = transform(key);
+
+    return this.qewdSession.data.$(subs).exists;
+  }
+
+  get(key) {
+    logger.debug('core/cache|get', { key });
+
+    const subs = transform(key);
+
+    return this.exists(key) ?
+      this.qewdSession.data.$(subs).value :
+      null;
+  }
+
+  getObject(key) {
+    logger.debug('core/cache|getObject', { key });
+
+    const subs = transform(key);
+
+    return this.exists(key) ?
+      this.qewdSession.data.$(subs).getDocument() :
+      null;
+  }
+
+  put(key, value) {
+    logger.debug('core/cache|put', { key, value });
+
+    const subs = transform(key);
+    this.qewdSession.data.$(subs).value = value;
+  }
+
+  putObject(key, value) {
+    logger.debug('core/cache|putObject', { key, value });
+
+    const subs = transform(key);
+    this.qewdSession.data.$(subs).setDocument(value);
+  }
+
+  delete(key) {
+    logger.debug('core/cache|delete', { key });
+
+    const subs = transform(key);
+    this.qewdSession.data.$(subs).delete();
   }
 
   static create(ctx) {
-    return new EhrSessionDb(ctx);
-  }
-
-  /**
-   * Inserts a new ehr session
-   *
-   * @param  {string} host
-   * @param  {Object} ehrSession
-   * @return {Promise}
-   */
-  async insert(host, ehrSession) {
-    debug('insert ehr session %j for %s host', ehrSession, host);
-    this.qewdSession.data.$(['openEHR', 'sessions', host]).setDocument(ehrSession);
+    return lazyLoadAdapter(new CacheRegistry(ctx));
   }
 }
 
-module.exports = EhrSessionDb;
+module.exports = CacheRegistry;

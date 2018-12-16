@@ -24,24 +24,28 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  14 December 2018
+  16 December 2018
 
 */
 
-'use strict';
+const RevertAllDiscoveryDataCommand = require('../../commands/discovery/revertAll');
+const { getResponseError } = require('../../errors');
 
-function FeedNotFoundError(message, userMessage, reason, meta, statusCode, code) {
-  this.message = message || 'Feed not found';
-  this.stack = new Error().stack;
-  this.errorType = this.name;
-  this.statusCode = statusCode || 400;
-  this.code = code || 'NotFound';
-  this.userMessage = userMessage || message;
-  this.meta = meta;
-  this.reason = reason;
-}
+/**
+ * @param  {Object} args
+ * @param  {Function} finished
+ */
+module.exports = async function (args, finished) {
+  try {
+    const command = new RevertAllDiscoveryDataCommand(args.req.ctx, args.session);
+    const responseObj = await command.execute(args.heading, args.req.data);
 
-FeedNotFoundError.prototype = Object.create(Error.prototype);
-FeedNotFoundError.prototype.name = 'FeedNotFoundError';
+    finished(responseObj);
+  } catch (err) {
+    const responseError = getResponseError(err);
 
-module.exports = FeedNotFoundError;
+    finished(responseError);
+  }
+};
+
+

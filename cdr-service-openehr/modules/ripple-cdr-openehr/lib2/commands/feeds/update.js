@@ -38,7 +38,6 @@ class UpdateFeedCommand {
   constructor(ctx, session) {
     this.ctx = ctx;
     this.session = session;
-    this.phrFeedService = this.ctx.services.phrFeedService;
   }
 
   /**
@@ -53,7 +52,8 @@ class UpdateFeedCommand {
       throw new BadRequestError('Missing or empty sourceId');
     }
 
-    const feed = await this.phrFeedService.getBySourceId(sourceId);
+    const { phrFeedService } = this.ctx.services;
+    const feed = await phrFeedService.getBySourceId(sourceId);
 
     isFeedPayloadValid(payload);
 
@@ -62,7 +62,7 @@ class UpdateFeedCommand {
       email: this.session.email
     };
 
-    await this.phrFeedService.update(feed.sourceId, updatedFeed);
+    await phrFeedService.update(feed.sourceId, updatedFeed);
 
     return {
       sourceId: feed.sourceId

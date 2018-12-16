@@ -36,7 +36,6 @@ const debug = require('debug')('ripple-cdr-openehr:commands:feeds:get-detail');
 class GetFeedDetailCommand {
   constructor(ctx) {
     this.ctx = ctx;
-    this.phrFeedService = this.ctx.services.phrFeedService;
   }
 
   /**
@@ -50,7 +49,10 @@ class GetFeedDetailCommand {
       throw new BadRequestError('Missing or empty sourceId');
     }
 
-    return await this.phrFeedService.getBySourceId(sourceId);
+    const { phrFeedService } = this.ctx.services;
+    const responseObj = await phrFeedService.getBySourceId(sourceId);
+
+    return responseObj;
   }
 }
 

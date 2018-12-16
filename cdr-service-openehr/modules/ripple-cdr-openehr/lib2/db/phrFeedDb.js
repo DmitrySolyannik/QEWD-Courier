@@ -30,7 +30,8 @@
 
 'use strict';
 
-const debug = require('debug')('ripple-cdr-openehr:db:phr-feed');
+const { logger } = require('../core');
+const debug = require('debug')('ripple-cdr-openehr:db:phr-feeds');
 
 class PhrFeedDb {
   constructor(ctx) {
@@ -49,12 +50,11 @@ class PhrFeedDb {
    * @return {Promise.<Object|null>}
    */
   async getBySourceId(sourceId) {
-    debug('get phr feed by source id %s', sourceId);
+    logger.info('db/phrFeedDb|getBySourceId', { sourceId });
+
     const node = this.phrFeeds.$(['bySourceId', sourceId]);
 
-    return node.exists ?
-      node.getDocument() :
-      null;
+    return node.exists ? node.getDocument() : null;
   }
 
   /**
@@ -65,18 +65,21 @@ class PhrFeedDb {
    * @return {Promise.<Object|null>}
    */
   async getByName(email, name) {
-    let dbFeed = null;
-
-    debug('get phr feed by %s name for %s', name, email);
+    logger.info('db/phrFeedDb|getByName', { email, name });
 
     const byEmailNode = this.phrFeeds.$(['byEmail', email]);
     const bySourceIdNode = this.phrFeeds.$('bySourceId');
+
+    let dbFeed = null;
 
     if (byEmailNode.exists) {
       byEmailNode.forEachChild((sourceId) => {
         const data = bySourceIdNode.$(sourceId).getDocument();
         if (data.name === name) {
-          dbFeed = data;
+          dbFeed = {
+            ...data,
+            sourceId
+          };
 
           return true; // stop loop
         }
@@ -94,18 +97,21 @@ class PhrFeedDb {
    * @return {Promise.<Object|null>}
    */
   async getByLandingPageUrl(email, landingPageUrl) {
-    let dbFeed = null;
-
-    debug('get phr feed by %s landing url for %s', landingPageUrl, email);
+    logger.info('db/phrFeedDb|getByLandingPageUrl', { email, landingPageUrl });
 
     const byEmailNode = this.phrFeeds.$(['byEmail', email]);
     const bySourceIdNode = this.phrFeeds.$('bySourceId');
+
+    let dbFeed = null;
 
     if (byEmailNode.exists) {
       byEmailNode.forEachChild((sourceId) => {
         const data = bySourceIdNode.$(sourceId).getDocument();
         if (data.landingPageUrl === landingPageUrl) {
-          dbFeed = data;
+          dbFeed = {
+            ...data,
+            sourceId
+          };
 
           return true; // stop loop
         }
@@ -122,14 +128,14 @@ class PhrFeedDb {
    * @return {Promise.<Object[]>}
    */
   async getByEmail(email) {
-    debug('get phr feeds by % email', email);
-
-    const names = {};
-    const urls = {};
-    const dbFeeds = [];
+    logger.info('db/phrFeedDb|getByEmail', { email });
 
     const byEmailNode = this.phrFeeds.$(['byEmail', email]);
     const bySourceIdNode = this.phrFeeds.$('bySourceId');
+
+    const dbFeeds = [];
+    const names = {};
+    const urls = {};
 
     if (byEmailNode.exists) {
       byEmailNode.forEachChild((sourceId) => {
@@ -165,15 +171,16 @@ class PhrFeedDb {
   }
 
   /**
-   * Inserts a new feed
+   * Inserts a new db record
    *
-   * @param  {Object} dbFeed
+   * @param  {Object} data
    * @return {Promise}
    */
-  async insert(dbFeed) {
-    debug('insert a new phr feed %j', dbFeed);
-    this.phrFeeds.$(['byEmail', dbFeed.email, dbFeed.sourceId]).value = 'true';
-    this.phrFeeds.$(['bySourceId', dbFeed.sourceId]).setDocument(dbFeed);
+  async insert(data) {
+    logger.info('db/phrFeedDb|insert', { data });
+
+    this.phrFeeds.$(['byEmail', data.email, data.sourceId]).value = 'true';
+    this.phrFeeds.$(['bySourceId', data.sourceId]).setDocument(data);
   }
 }
 

@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  14 December 2018
+  16 December 2018
 
 */
 
@@ -34,8 +34,9 @@ const ExtraHeading = Object.freeze({
   FINISHED: 'finished'
 });
 
-
 const Heading = Object.freeze({
+  COUNTS: 'counts',
+  FEEDS: 'feeds',
   TOP_3_THINGS: 'top3Things'
 });
 

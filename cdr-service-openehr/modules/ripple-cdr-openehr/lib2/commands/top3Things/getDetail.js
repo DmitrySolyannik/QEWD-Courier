@@ -37,7 +37,6 @@ class GetTop3ThingsDetailCommand {
   constructor(ctx, session) {
     this.ctx = ctx;
     this.session = session;
-    this.top3ThingsService = this.ctx.services.top3ThingsService;
   }
 
   /**
@@ -54,7 +53,10 @@ class GetTop3ThingsDetailCommand {
 
     isPatientIdValid(patientId);
 
-    return await this.top3ThingsService.getLatestDetailByPatientId(patientId);
+    const { top3ThingsService } = this.ctx.services;
+    const responseObj = await top3ThingsService.getLatestDetailByPatientId(patientId);
+
+    return responseObj;
   }
 }
 

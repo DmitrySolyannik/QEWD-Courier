@@ -24,15 +24,15 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  14 December 2018
+  16 December 2018
 
 */
 
 'use strict';
 
 const uuid = require('uuid/v4');
-const { FeedNotFoundError } = require('../errors');
-const debug = require('debug')('ripple-cdr-openehr:services:phr-feed');
+const { logger } = require('../core');
+const { NotFoundError } = require('../errors');
 
 class PhrFeedService {
   constructor(ctx) {
@@ -51,12 +51,12 @@ class PhrFeedService {
    * @return {Promise.<Object>}
    */
   async getBySourceId(sourceId) {
-    debug('get phr feed by source id %s', sourceId);
+    logger.info('services/phrFeedService|getBySourceId', { sourceId });
 
     const dbData = await this.phrFeedDb.getBySourceId(sourceId);
 
     if (!dbData) {
-      throw new FeedNotFoundError('Invalid sourceId');
+      throw new NotFoundError('Invalid sourceId');
     }
 
     return dbData;
@@ -69,11 +69,11 @@ class PhrFeedService {
    * @return {Promise.<Object[]>}
    */
   async getByEmail(email) {
-    debug('get phr feeds by email %s', email);
+    logger.info('services/phrFeedService|getByEmail', { email });
 
-    const dbFeeds = await this.phrFeedDb.getByEmail(email);
+    const dbData = await this.phrFeedDb.getByEmail(email);
 
-    return dbFeeds.map(x =>
+    return dbData.map(x =>
       ({
         name: x.name,
         landingPageUrl: x.landingPageUrl,
@@ -90,7 +90,7 @@ class PhrFeedService {
    * @return {Promise.<Object>}
    */
   async create(feed) {
-    debug('create a new phr feed %j', feed);
+    logger.info('services/phrFeedService|create', { feed });
 
     let dbData = null;
 
@@ -106,13 +106,13 @@ class PhrFeedService {
 
     const sourceId = uuid();
     const now = new Date().getTime();
-    const dbFeed = {
+    dbData = {
       ...feed,
       sourceId,
       dateCreated: now
     };
 
-    await this.phrFeedDb.insert(dbFeed);
+    await this.phrFeedDb.insert(dbData);
 
     return sourceId;
   }
@@ -124,16 +124,16 @@ class PhrFeedService {
    * @return {Promise.<Object>}
    */
   async update(sourceId, feed) {
-    debug('update existing phr feed %j by %s source id', feed, sourceId);
+    logger.info('services/phrFeedService|update', { sourceId, feed });
 
     const now = new Date().getTime();
-    const dbFeed = {
+    const dbData = {
       ...feed,
       sourceId,
       dateCreated: now
     };
 
-    await this.phrFeedDb.update(sourceId, dbFeed);
+    await this.phrFeedDb.update(sourceId, dbData);
   }
 }
 

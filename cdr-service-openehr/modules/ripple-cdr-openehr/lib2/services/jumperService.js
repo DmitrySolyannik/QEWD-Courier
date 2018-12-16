@@ -24,59 +24,35 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  14 December 2018
+  16 December 2018
 
 */
 
 'use strict';
 
-const debug = require('debug')('ripple-cdr-openehr:services:record-state');
+// let postHeadingByJumper;
 
-class RecordStateService {
+// try {
+//   postHeadingByJumper = require('../../../ripple-openehr-jumper/lib/postHeading');
+// }
+// catch(err) {
+//   debug('Unable to load')
+//   console.log('*** unable to load postHeading ***');
+// }
+
+
+class JumperService {
   constructor(ctx) {
     this.ctx = ctx;
-    this.recordStateDb = ctx.db.recordStateDb;
   }
 
   static create(ctx) {
-    return new RecordStateService(ctx);
+    return new JumperService(ctx);
   }
 
-  /**
-   * Gets record state by patient id
-   *
-   * @param  {string|int} patientId
-   * @return {Promise.<Object>}
-   */
-  async getByPatientId(patientId) {
-    debug('get state for %s patient', patientId);
+  async create() {
 
-    return await this.recordStateDb.get(patientId);
-  }
-
-  /**
-   * Creates record state for patient id
-   *
-   * @param  {string|int} patientId
-   * @param  {Object} state
-   * @return {Promise}
-   */
-  async create(patientId, state) {
-    debug('create state for %s patient with data %j ', patientId, state);
-    await this.recordStateDb.insert(patientId, state);
-  }
-
-  /**
-   * Updates existing record state for patient id
-   *
-   * @param  {string|int} patientId
-   * @param  {Object} state
-   * @return {Promise}
-   */
-  async update(patientId, state) {
-    debug('update state for %s patient with data %j', patientId, state);
-    await this.recordStateDb.update(patientId, state);
   }
 }
 
-module.exports = RecordStateService;
+module.exports = JumperService;

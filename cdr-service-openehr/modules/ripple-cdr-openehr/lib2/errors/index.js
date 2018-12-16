@@ -24,15 +24,17 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  14 December 2018
+  16 December 2018
 
 */
 
 'use strict';
 
 const BadRequestError = require('./BadRequestError');
+const EhrIdNotFoundError = require('./EhrIdNotFoundError');
 const EhrSessionError = require('./EhrSessionError');
-const FeedNotFoundError = require('./FeedNotFoundError');
+const ForbiddenError = require('./ForbiddenError');
+const NotFoundError = require('./NotFoundError');
 
 function qewdifyError(err) {
   return {
@@ -48,8 +50,10 @@ function getResponseError(err = new Error('Unknown error')) {
 
 module.exports = {
   BadRequestError,
+  EhrIdNotFoundError,
   EhrSessionError,
-  FeedNotFoundError,
+  ForbiddenError,
+  NotFoundError,
   getResponseError,
   qewdifyError
 };

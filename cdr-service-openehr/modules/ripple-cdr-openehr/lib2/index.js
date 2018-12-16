@@ -24,27 +24,27 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  14 December 2018
+  15 December 2018
 
 */
 
 'use strict';
 
 const router = require('qewd-router');
+const { ExecutionContext, logger } = require('./core');
+const DiscoveryDispatcher = require('./dispatchers/discovery');
 const routes = require('./routes');
-const DiscoveryService = require('./services/discoveryService');
 const { ExtraHeading, Heading, RecordStatus, Role } = require('./shared/enums');
-const ExecutionContext = require('./core/context');
 const debug = require('debug')('ripple-cdr-openehr');
 
 module.exports = {
   init() {
-    debug('init');
+    logger.info('init');
     router.addMicroServiceHandler(routes, module.exports);
   },
 
   beforeMicroServiceHandler(req, finished) {
-    debug('beforeMicroServiceHandler');
+    logger.info('beforeMicroServiceHandler');
 
     const authorized = this.jwt.handlers.validateRestRequest.call(this, req, finished);
     if (authorized) {
@@ -69,8 +69,9 @@ module.exports = {
 
   workerResponseHandlers: {
     restRequest(message, send) { // eslint-disable-line no-unused-vars
-      debug('workerResponseHandlers|restRequest: path = %s', message.path);
+      logger.info('workerResponseHandlers/restRequest');
 
+      debug('path: %s', message.path);
       if (message.path === '/api/openehr/check') {
         /*
           So at this point, during the /api/initialise process before login,
@@ -113,8 +114,8 @@ module.exports = {
           .filter(x => x !== Heading.TOP_3_THINGS)
           .concat(ExtraHeading.FINISHED);
 
-        const discoveryService = new DiscoveryService(this);
-        discoveryService.syncAll(message.nhsNumber, headings, message.token);
+        const discoveryDispatcher = new DiscoveryDispatcher(this);
+        discoveryDispatcher.syncAll(message.nhsNumber, headings, message.token);
       }
     }
   }

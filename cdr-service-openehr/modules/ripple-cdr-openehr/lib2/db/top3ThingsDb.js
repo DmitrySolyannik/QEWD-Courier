@@ -30,7 +30,7 @@
 
 'use strict';
 
-const debug = require('debug')('ripple-cdr-openehr:db:top3-things');
+const { logger } = require('../core');
 
 class Top3ThingsDb {
   constructor(ctx) {
@@ -46,12 +46,14 @@ class Top3ThingsDb {
    * Gets latest source id
    *
    * @param  {string|int} patientId
-   * @return {Promise.<string>}
+   * @return {Promise.<string|null>}
    */
   async getLatestSourceId(patientId) {
-    debug('patientId: %s', patientId);
+    logger.info('db/Top3ThingsDb|getLatestSourceId', { patientId });
 
-    return this.top3Things.$(['byPatient', patientId, 'latest']).value;
+    const node = this.top3Things.$(['byPatient', patientId, 'latest']);
+
+    return node.exists ? node.value : null;
   }
 
   /**
@@ -59,28 +61,30 @@ class Top3ThingsDb {
    *
    * @param  {string|int} patientId
    * @param  {string} sourceId
-   * @return {Promise.<string>}
+   * @return {Promise}
    */
   async setLatestSourceId(patientId, sourceId) {
-    debug('patientId: %s, sourceId: %s', patientId, sourceId);
+    logger.info('db/Top3ThingsDb|getLatestSourceId', { patientId, sourceId });
 
     this.top3Things.$(['byPatient', patientId, 'latest']).value = sourceId;
   }
 
   /**
-   * Gets top3 things by source id
+   * Gets data by source id
    *
    * @param  {string} sourceId
-   * @return {Promise.<Object>}
+   * @return {Promise.<Object|null>}
    */
   async getBySourceId(sourceId) {
-    debug('sourceId: %s', sourceId);
+    logger.info('db/Top3ThingsDb|getBySourceId', { sourceId });
 
-    return this.top3Things.$(['bySourceId', sourceId]).getDocument();
+    const node = this.top3Things.$(['bySourceId', sourceId]);
+
+    return node.exists ? node.getDocument() : null;
   }
 
   /**
-   * Inserts a new top3 things
+   * Inserts a new db record
    *
    * @param  {string|int} patientId
    * @param  {string} sourceId
@@ -88,7 +92,7 @@ class Top3ThingsDb {
    * @return {Promise.<Object>}
    */
   async insert(patientId, sourceId, top3Things) {
-    debug('patientId: %s, sourceId: %s, top3Things: %j', patientId, sourceId, top3Things);
+    logger.info('db/Top3ThingsDb|insert', { patientId, sourceId, top3Things });
 
     this.top3Things.$(['bySourceId', sourceId]).setDocument(top3Things);
     this.top3Things.$(['byPatient', patientId, 'byDate', top3Things.date]).value = sourceId;

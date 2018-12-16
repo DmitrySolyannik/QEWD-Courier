@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  14 December 2018
+  16 December 2018
 
 */
 
@@ -32,7 +32,7 @@
 
 const request = require('request');
 const config = require('../config');
-const debug = require('debug')('ripple-cdr-openehr:services:ehr-rest');
+const { logger } = require('../core');
 
 function requestAsync(options) {
   return new Promise((resolve, reject) => {
@@ -52,7 +52,7 @@ class EhrRestService {
   }
 
   async startSession() {
-    debug('start session');
+    logger.info(`services/ehrRestService|${this.host}|startSession`);
 
     const options = {
       url: `${this.hostConfig.url}/rest/v1/session`,
@@ -71,14 +71,14 @@ class EhrRestService {
     return await requestAsync(options);
   }
 
-  async stopSession(ehrSessionId) {
-    debug('stop session: %s', ehrSessionId);
+  async stopSession(sessionId) {
+    logger.info(`services/ehrRestService|${this.host}|stopSession`, { sessionId });
 
     const options = {
       url: `${this.hostConfig.url}/rest/v1/session`,
       method: 'DELETE',
       headers: {
-        'ehr-session': ehrSessionId
+        'ehr-session': sessionId
       },
       json: true
     };
@@ -86,18 +86,18 @@ class EhrRestService {
     return await requestAsync(options);
   }
 
-  async getEhr(ehrSessionId, nhsNumber) {
-    debug('get ehr: sessionId = %s, nhsNumber = %s', ehrSessionId, nhsNumber);
+  async getEhr(sessionId, patientId) {
+    logger.info(`services/ehrRestService|${this.host}|getEhr`, { sessionId, patientId });
 
     const options = {
       url: `${this.hostConfig.url}/rest/v1/ehr`,
       method: 'GET',
       qs: {
-        subjectId: nhsNumber,
+        subjectId: patientId,
         subjectNamespace: 'uk.nhs.nhs_number'
       },
       headers: {
-        'ehr-session': ehrSessionId
+        'ehr-session': sessionId
       },
       json: true
     };
@@ -105,24 +105,78 @@ class EhrRestService {
     return await requestAsync(options);
   }
 
-  async createEhr(ehrSessionId, nhsNumber) {
-    debug('create ehr: sessionId = %s, nhsNumber = %s', ehrSessionId, nhsNumber);
+  async postEhr(sessionId, patientId) {
+    logger.info(`services/ehrRestService|${this.host}|getEhr`, { sessionId, patientId });
 
     const options = {
       url: `${this.hostConfig.url}/rest/v1/ehr`,
       method: 'POST',
       qs: {
-        subjectId: nhsNumber,
+        subjectId: patientId,
         subjectNamespace: 'uk.nhs.nhs_number'
       },
       body: {
-        subjectId: nhsNumber,
+        subjectId: patientId,
         subjectNamespace: 'uk.nhs.nhs_number',
         queryable: 'true',
         modifiable: 'true'
       },
       headers: {
-        'ehr-session': ehrSessionId
+        'ehr-session': sessionId
+      },
+      json: true
+    };
+
+    return await requestAsync(options);
+  }
+
+  async postHeading(sessionId, ehrId, templateId, data) {
+    logger.info(`services/ehrRestService|${this.host}|postEhr`, { sessionId, ehrId, templateId, data });
+
+    const options = {
+      url: `${this.hostConfig.url}/rest/v1/composition`,
+      method: 'POST',
+      qs: {
+        templateId: templateId,
+        ehrId: ehrId,
+        format: 'FLAT'
+      },
+      body: data,
+      headers: {
+        'ehr-session': sessionId
+      },
+      json: true
+    };
+
+    return await requestAsync(options);
+  }
+
+  async query(sessionId, query) {
+    logger.info(`services/ehrRestService|${this.host}|query`, { sessionId, query });
+
+    const options = {
+      url: `${this.hostConfig.url}/rest/v1/query`,
+      method: 'GET',
+      qs: {
+        aql: query
+      },
+      headers: {
+        'ehr-session': sessionId
+      },
+      json: true
+    };
+
+    return await requestAsync(options);
+  }
+
+  async deleteHeading(sessionId, compositionId) {
+    logger.info(`services/ehrRestService|${this.host}|deleteHeading`, { sessionId, compositionId });
+
+    const options = {
+      url: `${this.hostConfig.url}/rest/v1/composition/${compositionId}`,
+      method: 'DELETE',
+      headers: {
+        'ehr-session': sessionId
       },
       json: true
     };

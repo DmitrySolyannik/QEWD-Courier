@@ -32,18 +32,42 @@
 
 const checkNhsNumber = require('./handlers/checkNhsNumber');
 
+// feeds
 const createFeed = require('./handlers/feeds/createFeed');
 const updateFeed = require('./handlers/feeds/updateFeed');
 const getFeedSummary = require('./handlers/feeds/getSummary');
 const getFeedDetail = require('./handlers/feeds/getDetail');
 
+// top3 things
 const getTop3ThingsSummary = require('./handlers/top3Things/getSummary');
 const getTop3ThingsDetail = require('./handlers/top3Things/getDetail');
 const createTop3Things = require('./handlers/top3Things/create');
 
+// discovery data
+const revertDiscoveryData = require('./handlers/discovery/revert');
+const revertAllDiscoveryData = require('./handlers/discovery/revertAll');
+const mergeDiscoveryData = require('./handlers/discovery/merge');
+
+const deletePatientHeading = require('./handlers/deletePatientHeading');
+
+
+
 module.exports = {
   '/api/openehr/check': {
     GET: checkNhsNumber
+  },
+  '/api/patients/:patientId/top3Things': {
+    POST: createTop3Things,
+    GET: getTop3ThingsSummary
+  },
+  '/api/patients/:patientId/top3Things/:sourceId': {
+    PUT: createTop3Things,
+    GET: getTop3ThingsDetail
+  },
+  '/api/patients/:patientId/:heading/:sourceId': {
+    // GET: getHeadingDetail,
+    // PUT: editPatientHeading,
+    DELETE: deletePatientHeading
   },
   '/api/feeds': {
     GET: getFeedSummary,
@@ -53,13 +77,14 @@ module.exports = {
     GET: getFeedDetail,
     PUT: updateFeed
   },
-  '/api/patients/:patientId/top3Things': {
-    POST: createTop3Things,
-    GET: getTop3ThingsSummary
+  '/discovery/merge/:heading': {
+    GET: mergeDiscoveryData
   },
-  '/api/patients/:patientId/top3Things/:sourceId': {
-    PUT: createTop3Things,
-    GET: getTop3ThingsDetail
+  '/api/discovery/revert/:patientId/:heading': {
+    DELETE: revertDiscoveryData
+  },
+  '/api/discovery/revert/all': {
+    DELETE: revertAllDiscoveryData
   }
 };
 

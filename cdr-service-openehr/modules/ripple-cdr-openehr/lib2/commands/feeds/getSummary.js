@@ -36,7 +36,6 @@ class GetFeedsSummaryCommand {
   constructor(ctx, session) {
     this.ctx = ctx;
     this.session = session;
-    this.phrFeedService = this.ctx.services.phrFeedService;
   }
 
   /**
@@ -45,7 +44,10 @@ class GetFeedsSummaryCommand {
   async execute() {
     debug('execute get feeds summary');
 
-    return await this.phrFeedService.getByEmail(this.session.email);
+    const { phrFeedService } = this.ctx.services;
+    const responseObj = await phrFeedService.getByEmail(this.session.email);
+
+    return responseObj;
   }
 }
 

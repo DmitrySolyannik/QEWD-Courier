@@ -24,24 +24,23 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  14 December 2018
+  16 December 2018
 
 */
 
 'use strict';
 
-const { lazyLoadAdapter } = require('../shared/utils');
 const EhrRestService = require('../services/ehrRestService');
-const debug = require('debug')('ripple-cdr-openehr:core:openehr');
+const { lazyLoadAdapter } = require('../shared/utils');
+const logger = require('./logger');
 
 class OpenEhrRegistry {
   constructor(ctx) {
-    debug('initialize');
     this.ctx = ctx;
   }
 
   initialise(host) {
-    debug('initialize ehr rest service for host %s', host);
+    logger.info('core/openehr|initialise', { host });
 
     const hostConfig = this.ctx.userDefined.openehr[host];
 

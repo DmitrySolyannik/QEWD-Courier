@@ -37,7 +37,6 @@ class CreateTop3ThingsCommand {
   constructor(ctx, session) {
     this.ctx = ctx;
     this.session = session;
-    this.top3ThingsService = this.ctx.services.top3ThingsService;
   }
 
   /**
@@ -56,7 +55,8 @@ class CreateTop3ThingsCommand {
     isPatientIdValid(patientId);
     isTop3ThingsPayloadValid(payload);
 
-    const sourceId = await this.top3ThingsService.create(patientId, payload);
+    const { top3ThingsService } = this.ctx.services;
+    const sourceId = await top3ThingsService.create(patientId, payload);
 
     return {
       sourceId

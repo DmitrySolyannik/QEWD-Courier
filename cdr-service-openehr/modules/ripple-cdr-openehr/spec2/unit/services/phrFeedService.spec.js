@@ -32,7 +32,7 @@
 
 const ExecutionContextMock = require('../../mocks/context');
 const { uuidV4Regex } = require('../../helpers/utils');
-const { FeedNotFoundError } = require('../../../lib2/errors');
+const { NotFoundError } = require('../../../lib2/errors');
 const PhrFeedService = require('../../../lib2/services/phrFeedService');
 
 describe('ripple-cdr-openehr/lib/services/phrFeedService', () => {
@@ -63,7 +63,7 @@ describe('ripple-cdr-openehr/lib/services/phrFeedService', () => {
       const sourceId = 'eaf394a9-5e05-49c0-9c69-c710c77eda76';
       const actual = phrFeedService.getBySourceId(sourceId);
 
-      await expectAsync(actual).toBeRejectedWith(new FeedNotFoundError('Invalid sourceId'));
+      await expectAsync(actual).toBeRejectedWith(new NotFoundError('Invalid sourceId'));
       expect(phrFeedDb.getBySourceId).toHaveBeenCalledWith('eaf394a9-5e05-49c0-9c69-c710c77eda76');
     });
 

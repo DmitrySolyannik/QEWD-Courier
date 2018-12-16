@@ -30,6 +30,8 @@
 
 'use strict';
 
+
+const { logger } = require('../core');
 const { EhrSessionError } = require('../errors');
 const debug = require('debug')('ripple-cdr-openehr:services:ehr-session');
 
@@ -50,32 +52,34 @@ class EhrSessionService {
    * @return {Promise.<Object>}
    */
   async start(host, { enableCaching = true }) {
-    debug('start: host = %s', host);
+    logger.info('services/ehrSessionService|start', { host });
+
+    //TODO: return session if exists
 
     const data = await this.ctx.openehr[host].startSession();
 
     if (!data || !data.sessionId) {
-      debug('start session response was unexpected: %j', data);
+      logger.error('start session response was unexpected', data);
       throw new EhrSessionError(`Unable to establish a session with ${host}`);
     }
 
     if (enableCaching) {
-      const ehrSession = {
+      const session = {
         creationTime: new Date().getTime(),
         id: data.sessionId
       };
 
-      await this.ctx.db.ehrSessionDb.insert(ehrSession);
-      debug('session for %s: %s has been cached', host, data.sessionId);
+      await this.ctx.cache.sessionCache.set(host, session);
+      debug('session %s for %s host has been cached', host, data.sessionId);
     }
 
     return {
-      id: data.sessionId
+      sessionId: data.sessionId
     };
   }
 
   async stop() {
-
+    logger.info('services/ehrSessionService|stop');
   }
 }
 

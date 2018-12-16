@@ -24,43 +24,28 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  14 December 2018
+  16 December 2018
 
 */
 
-'use strict';
+const MergeDiscoveryDataCommand = require('../../commands/discovery/merge');
+const { getResponseError } = require('../../errors');
 
-const debug = require('debug')('ripple-cdr-openehr:services:nhs-number');
+/**
+ * @param  {Object} args
+ * @param  {Function} finished
+ */
+module.exports = async function (args, finished) {
+  try {
+    const command = new MergeDiscoveryDataCommand(args.req.ctx, args.session);
+    const responseObj = await command.execute(args.heading, args.req.data);
 
-class NhsNumberService {
-  constructor(ctx) {
-    this.ctx = ctx;
+    finished(responseObj);
+  } catch (err) {
+    const responseError = getResponseError(err);
+
+    finished(responseError);
   }
+};
 
-  static create(ctx) {
-    return new NhsNumberService(ctx);
-  }
 
-  async check(host, ehrSessionId, nhsNumber) {
-    const ehrRestService = this.ctx.openehr[host];
-
-    let data = await ehrRestService.getEhr(ehrSessionId, nhsNumber);
-    debug('get ehr data: %j', data);
-    if (data && typeof data !== 'string') {
-      return {
-        data: data,
-        created: false
-      };
-    }
-
-    data = await ehrRestService.createEhr(ehrSessionId, nhsNumber);
-    debug('create ehr data: %j', data);
-
-    return {
-      data: data,
-      created: true
-    };
-  }
-}
-
-module.exports = NhsNumberService;

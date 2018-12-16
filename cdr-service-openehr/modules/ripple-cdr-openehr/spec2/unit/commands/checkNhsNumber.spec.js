@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  14 December 2018
+  16 December 2018
 
 */
 
@@ -38,9 +38,8 @@ describe('ripple-cdr-openehr/lib/commands/checkNhsNumber', () => {
   let ctx;
   let session;
 
-  let recordStateService;
-  let ehrSessionService;
-  let nhsNumberService;
+  let statusService;
+  let patientService;
   let phrFeedService;
 
   beforeEach(() => {
@@ -50,9 +49,8 @@ describe('ripple-cdr-openehr/lib/commands/checkNhsNumber', () => {
       email: 'john.doe@example.org'
     };
 
-    recordStateService = ctx.services.recordStateService;
-    ehrSessionService = ctx.services.ehrSessionService;
-    nhsNumberService = ctx.services.nhsNumberService;
+    statusService = ctx.services.statusService;
+    patientService = ctx.services.patientService;
     phrFeedService = ctx.services.phrFeedService;
   });
 
@@ -73,23 +71,17 @@ describe('ripple-cdr-openehr/lib/commands/checkNhsNumber', () => {
       nhsNumber: 9999999000
     };
 
-    const recordState = {
+    const state = {
       new_patient: true,
-      requestNo: 1,
+      requestNo: 2,
       status: 'loading_data'
     };
-    recordStateService.getByPatientId.and.resolveValue(recordState);
+    statusService.check.and.resolveValue(state);
 
     const command = new CheckNhsNumberCommand(ctx, session);
     const actual = await command.execute();
 
-    expect(recordStateService.getByPatientId).toHaveBeenCalledWith(9999999000);
-    expect(recordStateService.update).toHaveBeenCalledWith(9999999000, {
-      new_patient: true,
-      requestNo: 2,
-      status: 'loading_data'
-    });
-
+    expect(statusService.check).toHaveBeenCalled();
     expect(actual).toEqual(expected);
   });
 
@@ -99,23 +91,17 @@ describe('ripple-cdr-openehr/lib/commands/checkNhsNumber', () => {
       nhsNumber: 9999999000
     };
 
-    const recordState = {
+    const state = {
       new_patient: true,
       requestNo: 2,
       status: 'ready'
     };
-    recordStateService.getByPatientId.and.resolveValue(recordState);
+    statusService.check.and.resolveValue(state);
 
     const command = new CheckNhsNumberCommand(ctx, session);
     const actual = await command.execute();
 
-    expect(recordStateService.getByPatientId).toHaveBeenCalledWith(9999999000);
-    expect(recordStateService.update).toHaveBeenCalledWith(9999999000, {
-      new_patient: true,
-      requestNo: 3,
-      status: 'ready'
-    });
-
+    expect(statusService.check).toHaveBeenCalledWith();
     expect(actual).toEqual(expected);
   });
 
@@ -127,40 +113,28 @@ describe('ripple-cdr-openehr/lib/commands/checkNhsNumber', () => {
       nhsNumber: 9999999000
     };
 
-    recordStateService.getByPatientId.and.resolveValues(
-      null,
-      {
-        status: 'loading_data',
-        new_patient: 'not_known_yet',
-        requestNo: 2
-      }
-    );
-    recordStateService.create.and.resolveValue();
-
-    const ehrSession = {
-      id: '182bdb28-d257-4a99-9a41-441c49aead0c'
-    };
-    ehrSessionService.start.and.resolveValue(ehrSession);
-
-    const data = {
+    statusService.check.and.resolveValue();
+    statusService.create.and.resolveValue();
+    patientService.check.and.resolveValue({
       created: false
-    };
-    nhsNumberService.check.and.resolveValue(data);
+    });
+    statusService.get.and.resolveValue({
+      status: 'loading_data',
+      new_patient: 'not_known_yet',
+      requestNo: 2
+    });
 
     const command = new CheckNhsNumberCommand(ctx, session);
     const actual = await command.execute();
 
-    expect(recordStateService.getByPatientId.calls.argsFor(0)).toEqual([9999999000]);
-    expect(recordStateService.create).toHaveBeenCalledWith(9999999000, {
+    expect(statusService.check).toHaveBeenCalledWith();
+    expect(statusService.create).toHaveBeenCalledWith({
       status: 'loading_data',
       new_patient: 'not_known_yet',
       requestNo: 1
     });
-    expect(ehrSessionService.start).toHaveBeenCalledWith('ethercis');
-    expect(nhsNumberService.check).toHaveBeenCalledWith('ethercis', '182bdb28-d257-4a99-9a41-441c49aead0c', 9999999000);
-
-    expect(recordStateService.getByPatientId.calls.argsFor(1)).toEqual([9999999000]);
-    expect(recordStateService.update).toHaveBeenCalledWith(9999999000, {
+    expect(patientService.check).toHaveBeenCalledWith('ethercis', 9999999000);
+    expect(statusService.update).toHaveBeenCalledWith({
       status: 'loading_data',
       new_patient: false,
       requestNo: 2
@@ -177,38 +151,27 @@ describe('ripple-cdr-openehr/lib/commands/checkNhsNumber', () => {
       nhsNumber: 9999999000
     };
 
-    recordStateService.getByPatientId.and.resolveValues(
-      null,
-      {
-        status: 'loading_data',
-        new_patient: 'not_known_yet',
-        requestNo: 2
-      }
-    );
-    recordStateService.create.and.resolveValue();
-
-    const ehrSession = {
-      id: '182bdb28-d257-4a99-9a41-441c49aead0c'
-    };
-    ehrSessionService.start.and.resolveValue(ehrSession);
-
-    const data = {
+    statusService.check.and.resolveValue();
+    statusService.create.and.resolveValue();
+    patientService.check.and.resolveValue({
       created: true
-    };
-    nhsNumberService.check.and.resolveValue(data);
-    phrFeedService.create.and.resolveValue();
+    });
+    statusService.get.and.resolveValue({
+      status: 'loading_data',
+      new_patient: 'not_known_yet',
+      requestNo: 2
+    });
 
     const command = new CheckNhsNumberCommand(ctx, session);
     const actual = await command.execute();
 
-    expect(recordStateService.getByPatientId.calls.argsFor(0)).toEqual([9999999000]);
-    expect(recordStateService.create).toHaveBeenCalledWith(9999999000, {
+    expect(statusService.check).toHaveBeenCalledWith();
+    expect(statusService.create).toHaveBeenCalledWith({
       status: 'loading_data',
       new_patient: 'not_known_yet',
       requestNo: 1
     });
-    expect(ehrSessionService.start).toHaveBeenCalledWith('ethercis');
-    expect(nhsNumberService.check).toHaveBeenCalledWith('ethercis', '182bdb28-d257-4a99-9a41-441c49aead0c', 9999999000);
+    expect(patientService.check).toHaveBeenCalledWith('ethercis', 9999999000);
     expect(phrFeedService.create).toHaveBeenCalledWith({
       email: 'john.doe@example.org',
       author: 'Helm PHR service',
@@ -216,9 +179,7 @@ describe('ripple-cdr-openehr/lib/commands/checkNhsNumber', () => {
       landingPageUrl: 'https://www.leeds-live.co.uk/best-in-leeds/whats-on-news/',
       rssFeedUrl: 'https://www.leeds-live.co.uk/news/?service=rss'
     });
-
-    expect(recordStateService.getByPatientId.calls.argsFor(1)).toEqual([9999999000]);
-    expect(recordStateService.update).toHaveBeenCalledWith(9999999000, {
+    expect(statusService.update).toHaveBeenCalledWith({
       status: 'loading_data',
       new_patient: true,
       requestNo: 2

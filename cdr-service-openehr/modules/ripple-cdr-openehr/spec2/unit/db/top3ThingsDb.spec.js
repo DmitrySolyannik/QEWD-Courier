@@ -33,7 +33,7 @@
 const ExecutionContextMock = require('../../mocks/context');
 const Top3ThingsDb = require('../../../lib2/db/top3ThingsDb');
 
-fdescribe('ripple-cdr-openehr/lib/db/top3ThingsDb', () => {
+describe('ripple-cdr-openehr/lib/db/top3ThingsDb', () => {
   let ctx;
   let top3ThingsDb;
 
@@ -66,8 +66,8 @@ fdescribe('ripple-cdr-openehr/lib/db/top3ThingsDb', () => {
   });
 
   describe('#getLatestSourceId', () => {
-    it('should return empty', async () => {
-      const expected = '';
+    it('should return null', async () => {
+      const expected = null;
 
       const patientId = 94347659193;
       const actual = await top3ThingsDb.getLatestSourceId(patientId);

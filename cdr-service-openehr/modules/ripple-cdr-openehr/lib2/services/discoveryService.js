@@ -24,133 +24,120 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  14 December 2018
+  16 December 2018
 
 */
 
 'use strict';
 
-const { handleResponse } = require('../shared/utils');
+const P = require('bluebird');
+const { logger } = require('../core');
+const { buildSourceId } = require('../shared/utils');
 const debug = require('debug')('ripple-cdr-openehr:services:discovery');
 
 class DiscoveryService {
-  constructor(q) {
-    this.q = q;
+  constructor(ctx) {
+    this.ctx = ctx;
+  }
+
+  static create(ctx) {
+    return new DiscoveryService(ctx);
   }
 
   /**
-   * Get discovery data
+   * Merges discovery data
    *
-   * @private
-   * @param  {int|string} patientId
+   * @param  {string|int} patientId
    * @param  {string} heading
-   * @param  {string} jwt
-   * @return {Promise.<Object>}
+   * @param  {Object[]} data
+   * @return {Promise.<bool>}
    */
-  getDiscoveryData(patientId, heading, jwt) {
-    debug('get discovery data: patientId = %s, heading = %s', patientId, heading);
+  async mergeAll(patientId, heading, data) {
+    logger.info('services/discoveryService|mergeAll', { patientId, heading, data });
 
-    return new Promise((resolve, reject) => {
-      if (heading === 'finished') {
-        return resolve({
-          message: {
-            status: 'complete',
-            results: []
-          }
-        });
-      }
+    // before we start the processing loop, obtain an OpenEHR session and ensure an ehrId exists
+    // this ensures it's available for each iteration of the loop instead of each
+    // iteration creating a new one
 
-      const message = {
-        path: `/api/discovery/${patientId}/${heading}`,
-        method: 'GET',
-        headers: {
-          authorization: `Bearer ${jwt}`
-        }
-      };
+    const { patientService, ehrSessionService } = this.ctx.services;
+    const host = this.ctx.defaultHost;
 
-      debug('message: %j', message);
+    const ehrSession = await ehrSessionService.start(host);
+    await patientService.getEhrId(host, ehrSession.id, patientId);
 
-      this.q.microServiceRouter.call(this.q, message, (responseObj) => {
-        debug('handle response from micro service: patientId = %s, heading = %s, responseObj = %j', patientId, heading, responseObj);
-        handleResponse(responseObj, resolve, reject);
-      });
-    });
+    // The posts are serialised - only one at a time, and the next one isn't sent till the
+    // previous one gets a response from OpenEHR - so as not to flood the OpenEHR system with POSTs
+    const results = await P.mapSeries(data, x => this.merge(patientId, heading, x));
+
+    return results.some(x => x);
   }
 
   /**
-   * Merge discovery data in worker process
+   * Merges a single discovery item
    *
-   * @private
-   * @param  {int|string} patientId
-   * @param  {Object} data
-   * @param  {string} jwt
-   * @return {Promise.<Object>}
-   */
-  mergeDiscoveryData(heading, data, jwt) {
-    debug('merge discovery data: heading = %s, data = %j', heading, data);
-
-    return new Promise((resolve, reject) => {
-      const token = this.q.jwt.handlers.getProperty('uid', jwt);
-      const messageObj = {
-        application: 'ripple-cdr-openehr',
-        type: 'restRequest',
-        path: `/discovery/merge/${heading}`,
-        pathTemplate: '/discovery/merge/:heading',
-        method: 'GET',
-        headers: {
-          authorization: `Bearer ${jwt}`
-        },
-        args: {
-          heading: heading
-        },
-        data: data,
-        token: token
-      };
-
-      debug('message: %j', messageObj);
-
-      this.q.handleMessage(messageObj, (responseObj) => {
-        // heading has been merged into EtherCIS
-        handleResponse(responseObj, resolve, reject);
-      });
-    });
-  }
-
-  /**
-   * Sync heading data with discovery service
-   *
-   * @public
-   * @param  {int|string} patientId
+   * @param  {string} host
+   * @param  {string|int} patientId
    * @param  {string} heading
-   * @param  {string} jwt
-   * @return {Promise}
+   * @param  {Object} item
+   * @return {Promise.<bool>}
    */
-  async sync(patientId, heading, jwt) {
-    debug('sync: patientId = %s, heading = %s', patientId, heading);
+  async merge(host, patientId, heading, item) {
+    logger.info('services/discoveryService|merge', { host, patientId, heading, item });
+
+    const discoverySourceId = item.sourceId;
+
+    const { discoveryDb } = this.ctx.db;
+    const found = await discoveryDb.getSourceIdByDiscoverySourceId(discoverySourceId);
+    if (found) return false;
+
+    let result = null;
+    debug('discovery record %s needs to be added to %s', discoverySourceId, host);
 
     try {
-      const discoveryData = await this.getDiscoveryData(patientId, heading, jwt);
-      await this.mergeDiscoveryData(heading, discoveryData, jwt);
+      const data = {
+        data: item,
+        format: 'pulsetile',
+        source: 'GP'
+      };
+
+      const { headingService } = this.ctx.services;
+      const response = await headingService.create(patientId, heading, data);
+      debug('response: %j', response);
+
+      const sourceId = buildSourceId(host, response.compositionUid);
+      debug('openehr sourceId: %s', sourceId);
+
+      const dbData = {
+        discovery: discoverySourceId,
+        openehr: response.compositionUid,
+        patientId: patientId,
+        heading: heading
+      };
+
+      await discoveryDb.insert(discoverySourceId, sourceId, dbData);
+
+      result = true;
     } catch (err) {
-      debug('sync|err: %j', err);
+      logger.error('services/discoveryService|merge|err', err, discoverySourceId);
+      result = false;
     }
+
+    return result;
   }
 
-  /**
-   * Sync all headings data with discovery service
-   *
-   * @public
-   * @param  {int|string} patientId
-   * @param  {string[]} headings
-   * @param  {string} jwt
-   * @return {Promise}
-   */
-  async syncAll(patientId, headings, jwt) {
-    debug('syncAll: patientId = %s, headings = %j', patientId, headings);
+  async delete(sourceId) {
+    logger.info('services/discoveryService|delete', { sourceId });
 
-    await Promise.all(headings.map((heading) => this.sync(patientId, heading, jwt)));
+    //TODO:
+    //var discovery_map = this.db.use('DiscoveryMap');
+    // if (!discovery_map.exists) return;
 
-    debug('discovery data loaded into EtherCIS');
+    const { discoveryDb } = this.ctx.db;
+    const dbData = await discoveryDb.getBySourceId(sourceId);
+
+    if (dbData) {
+      await discoveryDb.delete(dbData.discovery, sourceId);
+    }
   }
 }
 

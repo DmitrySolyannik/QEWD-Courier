@@ -31,16 +31,15 @@
 'use strict';
 
 const { lazyLoadAdapter } = require('../shared/utils');
-const debug = require('debug')('ripple-cdr-openehr:core:services');
+const logger = require('./logger');
 
 class ServiceRegistry {
   constructor(ctx) {
-    debug('initialize');
     this.ctx = ctx;
   }
 
   initialise(id) {
-    debug('lazy load initialisation for %s', id);
+    logger.info('core/services|initialise', { id });
 
     const Service = require(`../services/${id}`);
 
