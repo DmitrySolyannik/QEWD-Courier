@@ -28,58 +28,24 @@
 
 */
 
-'use strict';
+const DeletePatientHeadingCommand = require('../commands/deletePatientHeading');
+const { getResponseError } = require('../errors');
 
-const { logger } = require('../core');
+/**
+ * @param  {Object} args
+ * @param  {Function} finished
+ */
+module.exports = async function (args, finished) {
+  try {
+    const command = new DeletePatientHeadingCommand(args.req.ctx, args.session);
+    const responseObj = await command.execute(args.patientId, args.heading, args.sourceId);
 
-class SessionCache {
-  constructor(ctx) {
-    this.ctx = ctx;
+    finished(responseObj);
+  } catch (err) {
+    const responseError = getResponseError(err);
+
+    finished(responseError);
   }
+};
 
-  static create(ctx) {
-    return new SessionCache(ctx);
-  }
 
-  /**
-   * Gets a session for a host
-   *
-   * @param  {string} host
-   * @return {Promise}
-   */
-  async get(host) {
-    logger.info('cache/sessionCache|get', { host  });
-
-    const key = ['openEHR', 'sessions', host];
-    this.ctx.cache.getObject(key);
-  }
-
-  /**
-   * Sets a session for a host
-   *
-   * @param  {string} host
-   * @param  {Object} session
-   * @return {Promise}
-   */
-  async set(host, session) {
-    logger.info('cache/sessionCache|set', { host, session });
-
-    const key = ['openEHR', 'sessions', host];
-    this.ctx.cache.putObject(key, session);
-  }
-
-  /**
-   * Deletes a session for a host
-   *
-   * @param  {string} host
-   * @return {Promise}
-   */
-  async delete(host) {
-    logger.info('cache/sessionCache|delete', { host });
-
-    const key = ['openEHR', 'sessions', host];
-    this.ctx.cache.delete(key);
-  }
-}
-
-module.exports = SessionCache;

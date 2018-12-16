@@ -44,16 +44,16 @@ var getHeadingSummaryFields = require('./handlers/getSummaryHeadingFields');
 var revertDiscoveryData = require('./handlers/revertDiscoveryData');
 var revertAllDiscoveryData = require('./handlers/revertAllDiscoveryData');
 var checkNHSNumber = require('./handlers/checkNHSNumber');
-//var mergeDiscoveryData = require('./handlers/mergeDiscoveryData');
+var mergeDiscoveryData = require('./handlers/mergeDiscoveryData'); //
 
-// var getTop3ThingsSummary = require('./top3Things/getTop3ThingsSummary');
-// var getTop3ThingsDetail = require('./top3Things/getTop3ThingsDetail');
-// var postTop3Things = require('./top3Things/postTop3Things');
+var getTop3ThingsSummary = require('./top3Things/getTop3ThingsSummary'); //
+var getTop3ThingsDetail = require('./top3Things/getTop3ThingsDetail'); //
+var postTop3Things = require('./top3Things/postTop3Things'); //
 
-// var getFeedSummary = require('./feeds/getSummary');
-// var getFeedDetail = require('./feeds/getDetail');
-// var postFeed = require('./feeds/post');
-// var editFeed = require('./feeds/edit');
+var getFeedSummary = require('./feeds/getSummary'); //
+var getFeedDetail = require('./feeds/getDetail'); //
+var postFeed = require('./feeds/post'); //
+var editFeed = require('./feeds/edit'); //
 
 var getDiscoveryHeadingData = require('./src/getDiscoveryHeadingData');
 var mergeDiscoveryDataInWorker = require('./src/mergeDiscoveryDataInWorker');
