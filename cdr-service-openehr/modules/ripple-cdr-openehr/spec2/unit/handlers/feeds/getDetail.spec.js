@@ -24,15 +24,14 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  14 December 2018
+  17 December 2018
 
 */
 
 'use strict';
 
 const mockery = require('mockery');
-const CommandMock = require('../../../mocks/command');
-const ContextMock = require('../../../mocks/context');
+const { CommandMock, ExecutionContextMock } = require('../../../mocks');
 
 describe('ripple-cdr-openehr/lib/handlers/feeds/getDetail', () => {
   let args;
@@ -57,7 +56,7 @@ describe('ripple-cdr-openehr/lib/handlers/feeds/getDetail', () => {
     args = {
       sourceId: 'eaf394a9-5e05-49c0-9c69-c710c77eda76',
       req: {
-        ctx: new ContextMock()
+        ctx: new ExecutionContextMock()
       },
       session: {
         nhsNumber: 9999999000,

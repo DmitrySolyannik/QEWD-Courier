@@ -24,13 +24,13 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  14 December 2018
+  17 December 2018
 
 */
 
 'use strict';
 
-const ExecutionContextMock = require('../../../mocks/context');
+const { ExecutionContextMock } = require('../../../mocks');
 const GetFeedsSummaryCommand = require('../../../../lib2/commands/feeds/getSummary');
 
 describe('ripple-cdr-openehr/lib/commands/feeds/getSummary', () => {

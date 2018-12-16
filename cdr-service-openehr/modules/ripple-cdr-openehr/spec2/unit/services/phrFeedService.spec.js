@@ -30,7 +30,7 @@
 
 'use strict';
 
-const ExecutionContextMock = require('../../mocks/context');
+const { ExecutionContextMock } = require('../../mocks');
 const { uuidV4Regex } = require('../../helpers/utils');
 const { NotFoundError } = require('../../../lib2/errors');
 const PhrFeedService = require('../../../lib2/services/phrFeedService');

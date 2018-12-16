@@ -30,21 +30,12 @@
 
 'use strict';
 
-const { lazyLoadAdapter } = require('../../lib2/shared/utils');
+const CommandMock = require('./command');
+const ExecutionContextMock = require('./context');
+const Worker = require('./worker');
 
-class ServiceRegistryMock {
-  initialise(id) {
-    const Service = require(`../../lib2/services/${id}`);
-    const methods = Reflect
-      .ownKeys(Service.prototype)
-      .filter(x => x !== 'constructor');
-
-    return jasmine.createSpyObj(id, methods);
-  }
-
-  static create() {
-    return lazyLoadAdapter(new ServiceRegistryMock());
-  }
-}
-
-module.exports = ServiceRegistryMock;
+module.exports = {
+  CommandMock,
+  ExecutionContextMock,
+  Worker
+};

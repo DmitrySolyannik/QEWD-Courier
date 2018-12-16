@@ -31,8 +31,7 @@
 'use strict';
 
 const mockery = require('mockery');
-const CommandMock = require('../../../mocks/command');
-const ContextMock = require('../../../mocks/context');
+const { CommandMock, ExecutionContextMock } = require('../../../mocks');
 
 describe('ripple-cdr-openehr/lib/handlers/feeds/create', () => {
   let args;
@@ -56,7 +55,7 @@ describe('ripple-cdr-openehr/lib/handlers/feeds/create', () => {
   beforeEach(() => {
     args = {
       req: {
-        ctx: new ContextMock(),
+        ctx: new ExecutionContextMock(),
         body: {
           author: 'ivor.cox@phr.leeds.nhs',
           name: 'BBC News',

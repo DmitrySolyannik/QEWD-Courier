@@ -24,13 +24,13 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  15 December 2018
+  17 December 2018
 
 */
 
 'use strict';
 
-const ExecutionContextMock = require('../../mocks/context');
+const { ExecutionContextMock } = require('../../mocks');
 const Top3ThingsDb = require('../../../lib2/db/top3ThingsDb');
 
 describe('ripple-cdr-openehr/lib/db/top3ThingsDb', () => {

@@ -24,19 +24,16 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  14 December 2018
+  17 December 2018
 
 */
 
 'use strict';
 
 const { lazyLoadAdapter } = require('../../lib2/shared/utils');
-const debug = require('debug')('ripple-cdr-openehr:mocks:db');
 
 class DbRegistryMock {
   initialise(id) {
-    debug('lazy load initialisation for %s mock', id);
-
     const Db = require(`../../lib2/db/${id}`);
     const methods = Reflect
       .ownKeys(Db.prototype)

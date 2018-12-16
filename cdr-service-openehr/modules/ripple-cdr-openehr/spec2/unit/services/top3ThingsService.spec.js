@@ -24,13 +24,13 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  15 December 2018
+  17 December 2018
 
 */
 
 'use strict';
 
-const ExecutionContextMock = require('../../mocks/context');
+const { ExecutionContextMock } = require('../../mocks');
 const { uuidV4Regex } = require('../../helpers/utils');
 const Top3ThingsService = require('../../../lib2/services/Top3ThingsService');
 

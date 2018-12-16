@@ -24,13 +24,13 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  16 December 2018
+  17 December 2018
 
 */
 
 'use strict';
 
-const ExecutionContextMock = require('../../../mocks/context');
+const { ExecutionContextMock } = require('../../../mocks');
 const { BadRequestError, NotFoundError } = require('../../../../lib2/errors');
 const UpdateFeedCommand = require('../../../../lib2/commands/feeds/update');
 
