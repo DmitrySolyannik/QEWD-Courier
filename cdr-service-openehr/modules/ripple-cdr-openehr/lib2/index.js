@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  15 December 2018
+  18 December 2018
 
 */
 
@@ -61,7 +61,7 @@ module.exports = {
         return false;
       }
 
-      req.ctx = new ExecutionContext(this, req);
+      req.ctx = ExecutionContext.fromRequest(this, req);
     }
 
     return authorized;

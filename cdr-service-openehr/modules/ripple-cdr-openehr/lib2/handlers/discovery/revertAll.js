@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  16 December 2018
+  18 December 2018
 
 */
 
@@ -38,7 +38,7 @@ const { getResponseError } = require('../../errors');
 module.exports = async function (args, finished) {
   try {
     const command = new RevertAllDiscoveryDataCommand(args.req.ctx, args.session);
-    const responseObj = await command.execute(args.heading, args.req.data);
+    const responseObj = await command.execute();
 
     finished(responseObj);
   } catch (err) {

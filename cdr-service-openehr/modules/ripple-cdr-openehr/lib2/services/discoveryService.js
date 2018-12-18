@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  16 December 2018
+  18 December 2018
 
 */
 
@@ -52,18 +52,17 @@ class DiscoveryService {
    * @param  {Object[]} data
    * @return {Promise.<bool>}
    */
-  async mergeAll(patientId, heading, data) {
-    logger.info('services/discoveryService|mergeAll', { patientId, heading, data });
+  async mergeAll(host, patientId, heading, data) {
+    logger.info('services/discoveryService|mergeAll', { host, patientId, heading, data });
 
     // before we start the processing loop, obtain an OpenEHR session and ensure an ehrId exists
     // this ensures it's available for each iteration of the loop instead of each
     // iteration creating a new one
 
     const { patientService, ehrSessionService } = this.ctx.services;
-    const host = this.ctx.defaultHost;
 
-    const ehrSession = await ehrSessionService.start(host);
-    await patientService.getEhrId(host, ehrSession.id, patientId);
+    const { sessionId } = await ehrSessionService.start(host);
+    await patientService.getEhrId(host, sessionId, patientId);
 
     // The posts are serialised - only one at a time, and the next one isn't sent till the
     // previous one gets a response from OpenEHR - so as not to flood the OpenEHR system with POSTs
@@ -90,7 +89,7 @@ class DiscoveryService {
     const found = await discoveryDb.getSourceIdByDiscoverySourceId(discoverySourceId);
     if (found) return false;
 
-    let result = null;
+    let result = false;
     debug('discovery record %s needs to be added to %s', discoverySourceId, host);
 
     try {
@@ -101,15 +100,16 @@ class DiscoveryService {
       };
 
       const { headingService } = this.ctx.services;
-      const response = await headingService.create(patientId, heading, data);
-      debug('response: %j', response);
+      const responseObj = await headingService.post(patientId, heading, data);
+      debug('response: %j', responseObj);
+      if (!responseObj.ok) return result;
 
-      const sourceId = buildSourceId(host, response.compositionUid);
+      const sourceId = buildSourceId(host, responseObj.compositionUid);
       debug('openehr sourceId: %s', sourceId);
 
       const dbData = {
         discovery: discoverySourceId,
-        openehr: response.compositionUid,
+        openehr: responseObj.compositionUid,
         patientId: patientId,
         heading: heading
       };
@@ -118,13 +118,18 @@ class DiscoveryService {
 
       result = true;
     } catch (err) {
-      logger.error('services/discoveryService|merge|err', err, discoverySourceId);
-      result = false;
+      logger.error('services/discoveryService|merge|err: ' + err.message);
+      logger.error('services/discoveryService|merge|stack: ' + err.stack);
     }
 
     return result;
   }
 
+  /**
+   * Deletes discovery data by sourceId
+   * @param  {string} sourceId
+   * @return {Promise}
+   */
   async delete(sourceId) {
     logger.info('services/discoveryService|delete', { sourceId });
 
@@ -138,6 +143,18 @@ class DiscoveryService {
     if (dbData) {
       await discoveryDb.delete(dbData.discovery, sourceId);
     }
+  }
+
+  /**
+   * Gets all sourceIds
+   * @return {Promise.<string[]>}
+   */
+  async getAllSourceIds() {
+    logger.info('services/discoveryService|getAllSourceIds');
+
+    const { discoveryDb } = this.ctx.db;
+
+    return await discoveryDb.getAllSourceIds();
   }
 }
 

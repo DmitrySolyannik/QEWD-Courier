@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  17 December 2018
+  18 December 2018
 
 */
 
@@ -37,8 +37,11 @@ const DbRegistryMock = require('./db');
 
 class ExecutionContextMock extends ExecutionContext {
   constructor(q) {
-    super(q || new WorkerMock());
-    this.qewdSession = this.worker.sessions.create('mock');
+    q = q || new WorkerMock();
+    const qewdSession = q.sessions.create('mock');
+
+    super(q, { qewdSession });
+
     this.services = ServiceRegistryMock.create();
     this.db = DbRegistryMock.create();
   }

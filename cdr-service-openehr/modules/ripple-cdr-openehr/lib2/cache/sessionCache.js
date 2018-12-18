@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  17 December 2018
+  18 December 2018
 
 */
 
@@ -33,12 +33,12 @@
 const { logger } = require('../core');
 
 class SessionCache {
-  constructor(ctx) {
-    this.ctx = ctx;
+  constructor(adapter) {
+    this.adapter = adapter;
   }
 
-  static create(ctx) {
-    return new SessionCache(ctx);
+  static create(adapter) {
+    return new SessionCache(adapter);
   }
 
   /**
@@ -51,7 +51,7 @@ class SessionCache {
     logger.info('cache/sessionCache|get', { host  });
 
     const key = ['openEHR', 'sessions', host];
-    this.ctx.cache.getObject(key);
+    this.adapter.getObject(key);
   }
 
   /**
@@ -65,7 +65,7 @@ class SessionCache {
     logger.info('cache/sessionCache|set', { host, session });
 
     const key = ['openEHR', 'sessions', host];
-    this.ctx.cache.putObject(key, session);
+    this.adapter.putObject(key, session);
   }
 
   /**
@@ -78,7 +78,7 @@ class SessionCache {
     logger.info('cache/sessionCache|delete', { host });
 
     const key = ['openEHR', 'sessions', host];
-    this.ctx.cache.delete(key);
+    this.adapter.delete(key);
   }
 }
 

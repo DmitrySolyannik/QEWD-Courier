@@ -1,3 +1,4 @@
+
 /*
 
  ----------------------------------------------------------------------------
@@ -30,32 +31,52 @@
 
 'use strict';
 
-const { lazyLoadAdapter } = require('../shared/utils');
-const QewdCacheAdapter = require('./adapter');
 const logger = require('./logger');
 
-class CacheRegistry {
-  constructor(ctx) {
-    this.ctx = ctx;
-    this.adapter = new QewdCacheAdapter(ctx.qewdSession);
+class QewdCacheAdapter {
+  constructor(qewdSession) {
+    this.qewdSession = qewdSession;
   }
 
-  initialise(id) {
-    logger.info('core/cache|initialise', { id });
+  exists(key) {
+    logger.debug('core/adapter|exists', { key });
 
-    const Cache = require(`../cache/${id}`);
-
-    if (!Cache.create) {
-      throw new Error(`${id} cache class does not support lazy load initialisation.`);
-    }
-
-    return Cache.create(this.adapter);
+    return this.qewdSession.data.$(key).exists;
   }
 
-  static create(ctx) {
-    return lazyLoadAdapter(new CacheRegistry(ctx));
+  get(key) {
+    logger.debug('core/adapter|get', { key });
+
+    return this.qewdSession.data.$(key).exists ?
+      this.qewdSession.data.$(key).value :
+      null;
+  }
+
+  getObject(key) {
+    logger.debug('core/adapter|getObject', { key });
+
+    return this.qewdSession.data.$(key).exists ?
+      this.qewdSession.data.$(key).getDocument() :
+      null;
+  }
+
+  put(key, value) {
+    logger.debug('core/adapter|put', { key, value });
+
+    this.qewdSession.data.$(key).value = value;
+  }
+
+  putObject(key, value) {
+    logger.debug('core/adapter|putObject', { key, value });
+
+    this.qewdSession.data.$(key).setDocument(value);
+  }
+
+  delete(key) {
+    logger.debug('core/adapter|delete', { key });
+
+    this.qewdSession.data.$(key).delete();
   }
 }
 
-module.exports = CacheRegistry;
-
+module.exports = QewdCacheAdapter;

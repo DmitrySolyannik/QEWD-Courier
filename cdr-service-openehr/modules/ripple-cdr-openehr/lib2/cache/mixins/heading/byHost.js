@@ -30,32 +30,30 @@
 
 'use strict';
 
-const { lazyLoadAdapter } = require('../shared/utils');
-const QewdCacheAdapter = require('./adapter');
-const logger = require('./logger');
+const { logger } = require('../../../core');
 
-class CacheRegistry {
-  constructor(ctx) {
-    this.ctx = ctx;
-    this.adapter = new QewdCacheAdapter(ctx.qewdSession);
-  }
+module.exports = (adapter) => {
+  return {
+    delete: async (patientId, heading, sourceId, host) => {
+      logger.info('cache/headingCache|byHost|delete', { patientId, heading, sourceId, host });
 
-  initialise(id) {
-    logger.info('core/cache|initialise', { id });
+      const key = ['headings', 'byPatientId', patientId, heading, 'byHost', host, sourceId];
+      adapter.delete(key);
+    },
 
-    const Cache = require(`../cache/${id}`);
+    exists: async (patientId, heading, host) => {
+      logger.info('cache/headingCache|byHost|exists', { patientId, heading, host });
 
-    if (!Cache.create) {
-      throw new Error(`${id} cache class does not support lazy load initialisation.`);
+      const key = ['headings', 'byPatientId', patientId, heading, 'byHost', host];
+
+      return adapter.exists(key);
+    },
+
+    set: async (patientId, heading, sourceId, host) => {
+      logger.info('cache/headingCache|byHost|set', { patientId, heading, sourceId, host });
+
+      const key = ['headings', 'byPatientId', patientId, heading, 'byHost', host, sourceId];
+      adapter.put(key, 'true');
     }
-
-    return Cache.create(this.adapter);
-  }
-
-  static create(ctx) {
-    return lazyLoadAdapter(new CacheRegistry(ctx));
-  }
-}
-
-module.exports = CacheRegistry;
-
+  };
+};

@@ -30,32 +30,22 @@
 
 'use strict';
 
-const { lazyLoadAdapter } = require('../shared/utils');
-const QewdCacheAdapter = require('./adapter');
-const logger = require('./logger');
+const { logger } = require('../../../core');
 
-class CacheRegistry {
-  constructor(ctx) {
-    this.ctx = ctx;
-    this.adapter = new QewdCacheAdapter(ctx.qewdSession);
-  }
+module.exports = (adapter) => {
+  return {
+    delete: async (heading, sourceId) => {
+      logger.info('cache/headingCache|byHeading|delete', { heading, sourceId });
 
-  initialise(id) {
-    logger.info('core/cache|initialise', { id });
+      const key = ['headings', 'byHeading', heading, sourceId];
+      adapter.delete(key);
+    },
 
-    const Cache = require(`../cache/${id}`);
+    deleteAll: async (heading) => {
+      logger.info('cache/headingCache|byHeading|deleteAll', { heading });
 
-    if (!Cache.create) {
-      throw new Error(`${id} cache class does not support lazy load initialisation.`);
+      const key = ['headings', 'byHeading', heading];
+      adapter.delete(key);
     }
-
-    return Cache.create(this.adapter);
-  }
-
-  static create(ctx) {
-    return lazyLoadAdapter(new CacheRegistry(ctx));
-  }
-}
-
-module.exports = CacheRegistry;
-
+  };
+};

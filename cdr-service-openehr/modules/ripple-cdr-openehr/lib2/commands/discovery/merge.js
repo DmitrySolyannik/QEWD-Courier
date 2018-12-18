@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  15 December 2018
+  18 December 2018
 
 */
 
@@ -50,10 +50,10 @@ class MergeDiscoveryDataCommand {
     const patientId = this.session.nhsNumber;
     debug('patientId: %s', patientId);
 
-    const { statusService, discoveryService } = this.ctx.services;
+    const { statusService } = this.ctx.services;
 
     if (heading === ExtraHeading.FINISHED) {
-      const state = await this.statusService.get();
+      const state = await statusService.get();
       debug('loaded record state: %j', state);
 
       state.status = RecordStatus.READY;
@@ -64,10 +64,17 @@ class MergeDiscoveryDataCommand {
       };
     }
 
-    const result = await discoveryService.mergeAll(patientId, heading, data);
+    if (data.length === 0) {
+      return {
+        refresh: false
+      };
+    }
+
+    const host = this.ctx.defaultHost;
+    const { discoveryService, cacheService } = this.ctx.services;
+    const result = await discoveryService.mergeAll(host, patientId, heading, data);
     if (result) {
-      // TODO: add
-      // deleteSessionCaches.call(_this, patientId, heading, 'ethercis');
+      cacheService.delete(host, patientId, heading);
     }
 
     return {

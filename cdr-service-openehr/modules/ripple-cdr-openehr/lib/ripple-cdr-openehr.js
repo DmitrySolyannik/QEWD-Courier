@@ -43,7 +43,7 @@ var deletePatientHeading = require('./handlers/deletePatientHeading');
 var getHeadingSummaryFields = require('./handlers/getSummaryHeadingFields');
 var revertDiscoveryData = require('./handlers/revertDiscoveryData');
 var revertAllDiscoveryData = require('./handlers/revertAllDiscoveryData');
-var checkNHSNumber = require('./handlers/checkNHSNumber');
+var checkNHSNumber = require('./handlers/checkNHSNumber'); //
 var mergeDiscoveryData = require('./handlers/mergeDiscoveryData'); //
 
 var getTop3ThingsSummary = require('./top3Things/getTop3ThingsSummary'); //

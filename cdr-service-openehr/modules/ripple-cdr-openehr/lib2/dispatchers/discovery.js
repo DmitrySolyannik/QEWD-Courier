@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  16 December 2018
+  18 December 2018
 
 */
 
@@ -135,7 +135,8 @@ class DiscoveryDispatcher {
       const discoveryData = await this.getDiscoveryData(patientId, heading, jwt);
       await this.mergeDiscoveryData(heading, discoveryData, jwt);
     } catch (err) {
-      logger.error('dispatchers/discoveryDispatcher|sync|err', err);
+      logger.error('dispatchers/discoveryDispatcher|sync|err: ' + err.message);
+      logger.error('dispatchers/discoveryDispatcher|sync|stack: ' + err.stack);
     }
   }
 

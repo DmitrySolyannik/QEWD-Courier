@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  16 December 2018
+  18 December 2018
 
 */
 
@@ -32,11 +32,13 @@
 
 const P = require('bluebird');
 const template = require('qewd-template');
+const { transform } = require('qewd-transform-json');
 const config = require('../config');
 const { logger } = require('../core');
-const { NotFoundError } = require('../errors');
+const { NotFoundError, UnprocessableEntityError } = require('../errors');
 const { Heading } = require('../shared/enums');
-const { buildSourceId } = require('../shared/utils');
+const { buildSourceId, flatten } = require('../shared/utils');
+const dateTime = require('../shared/dateTime');
 
 class HeadingService {
   constructor(ctx, headings) {
@@ -49,18 +51,44 @@ class HeadingService {
     return new HeadingService(ctx, config.headings);
   }
 
-  //TODO: implement it
-  async create(host, patientId, heading, data) {
+  async post(host, patientId, heading, data) {
     logger.info('services/headingService|create', { host, patientId, heading, data });
 
+    // TODO: implement jumper
 
-    // debug('jumper is not used for creating this record');
+    logger.debug('jumper is not used for creating this record');
 
-    // const { ehrSessionService, patientService } = this.ctx.services;
-    // const host = this.ctx.defaultHost;
+    if (!this.headings[heading].post) {
+      throw new UnprocessableEntityError(`heading ${heading} not recognised, or no POST definition available`);
+    }
 
-    // const ehrSession = await ehrSessionService.start(host);
-    // const ehrId = await patientService.getEhrId(host, ehrSession.id, patientId);
+    const postMap = this.headings[heading].post;
+    const { ehrSessionService, patientService } = this.ctx.services;
+    const { sessionId } = await ehrSessionService.start(host);
+    const ehrId = await patientService.getEhrId(host, sessionId, patientId);
+
+    const helpers = {
+      ...postMap.helperFunctions,
+      now: dateTime.now
+    };
+    const output = transform(postMap.transformTemplate, data, helpers);
+    const postData = flatten(output);
+
+    const ehrRestService = this.ctx.openehr[host];
+    const responseObj = await ehrRestService.postHeading(sessionId, ehrId, postMap.templateId, postData);
+
+    await ehrSessionService.stop(host, sessionId);
+
+    return responseObj && responseObj.data && responseObj.data.compositionUid ?
+      {
+        ok: true,
+        host: host,
+        heading: heading,
+        compositionUid: responseObj.data.compositionUid
+      } :
+      {
+        ok: false
+      };
   }
 
   async get(host, patientId, heading) {
@@ -79,12 +107,12 @@ class HeadingService {
     const query = template.replace(aql, subs);
 
     const ehrRestService = this.ctx.openehr[host];
-    const data = await ehrRestService.query(sessionId, query);
+    const responseObj = await ehrRestService.query(sessionId, query);
 
     await ehrSessionService.stop(host, sessionId);
 
-    return data && data.resultSet ?
-      data.resultSet :
+    return responseObj && responseObj.resultSet ?
+      responseObj.resultSet :
       [];
   }
 
@@ -104,7 +132,7 @@ class HeadingService {
 
     const { headingCache } = this.ctx.cache;
 
-    const exists = await headingCache.exists(patientId, heading, host);
+    const exists = await headingCache.byHost.exists(patientId, heading, host);
     if (exists) return;
 
     try {
@@ -131,9 +159,9 @@ class HeadingService {
             uid: result.uid
           };
 
-          await headingCache.setByHost(patientId, heading, host, sourceId);
-          await headingCache.setByDate(patientId, heading, date, sourceId);
-          await headingCache.setBySourceId(sourceId, dbData);
+          await headingCache.byHost.set(patientId, heading, host, sourceId);
+          await headingCache.byDate.set(patientId, heading, date, sourceId);
+          await headingCache.bySourceId.set(sourceId, dbData);
         }
       });
     } catch (err) {
@@ -146,7 +174,7 @@ class HeadingService {
 
     const { headingCache } = this.ctx.cache;
 
-    const dbData = await headingCache.getBySourceId(sourceId);
+    const dbData = await headingCache.bySourceId.get(sourceId);
     if (!dbData) {
       throw new NotFoundError(`No existing ${heading} record found for sourceId: ${sourceId}`);
     }
@@ -165,10 +193,10 @@ class HeadingService {
     const ehrRestService = this.ctx.openehr[host];
     await ehrRestService.deleteHeading(sessionId, compositionId);
 
-    await headingCache.deleteByHost(patientId, heading, host, sourceId);
-    await headingCache.deleteByDate(patientId, heading, date, sourceId);
-    await headingCache.deleteBySourceId(sourceId);
-    await headingCache.deleteByHeading(heading, sourceId);
+    await headingCache.byHost.delete(patientId, heading, host, sourceId);
+    await headingCache.byDate.delete(patientId, heading, date, sourceId);
+    await headingCache.bySourceId.delete(sourceId);
+    await headingCache.byHeading.delete(heading, sourceId);
 
     await ehrSessionService.stop(host, sessionId);
 

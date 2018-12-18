@@ -24,11 +24,14 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  16 December 2018
+  18 December 2018
 
 */
 
 'use strict';
+
+const P = require('bluebird');
+const { ExecutionContext, logger } = require('../core');
 
 class CacheService {
   constructor(ctx) {
@@ -37,6 +40,20 @@ class CacheService {
 
   static create(ctx) {
     return new CacheService(ctx);
+  }
+
+  async delete(host, patientId, heading) {
+    logger.info('cache/cacheService|delete', { host, patientId, heading });
+
+    const sessions = this.ctx.activeSessions;
+
+    await P.each(sessions, async (session) => {
+      const ctx = ExecutionContext.fromQewdSession(this.ctx.worker, session);
+      const { headingCache } = ctx.cache;
+
+      await headingCache.deleteAllForHost(patientId, heading, host);
+      await headingCache.byHeading.deleteAll(heading);
+    });
   }
 }
 

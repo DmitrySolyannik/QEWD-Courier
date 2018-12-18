@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  16 December 2018
+  18 December 2018
 
 */
 
@@ -36,15 +36,23 @@ const ServiceRegistry = require('./services');
 const OpenEhrRegistry = require('./openehr');
 
 class ExecutionContext {
-  constructor(q, req) {
+  constructor(q, { req, qewdSession }) {
     this.worker = q;
     this.userDefined = q.userDefined;
-    this.qewdSession = q.qewdSessionByJWT.call(q, req);
+    this.qewdSession = qewdSession || q.qewdSessionByJWT.call(q, req);
 
     this.cache = CacheRegistry.create(this);
     this.db = DbRegistry.create(this);
     this.services = ServiceRegistry.create(this);
     this.openehr = OpenEhrRegistry.create(this);
+  }
+
+  static fromRequest(q, req) {
+    return new ExecutionContext(q, { req });
+  }
+
+  static fromQewdSession(q, qewdSession) {
+    return new ExecutionContext(q, { qewdSession });
   }
 
   get defaultHost() {
@@ -57,6 +65,10 @@ class ExecutionContext {
 
   get serversConfig() {
     return this.userDefined.openehr;
+  }
+
+  get activeSessions() {
+    return this.worker.sessions.active();
   }
 }
 

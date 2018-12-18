@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  16 December 2018
+  18 December 2018
 
 */
 
@@ -35,6 +35,7 @@ const EhrIdNotFoundError = require('./EhrIdNotFoundError');
 const EhrSessionError = require('./EhrSessionError');
 const ForbiddenError = require('./ForbiddenError');
 const NotFoundError = require('./NotFoundError');
+const UnprocessableEntityError = require('./UnprocessableEntityError');
 
 function qewdifyError(err) {
   return {
@@ -54,6 +55,7 @@ module.exports = {
   EhrSessionError,
   ForbiddenError,
   NotFoundError,
+  UnprocessableEntityError,
   getResponseError,
   qewdifyError
 };

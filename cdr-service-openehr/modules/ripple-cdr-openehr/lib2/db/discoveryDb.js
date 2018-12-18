@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  16 December 2018
+  18 December 2018
 
 */
 
@@ -68,6 +68,24 @@ class DiscoveryDb {
     const node = this.discoveryMap.$(['by_openehr_sourceId', sourceId]);
 
     return node.exists ? node.getDocument() : null;
+  }
+
+  /**
+   * Gets all sourceIds
+   *
+   * @return {Promise.<string[]>}
+   */
+  async getAllSourceIds() {
+    logger.info('db/discoveryDb|getAllSourceIds');
+
+    const dbData = [];
+    const node = this.discoveryMap.$(['by_openehr_sourceId']);
+
+    node.forEachChild((sourceId) => {
+      dbData.push(sourceId);
+    });
+
+    return dbData;
   }
 
   /**

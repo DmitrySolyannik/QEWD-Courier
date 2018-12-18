@@ -30,32 +30,18 @@
 
 'use strict';
 
-const { lazyLoadAdapter } = require('../shared/utils');
-const QewdCacheAdapter = require('./adapter');
-const logger = require('./logger');
-
-class CacheRegistry {
-  constructor(ctx) {
-    this.ctx = ctx;
-    this.adapter = new QewdCacheAdapter(ctx.qewdSession);
-  }
-
-  initialise(id) {
-    logger.info('core/cache|initialise', { id });
-
-    const Cache = require(`../cache/${id}`);
-
-    if (!Cache.create) {
-      throw new Error(`${id} cache class does not support lazy load initialisation.`);
-    }
-
-    return Cache.create(this.adapter);
-  }
-
-  static create(ctx) {
-    return lazyLoadAdapter(new CacheRegistry(ctx));
-  }
+function UnprocessableEntityError(message, userMessage, reason, meta, statusCode, code) {
+  this.message = message || 'Unprocessable entity';
+  this.stack = new Error().stack;
+  this.errorType = this.name;
+  this.statusCode = statusCode || 422;
+  this.code = code || 'UnprocessableEntity';
+  this.userMessage = userMessage || this.message;
+  this.meta = meta;
+  this.reason = reason;
 }
 
-module.exports = CacheRegistry;
+UnprocessableEntityError.prototype = Object.create(Error.prototype);
+UnprocessableEntityError.prototype.name = 'UnprocessableEntityError';
 
+module.exports = UnprocessableEntityError;

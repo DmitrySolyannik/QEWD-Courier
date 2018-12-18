@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  16 December 2018
+  18 December 2018
 
 */
 
@@ -33,12 +33,12 @@
 const { logger } = require('../core');
 
 class StatusCache {
-  constructor(ctx) {
-    this.ctx = ctx;
+  constructor(adapter) {
+    this.adapter = adapter;
   }
 
-  static create(ctx) {
-    return new StatusCache(ctx);
+  static create(adapter) {
+    return new StatusCache(adapter);
   }
 
   /**
@@ -51,7 +51,7 @@ class StatusCache {
 
     const key = ['record_status'];
 
-    return this.ctx.cache.getObject(key);
+    return this.adapter.getObject(key);
   }
 
   /**
@@ -64,7 +64,7 @@ class StatusCache {
     logger.info('cache/statusCache|set', { data });
 
     const key = ['record_status'];
-    this.ctx.cache.putObject(key, data);
+    this.adapter.putObject(key, data);
   }
 }
 

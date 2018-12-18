@@ -24,86 +24,45 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  16 December 2018
+  18 December 2018
 
 */
 
 'use strict';
 
 const { logger } = require('../core');
+const { byDate, byHeading, byHost, bySourceId } = require('./mixins/heading');
 
 class HeadingCache {
-  constructor(ctx) {
-    this.ctx = ctx;
+  constructor(adapter) {
+    this.adapter = adapter;
+    this.byDate = byDate(adapter);
+    this.byHeading = byHeading(adapter);
+    this.byHost = byHost(adapter);
+    this.bySourceId = bySourceId(adapter);
   }
 
-  static create(ctx) {
-    return new HeadingCache(ctx);
+  static create(adapter) {
+    return new HeadingCache(adapter);
   }
 
-  async exists(patientId, heading, host) {
-    logger.info('cache/headingCache|getByIds', { patientId, heading, host });
+  async deleteAllForHost(patientId, heading, host) {
+    logger.info('cache/headingCache|deleteAllForHost', { patientId, heading, host });
 
-    const key = ['headings', 'byPatientId', patientId, heading, 'byHost'];
+    const qewdSession = this.adapter.qewdSession;
+    const byPatientHeading = qewdSession.data.$(['headings', 'byPatientId', patientId, heading]);
 
-    return this.ctx.cache.exists(key);
-  }
+    if (byPatientHeading.exists) {
+      const byDate = byPatientHeading.$('byDate');
+      const bySourceId = qewdSession.data.$(['headings', 'bySourceId']);
 
-  async getBySourceId(sourceId) {
-    logger.info('cache/headingCache|getBySourceId', { sourceId });
-
-    const key = ['headings', 'bySourceId', sourceId];
-
-    return this.ctx.cache.getObject(key);
-  }
-
-  async setByDate(patientId, heading, sourceId, date) {
-    logger.info('cache/headingCache|setByDate', { patientId, heading, sourceId, date });
-
-    const key = ['headings', 'byPatientId', patientId, heading, 'byDate', date, sourceId];
-    this.ctx.cache.put(key, 'true');
-  }
-
-  async setByHost(patientId, heading, sourceId, host) {
-    logger.info('cache/headingCache|setByHost', { patientId, heading, sourceId, host });
-
-    const key = ['headings', 'byPatientId', patientId, heading, 'byHost', host, sourceId];
-    this.ctx.cache.put(key, 'true');
-  }
-
-  async setBySourceId(sourceId, data) {
-    logger.info('cache/headingCache|setBySourceId', { sourceId, data });
-
-    const key = ['headings', 'bySourceId', sourceId];
-    this.ctx.cache.putObject(key, data);
-  }
-
-  async deleteByDate(patientId, heading, sourceId, date) {
-    logger.info('cache/headingCache|deleteByDate', { patientId, heading, sourceId, date });
-
-    const key = ['headings', 'byPatientId', patientId, heading, 'byDate', date, sourceId];
-    this.ctx.cache.delete(key);
-  }
-
-  async deleteByHeading(heading, sourceId) {
-    logger.info('cache/headingCache|deleteByHeading', { heading, sourceId });
-
-    const key = ['headings', 'ByHeading', heading, sourceId];
-    this.ctx.cache.delete(key);
-  }
-
-  async deleteByHost(patientId, heading, sourceId, host) {
-    logger.info('cache/headingCache|deleteByHost', { patientId, heading, sourceId, host });
-
-    const key = ['headings', 'byPatientId', patientId, heading, 'byHost', host, sourceId];
-    this.ctx.cache.delete(key);
-  }
-
-  async deleteBySourceId(sourceId) {
-    logger.info('cache/headingCache|deleteBySourceId', { sourceId });
-
-    const key = ['headings', 'bySourceId', sourceId];
-    this.ctx.cache.delete(key);
+      byPatientHeading.$(['byHost', host]).forEachChild((sourceId, node) => {
+        const date = bySourceId.$([sourceId, 'date']).value;
+        bySourceId.$(sourceId).delete();
+        byDate.$([date, sourceId]).delete();
+        node.delete();
+      });
+    }
   }
 }
 

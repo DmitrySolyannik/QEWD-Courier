@@ -30,32 +30,31 @@
 
 'use strict';
 
-const { lazyLoadAdapter } = require('../shared/utils');
-const QewdCacheAdapter = require('./adapter');
-const logger = require('./logger');
+const P = require('bluebird');
 
-class CacheRegistry {
-  constructor(ctx) {
+class RevertAllDiscoveryDataCommand {
+  constructor(ctx, session) {
     this.ctx = ctx;
-    this.adapter = new QewdCacheAdapter(ctx.qewdSession);
+    this.session = session;
   }
 
-  initialise(id) {
-    logger.info('core/cache|initialise', { id });
+  /**
+   * @return {Promise.<Object[]>}
+   */
+  async execute() {
+    const { discoveryService, headingService } = this.ctx.services;
+    const sourceIds = await discoveryService.getAllSourceIds();
 
-    const Cache = require(`../cache/${id}`);
+    const results = await P.mapSeries(sourceIds, async (sourceId) => {
+      const data = await discoveryService.getBySourceId(sourceId);
+      const responseObj = await headingService.delete(data.patientId, data.heading, sourceId);
+      await discoveryService.delete(data.discovery);
 
-    if (!Cache.create) {
-      throw new Error(`${id} cache class does not support lazy load initialisation.`);
-    }
+      return responseObj;
+    });
 
-    return Cache.create(this.adapter);
-  }
-
-  static create(ctx) {
-    return lazyLoadAdapter(new CacheRegistry(ctx));
+    return results;
   }
 }
 
-module.exports = CacheRegistry;
-
+module.exports = RevertAllDiscoveryDataCommand;

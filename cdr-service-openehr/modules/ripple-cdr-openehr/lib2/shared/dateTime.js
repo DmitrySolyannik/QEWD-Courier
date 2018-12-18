@@ -28,34 +28,66 @@
 
 */
 
-'use strict';
+// TODO: refactor it
 
-const { lazyLoadAdapter } = require('../shared/utils');
-const QewdCacheAdapter = require('./adapter');
-const logger = require('./logger');
+const moment = require('moment-timezone');
+const timezone = 'Europe/London';
 
-class CacheRegistry {
-  constructor(ctx) {
-    this.ctx = ctx;
-    this.adapter = new QewdCacheAdapter(ctx.qewdSession);
-  }
-
-  initialise(id) {
-    logger.info('core/cache|initialise', { id });
-
-    const Cache = require(`../cache/${id}`);
-
-    if (!Cache.create) {
-      throw new Error(`${id} cache class does not support lazy load initialisation.`);
-    }
-
-    return Cache.create(this.adapter);
-  }
-
-  static create(ctx) {
-    return lazyLoadAdapter(new CacheRegistry(ctx));
-  }
+function format(date) {
+  if (typeof date !== 'object') date = new Date(date);
+  return moment(date).tz(timezone).format();
 }
 
-module.exports = CacheRegistry;
+function now() {
+  return format(new Date());
+}
 
+function isDST(date) {
+  if (typeof date !== 'object') date = new Date(date);
+  return moment(date).tz(timezone).isDST();
+}
+
+function toSqlPASFormat(date) {
+  if (typeof date !== 'object') date = new Date(date);
+  return moment(date).tz(timezone).format('YYYY-MM-DD');
+}
+
+function toGMT(date) {
+  // if a date is in summer time, return as GMT, ie with an hour deducted
+  var result = date;
+  if (moment(date).tz(timezone).isDST()) result = new Date(date.getTime() - 3600000);
+  return result;
+}
+
+function getRippleTime(date, host) {
+  //console.log('*** host = ' + host);
+  if (date === '') return date;
+  var dt = new Date(date);
+  if (host === 'ethercis') dt = toGMT(dt);
+  return dt.getTime();
+}
+
+function msSinceMidnight(date, host, GMTCheck) {
+  var e = new Date(date);
+  //if (host === 'ethercis') e = toGMT(e);
+  if (GMTCheck) e = toGMT(e);
+  return e.getTime() - e.setHours(0,0,0,0);
+}
+
+function msAtMidnight(date, host, GMTCheck) {
+  var e = new Date(date);
+  //if (host === 'ethercis') e = toGMT(e);
+  if (GMTCheck) e = toGMT(e);
+  return e.setHours(0,0,0,0);
+}
+
+module.exports = {
+  format: format,
+  now: now,
+  isDST: isDST,
+  toGMT: toGMT,
+  msSinceMidnight: msSinceMidnight,
+  msAtMidnight: msAtMidnight,
+  getRippleTime: getRippleTime,
+  toSqlPASFormat: toSqlPASFormat
+};
