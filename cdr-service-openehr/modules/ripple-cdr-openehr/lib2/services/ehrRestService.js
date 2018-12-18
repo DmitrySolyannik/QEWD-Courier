@@ -1,0 +1,188 @@
+/*
+
+ ----------------------------------------------------------------------------
+ | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
+ |                                                                          |
+ | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
+ | All rights reserved.                                                     |
+ |                                                                          |
+ | http://rippleosi.org                                                     |
+ | Email: code.custodian@rippleosi.org                                      |
+ |                                                                          |
+ | Author: Rob Tweed, M/Gateway Developments Ltd                            |
+ |                                                                          |
+ | Licensed under the Apache License, Version 2.0 (the "License");          |
+ | you may not use this file except in compliance with the License.         |
+ | You may obtain a copy of the License at                                  |
+ |                                                                          |
+ |     http://www.apache.org/licenses/LICENSE-2.0                           |
+ |                                                                          |
+ | Unless required by applicable law or agreed to in writing, software      |
+ | distributed under the License is distributed on an "AS IS" BASIS,        |
+ | WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. |
+ | See the License for the specific language governing permissions and      |
+ |  limitations under the License.                                          |
+ ----------------------------------------------------------------------------
+
+  17 December 2018
+
+*/
+
+'use strict';
+
+const request = require('request');
+const config = require('../config');
+const { logger } = require('../core');
+
+function requestAsync(options) {
+  return new Promise((resolve, reject) => {
+    request(options, (err, response, body) => {
+      if (err) return reject(err);
+
+      return resolve(body);
+    });
+  });
+}
+
+class EhrRestService {
+  constructor(ctx, host, hostConfig) {
+    this.ctx = ctx;
+    this.host = host;
+    this.hostConfig = hostConfig;
+  }
+
+  async startSession() {
+    logger.info(`services/ehrRestService|${this.host}|startSession`);
+
+    const options = {
+      url: `${this.hostConfig.url}/rest/v1/session`,
+      method: 'POST',
+      qs: {
+        username: this.hostConfig.username,
+        password: this.hostConfig.password
+      },
+      headers: {
+        'x-max-session': config.openehr.sessionMaxNumber,
+        'x-session-timeout': config.openehr.sessionTimeout
+      },
+      json: true
+    };
+
+    return await requestAsync(options);
+  }
+
+  async stopSession(sessionId) {
+    logger.info(`services/ehrRestService|${this.host}|stopSession`, { sessionId });
+
+    const options = {
+      url: `${this.hostConfig.url}/rest/v1/session`,
+      method: 'DELETE',
+      headers: {
+        'ehr-session': sessionId
+      },
+      json: true
+    };
+
+    return await requestAsync(options);
+  }
+
+  async getEhr(sessionId, patientId) {
+    logger.info(`services/ehrRestService|${this.host}|getEhr`, { sessionId, patientId });
+
+    const options = {
+      url: `${this.hostConfig.url}/rest/v1/ehr`,
+      method: 'GET',
+      qs: {
+        subjectId: patientId,
+        subjectNamespace: 'uk.nhs.nhs_number'
+      },
+      headers: {
+        'ehr-session': sessionId
+      },
+      json: true
+    };
+
+    return await requestAsync(options);
+  }
+
+  async postEhr(sessionId, patientId) {
+    logger.info(`services/ehrRestService|${this.host}|getEhr`, { sessionId, patientId });
+
+    const options = {
+      url: `${this.hostConfig.url}/rest/v1/ehr`,
+      method: 'POST',
+      qs: {
+        subjectId: patientId,
+        subjectNamespace: 'uk.nhs.nhs_number'
+      },
+      body: {
+        subjectId: patientId,
+        subjectNamespace: 'uk.nhs.nhs_number',
+        queryable: 'true',
+        modifiable: 'true'
+      },
+      headers: {
+        'ehr-session': sessionId
+      },
+      json: true
+    };
+
+    return await requestAsync(options);
+  }
+
+  async postHeading(sessionId, ehrId, templateId, data) {
+    logger.info(`services/ehrRestService|${this.host}|postEhr`, { sessionId, ehrId, templateId, data });
+
+    const options = {
+      url: `${this.hostConfig.url}/rest/v1/composition`,
+      method: 'POST',
+      qs: {
+        templateId: templateId,
+        ehrId: ehrId,
+        format: 'FLAT'
+      },
+      body: data,
+      headers: {
+        'ehr-session': sessionId
+      },
+      json: true
+    };
+
+    return await requestAsync(options);
+  }
+
+  async query(sessionId, query) {
+    logger.info(`services/ehrRestService|${this.host}|query`, { sessionId, query });
+
+    const options = {
+      url: `${this.hostConfig.url}/rest/v1/query`,
+      method: 'GET',
+      qs: {
+        aql: query
+      },
+      headers: {
+        'ehr-session': sessionId
+      },
+      json: true
+    };
+
+    return await requestAsync(options);
+  }
+
+  async deleteHeading(sessionId, compositionId) {
+    logger.info(`services/ehrRestService|${this.host}|deleteHeading`, { sessionId, compositionId });
+
+    const options = {
+      url: `${this.hostConfig.url}/rest/v1/composition/${compositionId}`,
+      method: 'DELETE',
+      headers: {
+        'ehr-session': sessionId
+      },
+      json: true
+    };
+
+    return await requestAsync(options);
+  }
+}
+
+module.exports = EhrRestService;

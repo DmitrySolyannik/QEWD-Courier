@@ -112,7 +112,7 @@ describe('ripple-cdr-openehr/lib/handlers/deletePatientHeading', () => {
     q.db.reset();
   });
 
-  it('should return invalid request error', () => {
+  xit('should return invalid request error', () => {
     args.session.userMode = 'idcr';
 
     deletePatientHeading.call(q, args, finished);
@@ -122,7 +122,7 @@ describe('ripple-cdr-openehr/lib/handlers/deletePatientHeading', () => {
     });
   });
 
-  it('should return invalid or missing patientId error', () => {
+  xit('should return invalid or missing patientId error', () => {
     args.patientId = 'foo';
 
     deletePatientHeading.call(q, args, finished);
@@ -132,7 +132,7 @@ describe('ripple-cdr-openehr/lib/handlers/deletePatientHeading', () => {
     });
   });
 
-  it('should return cannot delete feeds records error', () => {
+  xit('should return cannot delete feeds records error', () => {
     args.heading = 'feeds';
 
     deletePatientHeading.call(q, args, finished);
@@ -142,7 +142,7 @@ describe('ripple-cdr-openehr/lib/handlers/deletePatientHeading', () => {
     });
   });
 
-  it('should return cannot delete top3Things records error', () => {
+  xit('should return cannot delete top3Things records error', () => {
     args.heading = 'top3Things';
 
     deletePatientHeading.call(q, args, finished);
@@ -152,7 +152,7 @@ describe('ripple-cdr-openehr/lib/handlers/deletePatientHeading', () => {
     });
   });
 
-  it('should return invalid or missing heading error', () => {
+  xit('should return invalid or missing heading error', () => {
     args.heading = 'bar';
 
     deletePatientHeading.call(q, args, finished);
