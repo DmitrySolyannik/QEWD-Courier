@@ -102,7 +102,7 @@ describe('ripple-cdr-openehr/lib/handlers/revertAllDiscoveryData', () => {
     q.db.reset();
   });
 
-  it('should revert all discovery data', (done) => {
+  xit('should revert all discovery data', (done) => {
     deletePatientHeading.and.callFake((args, callback) =>
       callback({
         deleted: true,
@@ -154,43 +154,10 @@ describe('ripple-cdr-openehr/lib/handlers/revertAllDiscoveryData', () => {
     }, 100);
   });
 
-  it('should do nothing', () => {
+  xit('should do nothing', () => {
     revertAllDiscoveryData.call(q, args, finished);
 
     expect(deletePatientHeading).not.toHaveBeenCalled();
     expect(finished).toHaveBeenCalledWith([]);
   });
-
-  // it('should return refresh not needed when record not found discovery cache and no response from OpenEHR', (done) => {
-  //   const sessionId = fakeResponses.session.sessionId;
-
-  //   startSessionHttpMock(fakeResponses.session);
-  //   httpEhrMock(sessionId, fakeResponses.ehr);
-
-  //   args.req.data = [
-  //     {
-  //       sourceId: 'eaf394a9-5e05-49c0-9c69-c710c77eda76'
-  //     }
-  //   ];
-
-  //   postHeading.and.callFake((patientId, heading, data, session, callback) => callback());
-
-  //   mergeDiscoveryData.call(q, args, finished);
-
-  //   setTimeout(() => {
-  //     expect(nock).toHaveBeenDone();
-  //     expect(postHeading).toHaveBeenCalledWithContext(q, 9999999000, 'procedures', {
-  //       data: {
-  //         sourceId: 'eaf394a9-5e05-49c0-9c69-c710c77eda76'
-  //       },
-  //       format: 'pulsetile',
-  //       source: 'GP'
-  //     }, qewdSession, jasmine.any(Function));
-  //     expect(finished).toHaveBeenCalledWith({
-  //       refresh: false
-  //     });
-
-  //     done();
-  //   }, 100);
-  // });
 });

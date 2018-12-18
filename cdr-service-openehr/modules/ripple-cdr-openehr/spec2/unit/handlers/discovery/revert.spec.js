@@ -33,12 +33,12 @@
 const mockery = require('mockery');
 const { CommandMock, ExecutionContextMock } = require('../../../mocks');
 
-describe('ripple-cdr-openehr/lib/handlers/discovery/revertAll', () => {
+describe('ripple-cdr-openehr/lib/handlers/discovery/revert', () => {
   let args;
   let finished;
 
   let command;
-  let RevertAllDiscoveryDataCommand;
+  let RevertDiscoveryDataCommand;
 
   let handler;
 
@@ -54,6 +54,8 @@ describe('ripple-cdr-openehr/lib/handlers/discovery/revertAll', () => {
 
   beforeEach(() => {
     args = {
+      patientId: 9999999111,
+      heading: 'problems',
       req: {
         ctx: new ExecutionContextMock()
       }
@@ -61,11 +63,11 @@ describe('ripple-cdr-openehr/lib/handlers/discovery/revertAll', () => {
     finished = jasmine.createSpy();
 
     command = new CommandMock();
-    RevertAllDiscoveryDataCommand = jasmine.createSpy().and.returnValue(command);
-    mockery.registerMock('../../commands/discovery/revertAll', RevertAllDiscoveryDataCommand);
+    RevertDiscoveryDataCommand = jasmine.createSpy().and.returnValue(command);
+    mockery.registerMock('../../commands/discovery/revert', RevertDiscoveryDataCommand);
 
-    delete require.cache[require.resolve('../../../../lib2/handlers/discovery/revertAll')];
-    handler = require('../../../../lib2/handlers/discovery/revertAll');
+    delete require.cache[require.resolve('../../../../lib2/handlers/discovery/revert')];
+    handler = require('../../../../lib2/handlers/discovery/revert');
   });
 
   afterEach(() => {
@@ -74,13 +76,6 @@ describe('ripple-cdr-openehr/lib/handlers/discovery/revertAll', () => {
 
   it('should return response object', async () => {
     const responseObj = [
-      {
-        deleted: true,
-        patientId: 9999999111,
-        heading: 'procedures',
-        compositionId: '188a6bbe-d823-4fca-a79f-11c64af5c2e6::vm01.ethercis.org::1',
-        host: 'ethercis'
-      },
       {
         deleted: true,
         patientId: 9999999111,
@@ -93,8 +88,8 @@ describe('ripple-cdr-openehr/lib/handlers/discovery/revertAll', () => {
 
     await handler(args, finished);
 
-    expect(RevertAllDiscoveryDataCommand).toHaveBeenCalledWith(args.req.ctx);
-    expect(command.execute).toHaveBeenCalledWith();
+    expect(RevertDiscoveryDataCommand).toHaveBeenCalledWith(args.req.ctx);
+    expect(command.execute).toHaveBeenCalledWith(args.patientId, args.heading);
 
     expect(finished).toHaveBeenCalledWith(responseObj);
   });
@@ -104,8 +99,8 @@ describe('ripple-cdr-openehr/lib/handlers/discovery/revertAll', () => {
 
     await handler(args, finished);
 
-    expect(RevertAllDiscoveryDataCommand).toHaveBeenCalledWith(args.req.ctx);
-    expect(command.execute).toHaveBeenCalledWith();
+    expect(RevertDiscoveryDataCommand).toHaveBeenCalledWith(args.req.ctx);
+    expect(command.execute).toHaveBeenCalledWith(args.patientId, args.heading);
 
     expect(finished).toHaveBeenCalledWith({
       error: 'custom error'

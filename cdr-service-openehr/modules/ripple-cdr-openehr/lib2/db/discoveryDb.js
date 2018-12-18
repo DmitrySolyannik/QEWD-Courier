@@ -89,6 +89,27 @@ class DiscoveryDb {
   }
 
   /**
+   * Gets all sourceIds by some condition
+   *
+   * @param  {Function} filter
+   * @return {Promise.<string[]>}
+   */
+  async getSourceIds(filter) {
+    logger.info('db/discoveryDb|getAllSourceIds');
+
+    const dbData = [];
+    const node = this.discoveryMap.$(['by_openehr_sourceId']);
+
+    node.forEachChild((sourceId, n) => {
+      if (filter(n.getDocument())) {
+        dbData.push(sourceId);
+      }
+    });
+
+    return dbData;
+  }
+
+  /**
    * Inserts a new db record
    *
    * @param  {string} discoverySourceId

@@ -109,6 +109,13 @@ function isTop3ThingsPayloadValid(payload) {
   return true;
 }
 
+/**
+ * Returns true if heading valid. Otherwise throw an error
+ *
+ * @param  {Object}  headingsConfig
+ * @param  {string}  heading
+ * @return {Boolean}
+ */
 function isHeadingValid(headingsConfig, heading) {
   if (!heading || !headingsConfig[heading]) {
     throw new BadRequestError(`Invalid or missing heading: ${heading}`);

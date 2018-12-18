@@ -42,7 +42,7 @@ class MergeDiscoveryDataCommand {
   /**
    * @param  {string} heading
    * @param  {Object[]} data
-   * @return {Promise.<Object[]>}
+   * @return {Promise.<Object>}
    */
   async execute(heading, data) {
     debug('heading: %s, data: %j', heading, data);
@@ -54,7 +54,7 @@ class MergeDiscoveryDataCommand {
 
     if (heading === ExtraHeading.FINISHED) {
       const state = await statusService.get();
-      debug('loaded record state: %j', state);
+      debug('record state: %j', state);
 
       state.status = RecordStatus.READY;
       await statusService.update(state);

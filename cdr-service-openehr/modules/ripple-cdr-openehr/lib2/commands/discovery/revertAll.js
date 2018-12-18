@@ -31,11 +31,11 @@
 'use strict';
 
 const P = require('bluebird');
+const debug = require('debug')('ripple-cdr-openehr:commands:discovery:revert-all');
 
 class RevertAllDiscoveryDataCommand {
-  constructor(ctx, session) {
+  constructor(ctx) {
     this.ctx = ctx;
-    this.session = session;
   }
 
   /**
@@ -46,8 +46,10 @@ class RevertAllDiscoveryDataCommand {
     const sourceIds = await discoveryService.getAllSourceIds();
 
     const results = await P.mapSeries(sourceIds, async (sourceId) => {
+      debug('sourceId: %s', sourceId);
       const data = await discoveryService.getBySourceId(sourceId);
       const responseObj = await headingService.delete(data.patientId, data.heading, sourceId);
+      debug('response: %j', responseObj);
       await discoveryService.delete(data.discovery);
 
       return responseObj;

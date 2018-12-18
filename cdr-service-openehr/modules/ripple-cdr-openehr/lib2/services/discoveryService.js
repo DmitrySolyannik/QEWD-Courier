@@ -127,6 +127,7 @@ class DiscoveryService {
 
   /**
    * Deletes discovery data by sourceId
+   *
    * @param  {string} sourceId
    * @return {Promise}
    */
@@ -147,6 +148,7 @@ class DiscoveryService {
 
   /**
    * Gets all sourceIds
+   *
    * @return {Promise.<string[]>}
    */
   async getAllSourceIds() {
@@ -155,6 +157,34 @@ class DiscoveryService {
     const { discoveryDb } = this.ctx.db;
 
     return await discoveryDb.getAllSourceIds();
+  }
+
+  /**
+   * Gets sourceIds by some condition
+   *
+   * @param  {Function} filter
+   * @return {Promise.<string[]>}
+   */
+  async getSourceIds(filter) {
+    logger.info('services/discoveryService|getSourceIds');
+
+    const { discoveryDb } = this.ctx.db;
+
+    return await discoveryDb.getSourceIds(filter);
+  }
+
+  /**
+   * Gets by sourceId
+   *
+   * @param  {string} sourceId
+   * @return {Promise.<Object>}
+   */
+  async getBySourceId(sourceId) {
+    logger.info('services/discoveryService|getBySourceId', { sourceId });
+
+    const { discoveryDb } = this.ctx.db;
+
+    return await discoveryDb.getBySourceId();
   }
 }
 

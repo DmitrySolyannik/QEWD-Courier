@@ -80,6 +80,10 @@ function handleResponse(responseObj, successHandler, errorHandler) {
   }
 }
 
+function equals(l, r) {
+  return l.toString() === r.toString();
+}
+
 function lazyLoadAdapter(target) {
   if (!target.initialise) {
     throw new Error('target must has initialise method defined.');
@@ -117,6 +121,7 @@ function lazyLoadAdapter(target) {
 module.exports = {
   buildSourceId,
   flatten,
+  equals,
   handleResponse,
   lazyLoadAdapter
 };

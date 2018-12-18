@@ -35,92 +35,91 @@ const RevertAllDiscoveryDataCommand = require('../../../../lib2/commands/discove
 
 describe('ripple-cdr-openehr/lib/commands/discovery/revertAll', () => {
   let ctx;
-  let session;
 
-  // let statusService;
-  // let discoveryService;
-  // let cacheService;
+  let discoveryService;
+  let headingService;
 
   beforeEach(() => {
     ctx = new ExecutionContextMock();
-    session = {
-      //nhsNumber: 9999999000,
-      //email: 'john.doe@example.org'
-    };
 
-    // statusService = ctx.services.statusService;
-    // discoveryService = ctx.services.discoveryService;
-    // cacheService = ctx.services.cacheService;
+    discoveryService = ctx.services.discoveryService;
+    headingService = ctx.services.headingService;
 
-    // discoveryService.mergeAll.and.resolveValue(false);
+    discoveryService.getAllSourceIds.and.resolveValue(
+      [
+        'ethercis-188a6bbe-d823-4fca-a79f-11c64af5c2e6',
+        'ethercis-eaf394a9-5e05-49c0-9c69-c710c77eda76'
+      ]
+    );
+    discoveryService.getBySourceId.and.resolveValues(
+      {
+        patientId: 9999999000,
+        heading: 'problems',
+        discovery: '0f7192e9-168e-4dea-812a-3e1d236ae46d'
+      },
+      {
+        patientId: 9999999111,
+        heading: 'procedures',
+        discovery: '260a7be5-e00f-4b1e-ad58-27d95604d010'
+      }
+    );
+    headingService.delete.and.resolveValues(
+      {
+        deleted: true,
+        patientId: 9999999000,
+        heading: 'problems',
+        compositionId: '188a6bbe-d823-4fca-a79f-11c64af5c2e6::vm01.ethercis.org::1',
+        host: 'ethercis'
+      },
+      {
+        deleted: true,
+        patientId: 9999999111,
+        heading: 'procedures',
+        compositionId: 'eaf394a9-5e05-49c0-9c69-c710c77eda76::vm01.ethercis.org::1',
+        host: 'ethercis'
+      }
+    );
   });
 
-  // it('should return refresh needed when heading is finished', async () => {
-  //   const expected = {
-  //     refresh: true
-  //   };
+  it('should revert all discovery data', async () => {
+    const expected = [
+      {
+        deleted: true,
+        patientId: 9999999000,
+        heading: 'problems',
+        compositionId: '188a6bbe-d823-4fca-a79f-11c64af5c2e6::vm01.ethercis.org::1',
+        host: 'ethercis'
+      },
+      {
+        deleted: true,
+        patientId: 9999999111,
+        heading: 'procedures',
+        compositionId: 'eaf394a9-5e05-49c0-9c69-c710c77eda76::vm01.ethercis.org::1',
+        host: 'ethercis'
+      }
+    ];
 
-  //   heading = 'finished';
+    const command = new RevertAllDiscoveryDataCommand(ctx);
+    const actual = await command.execute();
 
-  //   statusService.get.and.resolveValue({
-  //     status: 'loading_data',
-  //     new_patient: true,
-  //     requestNo: 2
-  //   });
+    expect(discoveryService.getAllSourceIds).toHaveBeenCalled();
 
-  //   const command = new MergeDiscoveryDataCommand(ctx, session);
-  //   const actual = await command.execute(heading, data);
+    expect(discoveryService.getBySourceId).toHaveBeenCalledTimes(2);
+    expect(discoveryService.getBySourceId.calls.argsFor(0)).toEqual(['ethercis-188a6bbe-d823-4fca-a79f-11c64af5c2e6']);
+    expect(discoveryService.getBySourceId.calls.argsFor(1)).toEqual(['ethercis-eaf394a9-5e05-49c0-9c69-c710c77eda76']);
 
-  //   expect(statusService.get).toHaveBeenCalled();
-  //   expect(statusService.update).toHaveBeenCalledWith({
-  //     status: 'ready',
-  //     new_patient: true,
-  //     requestNo: 2
-  //   });
+    expect(headingService.delete).toHaveBeenCalledTimes(2);
+    expect(headingService.delete.calls.argsFor(0)).toEqual(
+      [9999999000, 'problems', 'ethercis-188a6bbe-d823-4fca-a79f-11c64af5c2e6']
+    );
+    expect(headingService.delete.calls.argsFor(1)).toEqual(
+      [9999999111, 'procedures', 'ethercis-eaf394a9-5e05-49c0-9c69-c710c77eda76']
+    );
 
-  //   expect(actual).toEqual(expected);
-  // });
+    expect(discoveryService.delete).toHaveBeenCalledTimes(2);
+    expect(discoveryService.delete.calls.argsFor(0)).toEqual(['0f7192e9-168e-4dea-812a-3e1d236ae46d']);
+    expect(discoveryService.delete.calls.argsFor(1)).toEqual(['260a7be5-e00f-4b1e-ad58-27d95604d010']);
 
-  // it('should return refresh not needed when no data items', async () => {
-  //   const expected = {
-  //     refresh: false
-  //   };
-
-  //   data = [];
-
-  //   const command = new MergeDiscoveryDataCommand(ctx, session);
-  //   const actual = await command.execute(heading, data);
-
-  //   expect(actual).toEqual(expected);
-  // });
-
-  // it('should merge data and return refresh not needed', async () => {
-  //   const expected = {
-  //     refresh: false
-  //   };
-
-  //   const command = new MergeDiscoveryDataCommand(ctx, session);
-  //   const actual = await command.execute(heading, data);
-
-  //   expect(discoveryService.mergeAll).toHaveBeenCalledWith(9999999000, 'procedures', data);
-  //   expect(discoveryService.mergeAll).toHaveBeenCalledWith(9999999000, 'procedures', data);
-
-  //   expect(actual).toEqual(expected);
-  // });
-
-  // it('should merge data and return refresh needed', async () => {
-  //   const expected = {
-  //     refresh: true
-  //   };
-
-  //   discoveryService.mergeAll.and.resolveValue(true);
-
-  //   const command = new MergeDiscoveryDataCommand(ctx, session);
-  //   const actual = await command.execute(heading, data);
-
-  //   expect(discoveryService.mergeAll).toHaveBeenCalledWith(9999999000, 'procedures', data);
-  //   expect(cacheService.delete).toHaveBeenCalledWith(9999999000, 'procedures', 'ethercis');
-
-  //   expect(actual).toEqual(expected);
-  // });
+    expect(actual).toEqual(expected);
+  });
 });
