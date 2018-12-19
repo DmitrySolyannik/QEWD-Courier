@@ -24,41 +24,18 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  16 December 2018
+  19 December 2018
 
 */
 
 'use strict';
 
-const ExtraHeading = Object.freeze({
-  FINISHED: 'finished'
-});
-
-const Heading = Object.freeze({
-  COUNTS: 'counts',
-  FEEDS: 'feeds',
-  TOP_3_THINGS: 'top3Things'
-});
-
-const RecordStatus = Object.freeze({
-  LOADING: 'loading_data',
-  READY: 'ready'
-});
-
-const ResponseFormat = Object.freeze({
-  JUMPER: 'openehr-jumper',
-  PULSETILE: 'pulsetile'
-});
-
-const Role = Object.freeze({
-  ADMIN: 'admin',
-  PHR_USER: 'phrUser'
-});
+const mergeDiscoveryData = require('./merge');
+const revertDiscoveryData = require('./revert');
+const revertAllDiscoveryData = require('./revertAll');
 
 module.exports = {
-  ExtraHeading,
-  Heading,
-  RecordStatus,
-  ResponseFormat,
-  Role
+  mergeDiscoveryData,
+  revertDiscoveryData,
+  revertAllDiscoveryData
 };

@@ -24,12 +24,13 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  15 December 2018
+  19 December 2018
 
 */
 
 'use strict';
 
+const { BadRequestError } = require('../../errors');
 const { isPatientIdValid } = require('../../shared/validation');
 const debug = require('debug')('ripple-cdr-openehr:commands:top3things:get-detail');
 
@@ -51,7 +52,10 @@ class GetTop3ThingsDetailCommand {
       patientId = this.session.nhsNumber;
     }
 
-    isPatientIdValid(patientId);
+    const valid = isPatientIdValid(patientId);
+    if (!valid.ok) {
+      throw new BadRequestError(valid.error);
+    }
 
     const { top3ThingsService } = this.ctx.services;
     const responseObj = await top3ThingsService.getLatestDetailByPatientId(patientId);

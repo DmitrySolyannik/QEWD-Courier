@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  17 December 2018
+  19 December 2018
 
 */
 
@@ -32,9 +32,9 @@
 
 const { ExecutionContextMock } = require('../../../mocks');
 const { BadRequestError } = require('../../../../lib2/errors');
-const CreateTop3ThingsCommand = require('../../../../lib2/commands/top3Things/create');
+const PostTop3ThingsCommand = require('../../../../lib2/commands/top3Things/post');
 
-describe('ripple-cdr-openehr/lib/commands/top3Things/create', () => {
+describe('ripple-cdr-openehr/lib/commands/top3Things/post', () => {
   let ctx;
   let session;
   let patientId;
@@ -65,7 +65,7 @@ describe('ripple-cdr-openehr/lib/commands/top3Things/create', () => {
   it('should throw invalid or missing patientId error', async () => {
     patientId = 'foo';
 
-    const command = new CreateTop3ThingsCommand(ctx, session);
+    const command = new PostTop3ThingsCommand(ctx, session);
     const actual = command.execute(patientId, payload);
 
     await expectAsync(actual).toBeRejectedWith(new BadRequestError('patientId foo is invalid'));
@@ -74,7 +74,7 @@ describe('ripple-cdr-openehr/lib/commands/top3Things/create', () => {
   it('should throw must specify at least 1 top thing error when name1 missed', async () => {
     delete payload.name1;
 
-    const command = new CreateTop3ThingsCommand(ctx, session);
+    const command = new PostTop3ThingsCommand(ctx, session);
     const actual = command.execute(patientId, payload);
 
     await expectAsync(actual).toBeRejectedWith(new BadRequestError('You must specify at least 1 Top Thing'));
@@ -83,7 +83,7 @@ describe('ripple-cdr-openehr/lib/commands/top3Things/create', () => {
   it('should throw must specify at least 1 top thing error when description1 missed', async () => {
     delete payload.description1;
 
-    const command = new CreateTop3ThingsCommand(ctx, session);
+    const command = new PostTop3ThingsCommand(ctx, session);
     const actual = command.execute(patientId, payload);
 
     await expectAsync(actual).toBeRejectedWith(new BadRequestError('You must specify at least 1 Top Thing'));
@@ -92,7 +92,7 @@ describe('ripple-cdr-openehr/lib/commands/top3Things/create', () => {
   it('should throw description for the 2nd top thing was defined but its summary name was not defined error', async () => {
     delete payload.name2;
 
-    const command = new CreateTop3ThingsCommand(ctx, session);
+    const command = new PostTop3ThingsCommand(ctx, session);
     const actual = command.execute(patientId, payload);
 
     await expectAsync(actual).toBeRejectedWith(
@@ -103,7 +103,7 @@ describe('ripple-cdr-openehr/lib/commands/top3Things/create', () => {
   it('should throw description for the 3rd top thing was defined but its summary name was not defined error', async () => {
     delete payload.name3;
 
-    const command = new CreateTop3ThingsCommand(ctx, session);
+    const command = new PostTop3ThingsCommand(ctx, session);
     const actual = command.execute(patientId, payload);
 
     await expectAsync(actual).toBeRejectedWith(
@@ -116,7 +116,7 @@ describe('ripple-cdr-openehr/lib/commands/top3Things/create', () => {
       sourceId: 'ce437b97-4f6e-4c96-89bb-0b58b29a79cb'
     };
 
-    const command = new CreateTop3ThingsCommand(ctx, session);
+    const command = new PostTop3ThingsCommand(ctx, session);
     const actual = await command.execute(patientId, payload);
 
     expect(top3ThingsService.create).toHaveBeenCalledWith(9999999111, {
@@ -138,7 +138,7 @@ describe('ripple-cdr-openehr/lib/commands/top3Things/create', () => {
     delete payload.name2;
     delete payload.description2;
 
-    const command = new CreateTop3ThingsCommand(ctx, session);
+    const command = new PostTop3ThingsCommand(ctx, session);
     const actual = await command.execute(patientId, payload);
 
     expect(top3ThingsService.create).toHaveBeenCalledWith(9999999111, {
@@ -160,7 +160,7 @@ describe('ripple-cdr-openehr/lib/commands/top3Things/create', () => {
     delete payload.name3;
     delete payload.description3;
 
-    const command = new CreateTop3ThingsCommand(ctx, session);
+    const command = new PostTop3ThingsCommand(ctx, session);
     const actual = await command.execute(patientId, payload);
 
     expect(top3ThingsService.create).toHaveBeenCalledWith(9999999111, {
@@ -181,7 +181,7 @@ describe('ripple-cdr-openehr/lib/commands/top3Things/create', () => {
 
     session.role = 'phrUser';
 
-    const command = new CreateTop3ThingsCommand(ctx, session);
+    const command = new PostTop3ThingsCommand(ctx, session);
     const actual = await command.execute(patientId, payload);
 
     expect(top3ThingsService.create).toHaveBeenCalledWith(9999999000, {

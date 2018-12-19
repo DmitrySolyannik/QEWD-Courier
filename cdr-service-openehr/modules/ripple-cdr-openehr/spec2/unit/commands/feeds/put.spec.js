@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  17 December 2018
+  19 December 2018
 
 */
 
@@ -32,9 +32,9 @@
 
 const { ExecutionContextMock } = require('../../../mocks');
 const { BadRequestError, NotFoundError } = require('../../../../lib2/errors');
-const UpdateFeedCommand = require('../../../../lib2/commands/feeds/update');
+const PutFeedCommand = require('../../../../lib2/commands/feeds/put');
 
-describe('ripple-cdr-openehr/lib/commands/feeds/update', () => {
+describe('ripple-cdr-openehr/lib/commands/feeds/put', () => {
   let ctx;
   let session;
   let sourceId;
@@ -73,7 +73,7 @@ describe('ripple-cdr-openehr/lib/commands/feeds/update', () => {
   it('should throw missing or empty sourceId error', async () => {
     sourceId = '';
 
-    const command = new UpdateFeedCommand(ctx, session);
+    const command = new PutFeedCommand(ctx, session);
     const actual = command.execute(sourceId, payload);
 
     await expectAsync(actual).toBeRejectedWith(new BadRequestError('Missing or empty sourceId'));
@@ -82,7 +82,7 @@ describe('ripple-cdr-openehr/lib/commands/feeds/update', () => {
   it('should throw invalid sourceId error', async () => {
     phrFeedService.getBySourceId.and.rejectValue(new NotFoundError('Invalid sourceId'));
 
-    const command = new UpdateFeedCommand(ctx, session);
+    const command = new PutFeedCommand(ctx, session);
     const actual = command.execute(sourceId, payload);
 
     await expectAsync(actual).toBeRejectedWith(new NotFoundError('Invalid sourceId'));
@@ -91,7 +91,7 @@ describe('ripple-cdr-openehr/lib/commands/feeds/update', () => {
   it('should throw author missing or empty error', async () => {
     delete payload.author;
 
-    const command = new UpdateFeedCommand(ctx, session);
+    const command = new PutFeedCommand(ctx, session);
     const actual = command.execute(sourceId, payload);
 
     await expectAsync(actual).toBeRejectedWith(new BadRequestError('Author missing or empty'));
@@ -100,7 +100,7 @@ describe('ripple-cdr-openehr/lib/commands/feeds/update', () => {
   it('should throw feed name missing or empty error', async () => {
     delete payload.name;
 
-    const command = new UpdateFeedCommand(ctx, session);
+    const command = new PutFeedCommand(ctx, session);
     const actual = command.execute(sourceId, payload);
 
     await expectAsync(actual).toBeRejectedWith(new BadRequestError('Feed name missing or empty'));
@@ -109,7 +109,7 @@ describe('ripple-cdr-openehr/lib/commands/feeds/update', () => {
   it('should throw landing page URL missing or empty error', async () => {
     delete payload.landingPageUrl;
 
-    const command = new UpdateFeedCommand(ctx, session);
+    const command = new PutFeedCommand(ctx, session);
     const actual = command.execute(sourceId, payload);
 
     await expectAsync(actual).toBeRejectedWith(new BadRequestError('Landing page URL missing or empty'));
@@ -118,7 +118,7 @@ describe('ripple-cdr-openehr/lib/commands/feeds/update', () => {
   it('should throw landing page URL is invalid error', async () => {
     payload.landingPageUrl = 'foo';
 
-    const command = new UpdateFeedCommand(ctx, session);
+    const command = new PutFeedCommand(ctx, session);
     const actual = command.execute(sourceId, payload);
 
     await expectAsync(actual).toBeRejectedWith(new BadRequestError('Landing page URL is invalid'));
@@ -127,7 +127,7 @@ describe('ripple-cdr-openehr/lib/commands/feeds/update', () => {
   it('should throw RSS Feed URL missing or empty error', async () => {
     delete payload.rssFeedUrl;
 
-    const command = new UpdateFeedCommand(ctx, session);
+    const command = new PutFeedCommand(ctx, session);
     const actual = command.execute(sourceId, payload);
 
     await expectAsync(actual).toBeRejectedWith(new BadRequestError('RSS Feed URL missing or empty'));
@@ -136,7 +136,7 @@ describe('ripple-cdr-openehr/lib/commands/feeds/update', () => {
   it('should throw RSS Feed URL is invalid error', async () => {
     payload.rssFeedUrl = 'foo';
 
-    const command = new UpdateFeedCommand(ctx, session);
+    const command = new PutFeedCommand(ctx, session);
     const actual = command.execute(sourceId, payload);
 
     await expectAsync(actual).toBeRejectedWith(new BadRequestError('RSS Feed URL is invalid'));
@@ -147,7 +147,7 @@ describe('ripple-cdr-openehr/lib/commands/feeds/update', () => {
       sourceId: 'eaf394a9-5e05-49c0-9c69-c710c77eda76'
     };
 
-    const command = new UpdateFeedCommand(ctx, session);
+    const command = new PutFeedCommand(ctx, session);
     const actual = await command.execute(sourceId, payload);
 
     expect(phrFeedService.update).toHaveBeenCalledWith('eaf394a9-5e05-49c0-9c69-c710c77eda76', {

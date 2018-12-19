@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  18 December 2018
+  19 December 2018
 
 */
 
@@ -188,6 +188,7 @@ describe('ripple-cdr-openehr/lib/services/discoveryService', () => {
 
       expect(discoveryDb.getSourceIdByDiscoverySourceId).toHaveBeenCalledWith('eaf394a9-5e05-49c0-9c69-c710c77eda76');
       expect(headingService.post).toHaveBeenCalledWith(
+        'ethercis',
         9999999000,
         'procedures',
         {
@@ -219,6 +220,7 @@ describe('ripple-cdr-openehr/lib/services/discoveryService', () => {
 
       expect(discoveryDb.getSourceIdByDiscoverySourceId).toHaveBeenCalledWith('eaf394a9-5e05-49c0-9c69-c710c77eda76');
       expect(headingService.post).toHaveBeenCalledWith(
+        'ethercis',
         9999999000,
         'procedures',
         {
@@ -256,6 +258,7 @@ describe('ripple-cdr-openehr/lib/services/discoveryService', () => {
 
       expect(discoveryDb.getSourceIdByDiscoverySourceId).toHaveBeenCalledWith('eaf394a9-5e05-49c0-9c69-c710c77eda76');
       expect(headingService.post).toHaveBeenCalledWith(
+        'ethercis',
         9999999000,
         'procedures',
         {

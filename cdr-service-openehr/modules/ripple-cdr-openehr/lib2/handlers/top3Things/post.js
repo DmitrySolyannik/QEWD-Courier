@@ -24,41 +24,28 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  16 December 2018
+  19 December 2018
 
 */
 
-'use strict';
+const PostTop3ThingsCommand = require('../../commands/top3Things/post');
+const { getResponseError } = require('../../errors');
 
-const ExtraHeading = Object.freeze({
-  FINISHED: 'finished'
-});
+/**
+ * @param  {Object} args
+ * @param  {Function} finished
+ */
+module.exports = async function (args, finished) {
+  try {
+    const command = new PostTop3ThingsCommand(args.req.ctx, args.session);
+    const responseObj = await command.execute(args.patientId, args.req.body);
 
-const Heading = Object.freeze({
-  COUNTS: 'counts',
-  FEEDS: 'feeds',
-  TOP_3_THINGS: 'top3Things'
-});
+    finished(responseObj);
+  } catch (err) {
+    const responseError = getResponseError(err);
 
-const RecordStatus = Object.freeze({
-  LOADING: 'loading_data',
-  READY: 'ready'
-});
-
-const ResponseFormat = Object.freeze({
-  JUMPER: 'openehr-jumper',
-  PULSETILE: 'pulsetile'
-});
-
-const Role = Object.freeze({
-  ADMIN: 'admin',
-  PHR_USER: 'phrUser'
-});
-
-module.exports = {
-  ExtraHeading,
-  Heading,
-  RecordStatus,
-  ResponseFormat,
-  Role
+    finished(responseError);
+  }
 };
+
+

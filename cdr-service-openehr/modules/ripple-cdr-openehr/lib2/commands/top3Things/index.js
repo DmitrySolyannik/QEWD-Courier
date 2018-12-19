@@ -24,50 +24,18 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  14 December 2018
+  19 December 2018
 
 */
 
 'use strict';
 
-const { BadRequestError } = require('../../errors');
-const { isFeedPayloadValid } = require('../../shared/validation');
-const debug = require('debug')('ripple-cdr-openehr:commands:feeds:update');
+const getTop3ThingsSummary  = require('./getSummary');
+const getTop3ThingsDetail = require('./getDetail');
+const postTop3Things = require('./post');
 
-class UpdateFeedCommand {
-  constructor(ctx, session) {
-    this.ctx = ctx;
-    this.session = session;
-  }
-
-  /**
-   * @param  {string} sourceId
-   * @param  {Object} payload
-   * @return {Promise.<Object>}
-   */
-  async execute(sourceId, payload) {
-    debug('sourceId: %s, payload: %j', sourceId, payload);
-
-    if (!sourceId || sourceId === '') {
-      throw new BadRequestError('Missing or empty sourceId');
-    }
-
-    const { phrFeedService } = this.ctx.services;
-    const feed = await phrFeedService.getBySourceId(sourceId);
-
-    isFeedPayloadValid(payload);
-
-    const updatedFeed = {
-      ...payload,
-      email: this.session.email
-    };
-
-    await phrFeedService.update(feed.sourceId, updatedFeed);
-
-    return {
-      sourceId: feed.sourceId
-    };
-  }
-}
-
-module.exports = UpdateFeedCommand;
+module.exports = {
+  getTop3ThingsSummary,
+  getTop3ThingsDetail,
+  postTop3Things
+};

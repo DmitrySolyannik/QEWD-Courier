@@ -24,21 +24,21 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  17 December 2018
+  14 December 2018
 
 */
 
 'use strict';
 
 const mockery = require('mockery');
-const { CommandMock, ExecutionContextMock } = require('../../mocks');
+const { CommandMock, ExecutionContextMock } = require('../../../mocks');
 
-describe('ripple-cdr-openehr/lib/handlers/deletePatientHeading', () => {
+describe('ripple-cdr-openehr/lib/handlers/feeds/post', () => {
   let args;
   let finished;
 
   let command;
-  let DeletePatientHeadingCommand;
+  let PostFeedCommand;
 
   let handler;
 
@@ -54,11 +54,14 @@ describe('ripple-cdr-openehr/lib/handlers/deletePatientHeading', () => {
 
   beforeEach(() => {
     args = {
-      patientId: 9999999111,
-      heading: 'procedures',
-      sourceId: 'eaf394a9-5e05-49c0-9c69-c710c77eda76',
       req: {
-        ctx: new ExecutionContextMock()
+        ctx: new ExecutionContextMock(),
+        body: {
+          author: 'ivor.cox@phr.leeds.nhs',
+          name: 'BBC News',
+          landingPageUrl: 'https://www.bbc.co.uk/news',
+          rssFeedUrl: 'https://www.bbc.co.uk/rss'
+        }
       },
       session: {
         nhsNumber: 9999999000,
@@ -68,11 +71,11 @@ describe('ripple-cdr-openehr/lib/handlers/deletePatientHeading', () => {
     finished = jasmine.createSpy();
 
     command = new CommandMock();
-    DeletePatientHeadingCommand = jasmine.createSpy().and.returnValue(command);
-    mockery.registerMock('../commands/deletePatientHeading', DeletePatientHeadingCommand);
+    PostFeedCommand = jasmine.createSpy().and.returnValue(command);
+    mockery.registerMock('../../commands/feeds/post', PostFeedCommand);
 
-    delete require.cache[require.resolve('../../../lib2/handlers/deletePatientHeading')];
-    handler = require('../../../lib2/handlers/deletePatientHeading');
+    delete require.cache[require.resolve('../../../../lib2/handlers/feeds/post')];
+    handler = require('../../../../lib2/handlers/feeds/post');
   });
 
   afterEach(() => {
@@ -81,18 +84,20 @@ describe('ripple-cdr-openehr/lib/handlers/deletePatientHeading', () => {
 
   it('should return response object', async () => {
     const responseObj = {
-      deleted: true,
-      patientId: 9999999111,
-      heading: 'procedures',
-      compositionId: '188a6bbe-d823-4fca-a79f-11c64af5c2e6::vm01.ethercis.org::1',
-      host: 'ethercis'
+      author: 'ivor.cox@phr.leeds.nhs',
+      name: 'BBC News',
+      landingPageUrl: 'https://www.bbc.co.uk/news',
+      rssFeedUrl: 'https://www.bbc.co.uk/rss',
+      email: 'jane.doe@example.org',
+      sourceId: 'eaf394a9-5e05-49c0-9c69-c710c77eda76',
+      dateCreated: 1514764800000
     };
     command.execute.and.resolveValue(responseObj);
 
     await handler(args, finished);
 
-    expect(DeletePatientHeadingCommand).toHaveBeenCalledWith(args.req.ctx, args.session);
-    expect(command.execute).toHaveBeenCalledWith(args.patientId, args.heading, args.sourceId);
+    expect(PostFeedCommand).toHaveBeenCalledWith(args.req.ctx, args.session);
+    expect(command.execute).toHaveBeenCalledWith(args.req.body);
 
     expect(finished).toHaveBeenCalledWith(responseObj);
   });
@@ -102,8 +107,8 @@ describe('ripple-cdr-openehr/lib/handlers/deletePatientHeading', () => {
 
     await handler(args, finished);
 
-    expect(DeletePatientHeadingCommand).toHaveBeenCalledWith(args.req.ctx, args.session);
-    expect(command.execute).toHaveBeenCalledWith(args.patientId, args.heading, args.sourceId);
+    expect(PostFeedCommand).toHaveBeenCalledWith(args.req.ctx, args.session);
+    expect(command.execute).toHaveBeenCalledWith(args.req.body);
 
     expect(finished).toHaveBeenCalledWith({
       error: 'custom error'

@@ -24,12 +24,12 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  17 December 2018
+  19 December 2018
 
 */
 
-const DeletePatientHeadingCommand = require('../commands/deletePatientHeading');
-const { getResponseError } = require('../errors');
+const PostFeedCommand = require('../../commands/feeds/post');
+const { getResponseError } = require('../../errors');
 
 /**
  * @param  {Object} args
@@ -37,8 +37,8 @@ const { getResponseError } = require('../errors');
  */
 module.exports = async function (args, finished) {
   try {
-    const command = new DeletePatientHeadingCommand(args.req.ctx, args.session);
-    const responseObj = await command.execute(args.patientId, args.heading, args.sourceId);
+    const command = new PostFeedCommand(args.req.ctx, args.session);
+    const responseObj = await command.execute(args.req.body);
 
     finished(responseObj);
   } catch (err) {

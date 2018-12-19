@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  14 December 2018
+  17 December 2018
 
 */
 
@@ -33,12 +33,12 @@
 const mockery = require('mockery');
 const { CommandMock, ExecutionContextMock } = require('../../../mocks');
 
-describe('ripple-cdr-openehr/lib/handlers/feeds/create', () => {
+describe('ripple-cdr-openehr/lib/handlers/top3Things/post', () => {
   let args;
   let finished;
 
   let command;
-  let CreateFeedCommand;
+  let PostTop3ThingsCommand;
 
   let handler;
 
@@ -54,28 +54,31 @@ describe('ripple-cdr-openehr/lib/handlers/feeds/create', () => {
 
   beforeEach(() => {
     args = {
+      patientId: 9999999111,
       req: {
         ctx: new ExecutionContextMock(),
         body: {
-          author: 'ivor.cox@phr.leeds.nhs',
-          name: 'BBC News',
-          landingPageUrl: 'https://www.bbc.co.uk/news',
-          rssFeedUrl: 'https://www.bbc.co.uk/rss'
+          name1: 'foo1',
+          description1: 'baz1',
+          name2: 'foo2',
+          description2: 'baz2',
+          name3: 'foo3',
+          description3: 'baz3'
         }
       },
       session: {
         nhsNumber: 9999999000,
-        email: 'john.doe@example.org'
+        role: 'phrUser'
       }
     };
     finished = jasmine.createSpy();
 
     command = new CommandMock();
-    CreateFeedCommand = jasmine.createSpy().and.returnValue(command);
-    mockery.registerMock('../../commands/feeds/create', CreateFeedCommand);
+    PostTop3ThingsCommand = jasmine.createSpy().and.returnValue(command);
+    mockery.registerMock('../../commands/top3Things/post', PostTop3ThingsCommand);
 
-    delete require.cache[require.resolve('../../../../lib2/handlers/feeds/create')];
-    handler = require('../../../../lib2/handlers/feeds/create');
+    delete require.cache[require.resolve('../../../../lib2/handlers/top3Things/post')];
+    handler = require('../../../../lib2/handlers/top3Things/post');
   });
 
   afterEach(() => {
@@ -84,20 +87,14 @@ describe('ripple-cdr-openehr/lib/handlers/feeds/create', () => {
 
   it('should return response object', async () => {
     const responseObj = {
-      author: 'ivor.cox@phr.leeds.nhs',
-      name: 'BBC News',
-      landingPageUrl: 'https://www.bbc.co.uk/news',
-      rssFeedUrl: 'https://www.bbc.co.uk/rss',
-      email: 'jane.doe@example.org',
-      sourceId: 'eaf394a9-5e05-49c0-9c69-c710c77eda76',
-      dateCreated: 1514764800000
+      sourceId: 'ce437b97-4f6e-4c96-89bb-0b58b29a79cb',
     };
     command.execute.and.resolveValue(responseObj);
 
     await handler(args, finished);
 
-    expect(CreateFeedCommand).toHaveBeenCalledWith(args.req.ctx, args.session);
-    expect(command.execute).toHaveBeenCalledWith(args.req.body);
+    expect(PostTop3ThingsCommand).toHaveBeenCalledWith(args.req.ctx, args.session);
+    expect(command.execute).toHaveBeenCalledWith(args.patientId, args.req.body);
 
     expect(finished).toHaveBeenCalledWith(responseObj);
   });
@@ -107,8 +104,8 @@ describe('ripple-cdr-openehr/lib/handlers/feeds/create', () => {
 
     await handler(args, finished);
 
-    expect(CreateFeedCommand).toHaveBeenCalledWith(args.req.ctx, args.session);
-    expect(command.execute).toHaveBeenCalledWith(args.req.body);
+    expect(PostTop3ThingsCommand).toHaveBeenCalledWith(args.req.ctx, args.session);
+    expect(command.execute).toHaveBeenCalledWith(args.patientId, args.req.body);
 
     expect(finished).toHaveBeenCalledWith({
       error: 'custom error'

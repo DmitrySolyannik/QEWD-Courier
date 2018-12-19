@@ -24,41 +24,64 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  16 December 2018
+  19 December 2018
 
 */
 
-'use strict';
+const { BadRequestError } = require('../../errors');
+const { isHeadingValid, isEmpty, isPatientIdValid } = require('../../shared/validation');
+const { ResponseFormat, Role } = require('../../shared/enums');
+const debug = require('debug')('ripple-cdr-openehr:commands:patients:post-heading');
 
-const ExtraHeading = Object.freeze({
-  FINISHED: 'finished'
-});
+class PostPatientHeadingCommand {
+  constructor(ctx, session) {
+    this.ctx = ctx;
+    this.session = session;
+  }
 
-const Heading = Object.freeze({
-  COUNTS: 'counts',
-  FEEDS: 'feeds',
-  TOP_3_THINGS: 'top3Things'
-});
+  /**
+   * @param  {string} patientId
+   * @param  {string} heading
+   * @param  {Object} query
+   * @param  {Object} payload
+   * @return {Object}
+   */
+  async execute(patientId, heading, query, payload) {
+    debug('patientId: %s, heading: %s', patientId, heading);
+    debug('role: %s', this.session.role);
 
-const RecordStatus = Object.freeze({
-  LOADING: 'loading_data',
-  READY: 'ready'
-});
+    if (this.session.role === Role.PHR_USER) {
+      patientId = this.session.nhsNumber;
+    }
 
-const ResponseFormat = Object.freeze({
-  JUMPER: 'openehr-jumper',
-  PULSETILE: 'pulsetile'
-});
+    const patientValid = isPatientIdValid(patientId);
+    if (!patientValid.ok) {
+      throw new BadRequestError(patientValid.error);
+    }
 
-const Role = Object.freeze({
-  ADMIN: 'admin',
-  PHR_USER: 'phrUser'
-});
+    const headingValid = isHeadingValid(this.ctx.headingsConfig, heading);
+    if (!headingValid.ok) {
+      throw new BadRequestError(headingValid.error);
+    }
 
-module.exports = {
-  ExtraHeading,
-  Heading,
-  RecordStatus,
-  ResponseFormat,
-  Role
-};
+    if (isEmpty(payload)) {
+      throw new BadRequestError(`No body content was posted for heading ${heading}`);
+    }
+
+    const host = this.ctx.defaultHost;
+    const data = {
+      data: payload,
+      format: query.format === ResponseFormat.JUMPER
+        ? ResponseFormat.JUMPER
+        : ResponseFormat.PULSETILE
+    };
+
+    const { headingService } = this.ctx.services;
+    const responseObj = await headingService.post(host, patientId, heading, data);
+    debug('response: %j', responseObj);
+
+    return responseObj;
+  }
+}
+
+module.exports = PostPatientHeadingCommand;

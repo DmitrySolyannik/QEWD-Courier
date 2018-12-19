@@ -24,58 +24,52 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  16 December 2018
+  19 December 2018
 
 */
 
-const { BadRequestError, ForbiddenError } = require('../errors');
-const { isHeadingValid, isPatientIdValid } = require('../shared/validation');
-const { Heading } = require('../shared/enums');
-const debug = require('debug')('ripple-cdr-openehr:commands:delete-patient-heading');
+'use strict';
 
-class DeletePatientHeadingCommand {
+const { BadRequestError } = require('../../errors');
+const { isPatientIdValid, isTop3ThingsPayloadValid } = require('../../shared/validation');
+const debug = require('debug')('ripple-cdr-openehr:commands:top3things:post');
+
+class PostTop3ThingsCommand {
   constructor(ctx, session) {
     this.ctx = ctx;
     this.session = session;
   }
 
-  get forbiddenHeadings() {
-    return [
-      Heading.FEEDS,
-      Heading.TOP_3_THINGS
-    ];
-  }
-
   /**
    * @param  {string} patientId
-   * @param  {string} heading
-   * @param  {string} sourceId
-   * @return {Object}
+   * @param  {Object} payload
+   * @return {Promise.<Object[]>}
    */
-  async execute(patientId, heading, sourceId) {
-    debug('patientId: %s, heading: %s, sourceId: %s', patientId, heading, sourceId);
-    debug('role: %s', this.session.role);
+  async execute(patientId, payload) {
+    debug('patientId: %s, payload: %j', patientId, payload);
 
-    if (this.session.userMode !== 'admin') {
-      throw new ForbiddenError('Invalid request');
+    // override patientId for PHR Users - only allowed to see their own data
+    if (this.session.role === 'phrUser') {
+      patientId = this.session.nhsNumber;
     }
 
-    isPatientIdValid(patientId);
-
-    if (heading && this.forbiddenHeadings.includes(heading)) {
-      throw new BadRequestError(`Cannot delete ${heading} records`);
+    const patientValid = isPatientIdValid(patientId);
+    if (!patientValid.ok) {
+      throw new BadRequestError(patientValid.error);
     }
 
-    isHeadingValid(this.ctx.headingsConfig, heading);
+    const payloadValid = isTop3ThingsPayloadValid(payload);
+    if (!payloadValid.ok) {
+      throw new BadRequestError(payloadValid.error);
+    }
 
-    const { headingService, discoveryService } = this.ctx.services;
-    await headingService.fetchAll(patientId, heading);
+    const { top3ThingsService } = this.ctx.services;
+    const sourceId = await top3ThingsService.create(patientId, payload);
 
-    const responseObj = await headingService.delete(patientId, heading, sourceId);
-    await discoveryService.delete(sourceId);
-
-    return responseObj;
+    return {
+      sourceId
+    };
   }
 }
 
-module.exports = DeletePatientHeadingCommand;
+module.exports = PostTop3ThingsCommand;

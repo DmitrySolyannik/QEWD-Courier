@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  17 December 2018
+  19 December 2018
 
 */
 
@@ -33,12 +33,12 @@
 const mockery = require('mockery');
 const { CommandMock, ExecutionContextMock } = require('../../../mocks');
 
-describe('ripple-cdr-openehr/lib/handlers/top3Things/create', () => {
+describe('ripple-cdr-openehr/lib/handlers/patients/postHeading', () => {
   let args;
   let finished;
 
   let command;
-  let CreateTop3ThingsCommand;
+  let PostPatientHeadingCommand;
 
   let handler;
 
@@ -55,30 +55,29 @@ describe('ripple-cdr-openehr/lib/handlers/top3Things/create', () => {
   beforeEach(() => {
     args = {
       patientId: 9999999111,
+      heading: 'procedures',
       req: {
         ctx: new ExecutionContextMock(),
+        query: {
+          format: 'openehr-jumper'
+        },
         body: {
-          name1: 'foo1',
-          description1: 'baz1',
-          name2: 'foo2',
-          description2: 'baz2',
-          name3: 'foo3',
-          description3: 'baz3'
+          foo: 'bar'
         }
       },
       session: {
         nhsNumber: 9999999000,
-        role: 'phrUser'
+        role: 'admin'
       }
     };
     finished = jasmine.createSpy();
 
     command = new CommandMock();
-    CreateTop3ThingsCommand = jasmine.createSpy().and.returnValue(command);
-    mockery.registerMock('../../commands/top3Things/create', CreateTop3ThingsCommand);
+    PostPatientHeadingCommand = jasmine.createSpy().and.returnValue(command);
+    mockery.registerMock('../../commands/patients/postHeading', PostPatientHeadingCommand);
 
-    delete require.cache[require.resolve('../../../../lib2/handlers/top3Things/create')];
-    handler = require('../../../../lib2/handlers/top3Things/create');
+    delete require.cache[require.resolve('../../../../lib2/handlers/patients/postHeading')];
+    handler = require('../../../../lib2/handlers/patients/postHeading');
   });
 
   afterEach(() => {
@@ -87,14 +86,36 @@ describe('ripple-cdr-openehr/lib/handlers/top3Things/create', () => {
 
   it('should return response object', async () => {
     const responseObj = {
-      sourceId: 'ce437b97-4f6e-4c96-89bb-0b58b29a79cb',
+      ok: true,
+      host: 'ethercis',
+      heading: 'procedures',
+      compositionUid: '188a6bbe-d823-4fca-a79f-11c64af5c2e6::vm01.ethercis.org::1'
     };
     command.execute.and.resolveValue(responseObj);
 
     await handler(args, finished);
 
-    expect(CreateTop3ThingsCommand).toHaveBeenCalledWith(args.req.ctx, args.session);
-    expect(command.execute).toHaveBeenCalledWith(args.patientId, args.req.body);
+    expect(PostPatientHeadingCommand).toHaveBeenCalledWith(args.req.ctx, args.session);
+    expect(command.execute).toHaveBeenCalledWith(args.patientId, args.heading, args.req.query, args.req.body);
+
+    expect(finished).toHaveBeenCalledWith(responseObj);
+  });
+
+  it('should pass empty query when query is not defined', async () => {
+    delete args.req.query;
+
+    const responseObj = {
+      ok: true,
+      host: 'ethercis',
+      heading: 'procedures',
+      compositionUid: '188a6bbe-d823-4fca-a79f-11c64af5c2e6::vm01.ethercis.org::1'
+    };
+    command.execute.and.resolveValue(responseObj);
+
+    await handler(args, finished);
+
+    expect(PostPatientHeadingCommand).toHaveBeenCalledWith(args.req.ctx, args.session);
+    expect(command.execute).toHaveBeenCalledWith(args.patientId, args.heading, {}, args.req.body);
 
     expect(finished).toHaveBeenCalledWith(responseObj);
   });
@@ -104,8 +125,8 @@ describe('ripple-cdr-openehr/lib/handlers/top3Things/create', () => {
 
     await handler(args, finished);
 
-    expect(CreateTop3ThingsCommand).toHaveBeenCalledWith(args.req.ctx, args.session);
-    expect(command.execute).toHaveBeenCalledWith(args.patientId, args.req.body);
+    expect(PostPatientHeadingCommand).toHaveBeenCalledWith(args.req.ctx, args.session);
+    expect(command.execute).toHaveBeenCalledWith(args.patientId, args.heading, args.req.query, args.req.body);
 
     expect(finished).toHaveBeenCalledWith({
       error: 'custom error'

@@ -24,14 +24,19 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  16 December 2018
+  19 December 2018
 
 */
 
 'use strict';
 
 const validUrl = require('valid-url');
-const { BadRequestError } = require('../errors');
+
+function respondErr(err) {
+  return {
+    error: err
+  };
+}
 
 function isNumeric(n) {
   return !isNaN(parseFloat(n)) && isFinite(n);
@@ -39,39 +44,54 @@ function isNumeric(n) {
 
 function isPatientIdValid(patientId) {
   if (!patientId || patientId === '') {
-    throw new BadRequestError(`patientId ${patientId} must be defined`);
+    return respondErr(`patientId ${patientId} must be defined`);
   }
 
   if (!isNumeric(patientId)) {
-    throw new BadRequestError(`patientId ${patientId} is invalid`);
+    return respondErr(`patientId ${patientId} is invalid`);
   }
 
-  return true;
+  return {
+    ok: true
+  };
 }
 
 function isFeedPayloadValid(payload) {
   if (!payload.author || payload.author === '') {
-    throw new BadRequestError('Author missing or empty');
+    return respondErr('Author missing or empty');
   }
 
   if (!payload.name || payload.name === '') {
-    throw new BadRequestError('Feed name missing or empty');
+    return respondErr('Feed name missing or empty');
   }
 
   if (!payload.landingPageUrl || payload.landingPageUrl === '') {
-    throw new BadRequestError('Landing page URL missing or empty');
+    return respondErr('Landing page URL missing or empty');
   }
 
   if (!validUrl.isWebUri(payload.landingPageUrl)) {
-    throw new BadRequestError('Landing page URL is invalid');
+    return respondErr('Landing page URL is invalid');
   }
 
   if (!payload.rssFeedUrl || payload.rssFeedUrl === '') {
-    throw new BadRequestError('RSS Feed URL missing or empty');
+    return respondErr('RSS Feed URL missing or empty');
   }
 
   if (!validUrl.isWebUri(payload.rssFeedUrl)) {
-    throw new BadRequestError('RSS Feed URL is invalid');
+    return respondErr('RSS Feed URL is invalid');
+  }
+
+  return {
+    ok: true
+  };
+}
+
+function isEmpty(obj) {
+  if (!obj) return true;
+  if (typeof obj !== 'object') return true;
+
+  for (let name in obj) {
+    return false;
   }
 
   return true;
@@ -79,16 +99,16 @@ function isFeedPayloadValid(payload) {
 
 function isTop3ThingsPayloadValid(payload) {
   if (!payload.name1 || payload.name1 === '') {
-    throw new BadRequestError('You must specify at least 1 Top Thing');
+    return respondErr('You must specify at least 1 Top Thing');
   }
 
   if (!payload.description1 || payload.description1 === '') {
-    throw new BadRequestError('You must specify at least 1 Top Thing');
+    return respondErr('You must specify at least 1 Top Thing');
   }
 
   if (!payload.name2 || payload.name2 === '') {
     if (payload.description2 && payload.description2 !== '') {
-      throw new BadRequestError('A Description for the 2nd Top Thing was defined, but its summary name was not defined');
+      return respondErr('A Description for the 2nd Top Thing was defined, but its summary name was not defined');
     }
     payload.name2 = '';
     payload.description2 = '';
@@ -98,7 +118,7 @@ function isTop3ThingsPayloadValid(payload) {
 
   if (!payload.name3 || payload.name3 === '') {
     if (payload.description3 && payload.description3 !== '') {
-      throw new BadRequestError('A Description for the 3rd Top Thing was defined, but its summary name was not defined');
+      return respondErr('A Description for the 3rd Top Thing was defined, but its summary name was not defined');
     }
     payload.name3 = '';
     payload.description3 = '';
@@ -106,7 +126,9 @@ function isTop3ThingsPayloadValid(payload) {
     payload.description3 = payload.description3 || '';
   }
 
-  return true;
+  return {
+    ok: true
+  };
 }
 
 /**
@@ -118,8 +140,31 @@ function isTop3ThingsPayloadValid(payload) {
  */
 function isHeadingValid(headingsConfig, heading) {
   if (!heading || !headingsConfig[heading]) {
-    throw new BadRequestError(`Invalid or missing heading: ${heading}`);
+    return respondErr(`Invalid or missing heading: ${heading}`);
   }
+
+  return {
+    ok: true
+  };
+}
+
+function isGuid(s) {
+  const regexGuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+  return regexGuid.test(s);
+}
+
+function isSourceIdValid(sourceId) {
+  if (!sourceId) return false;
+
+  const pieces = sourceId.split('-');
+  if (pieces.length !== 6) return false;
+
+  // remove host name element
+  pieces.shift();
+
+  const guid = pieces.join('-');
+  if (!isGuid(guid)) return false;
 
   return true;
 }
@@ -128,6 +173,9 @@ module.exports = {
   isNumeric,
   isPatientIdValid,
   isFeedPayloadValid,
+  isEmpty,
   isTop3ThingsPayloadValid,
-  isHeadingValid
+  isHeadingValid,
+  isGuid,
+  isSourceIdValid
 };

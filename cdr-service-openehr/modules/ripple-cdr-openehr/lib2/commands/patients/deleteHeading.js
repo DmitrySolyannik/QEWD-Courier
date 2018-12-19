@@ -24,28 +24,66 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  14 December 2018
+  19 December 2018
 
 */
 
-const CreateFeedCommand = require('../../commands/feeds/create');
-const { getResponseError } = require('../../errors');
+'use strict';
 
-/**
- * @param  {Object} args
- * @param  {Function} finished
- */
-module.exports = async function (args, finished) {
-  try {
-    const command = new CreateFeedCommand(args.req.ctx, args.session);
-    const responseObj = await command.execute(args.req.body);
+const { BadRequestError, ForbiddenError } = require('../../errors');
+const { isHeadingValid, isPatientIdValid } = require('../../shared/validation');
+const { Heading } = require('../../shared/enums');
+const debug = require('debug')('ripple-cdr-openehr:commands:patients:delete-heading');
 
-    finished(responseObj);
-  } catch (err) {
-    const responseError = getResponseError(err);
-
-    finished(responseError);
+class DeletePatientHeadingCommand {
+  constructor(ctx, session) {
+    this.ctx = ctx;
+    this.session = session;
   }
-};
 
+  get forbiddenHeadings() {
+    return [
+      Heading.FEEDS,
+      Heading.TOP_3_THINGS
+    ];
+  }
 
+  /**
+   * @param  {string} patientId
+   * @param  {string} heading
+   * @param  {string} sourceId
+   * @return {Object}
+   */
+  async execute(patientId, heading, sourceId) {
+    debug('patientId: %s, heading: %s, sourceId: %s', patientId, heading, sourceId);
+    debug('role: %s', this.session.role);
+
+    if (this.session.userMode !== 'admin') {
+      throw new ForbiddenError('Invalid request');
+    }
+
+    const patientValid = isPatientIdValid(patientId);
+    if (!patientValid.ok) {
+      throw new BadRequestError(patientValid.error);
+    }
+
+    if (heading && this.forbiddenHeadings.includes(heading)) {
+      throw new BadRequestError(`Cannot delete ${heading} records`);
+    }
+
+    const headingValid = isHeadingValid(this.ctx.headingsConfig, heading);
+    if (!headingValid.ok) {
+      throw new BadRequestError(headingValid.error);
+    }
+
+    const { headingService, discoveryService } = this.ctx.services;
+    await headingService.fetchAll(patientId, heading);
+
+    const responseObj = await headingService.delete(patientId, heading, sourceId);
+    await discoveryService.delete(sourceId);
+
+    return responseObj;
+  }
+}
+
+module.exports = DeletePatientHeadingCommand;

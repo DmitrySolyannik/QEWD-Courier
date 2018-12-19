@@ -24,40 +24,28 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  14 December 2018
+  19 December 2018
 
 */
 
-'use strict';
+const DeletePatientHeadingCommand = require('../../commands/patients/deleteHeading');
+const { getResponseError } = require('../../errors');
 
-const { isFeedPayloadValid } = require('../../shared/validation');
-const debug = require('debug')('ripple-cdr-openehr:commands:feeds:create');
+/**
+ * @param  {Object} args
+ * @param  {Function} finished
+ */
+module.exports = async function (args, finished) {
+  try {
+    const command = new DeletePatientHeadingCommand(args.req.ctx, args.session);
+    const responseObj = await command.execute(args.patientId, args.heading, args.sourceId);
 
-class CreateFeedCommand {
-  constructor(ctx, session) {
-    this.ctx = ctx;
-    this.session = session;
+    finished(responseObj);
+  } catch (err) {
+    const responseError = getResponseError(err);
+
+    finished(responseError);
   }
+};
 
-  /**
-   * @param  {Object} payload
-   * @return {Promise.<Object>}
-   */
-  async execute(payload) {
-    debug('payload: %j', payload);
 
-    isFeedPayloadValid(payload);
-
-    const feed = {
-      ...payload,
-      email: this.session.email
-    };
-    debug('create a new feed: %j', feed);
-    const { phrFeedService } = this.ctx.services;
-    const responseObj = await phrFeedService.create(feed);
-
-    return responseObj;
-  }
-}
-
-module.exports = CreateFeedCommand;

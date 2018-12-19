@@ -79,14 +79,14 @@ class HeadingService {
 
     await ehrSessionService.stop(host, sessionId);
 
-    return responseObj && responseObj.data && responseObj.data.compositionUid ?
-      {
+    return responseObj && responseObj.data && responseObj.data.compositionUid
+      ? {
         ok: true,
         host: host,
         heading: heading,
         compositionUid: responseObj.data.compositionUid
-      } :
-      {
+      }
+      : {
         ok: false
       };
   }
@@ -111,9 +111,9 @@ class HeadingService {
 
     await ehrSessionService.stop(host, sessionId);
 
-    return responseObj && responseObj.resultSet ?
-      responseObj.resultSet :
-      [];
+    return responseObj && responseObj.resultSet
+      ? responseObj.resultSet
+      : [];
   }
 
   async fetchAll(patientId, heading) {

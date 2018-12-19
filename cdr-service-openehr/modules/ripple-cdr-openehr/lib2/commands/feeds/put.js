@@ -24,44 +24,53 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  15 December 2018
+  19 December 2018
 
 */
 
 'use strict';
 
-const { isPatientIdValid, isTop3ThingsPayloadValid } = require('../../shared/validation');
-const debug = require('debug')('ripple-cdr-openehr:commands:top3things:get-detail');
+const { BadRequestError } = require('../../errors');
+const { isFeedPayloadValid } = require('../../shared/validation');
+const debug = require('debug')('ripple-cdr-openehr:commands:feeds:put');
 
-class CreateTop3ThingsCommand {
+class PutFeedCommand {
   constructor(ctx, session) {
     this.ctx = ctx;
     this.session = session;
   }
 
   /**
-   * @param  {string} patientId
+   * @param  {string} sourceId
    * @param  {Object} payload
-   * @return {Promise.<Object[]>}
+   * @return {Promise.<Object>}
    */
-  async execute(patientId, payload) {
-    debug('patientId: %s, payload: %j', patientId, payload);
+  async execute(sourceId, payload) {
+    debug('sourceId: %s, payload: %j', sourceId, payload);
 
-    // override patientId for PHR Users - only allowed to see their own data
-    if (this.session.role === 'phrUser') {
-      patientId = this.session.nhsNumber;
+    if (!sourceId || sourceId === '') {
+      throw new BadRequestError('Missing or empty sourceId');
     }
 
-    isPatientIdValid(patientId);
-    isTop3ThingsPayloadValid(payload);
+    const { phrFeedService } = this.ctx.services;
+    const feed = await phrFeedService.getBySourceId(sourceId);
 
-    const { top3ThingsService } = this.ctx.services;
-    const sourceId = await top3ThingsService.create(patientId, payload);
+    const valid = isFeedPayloadValid(payload);
+    if (!valid.ok) {
+      throw new BadRequestError(valid.error);
+    }
+
+    const updatedFeed = {
+      ...payload,
+      email: this.session.email
+    };
+
+    await phrFeedService.update(feed.sourceId, updatedFeed);
 
     return {
-      sourceId
+      sourceId: feed.sourceId
     };
   }
 }
 
-module.exports = CreateTop3ThingsCommand;
+module.exports = PutFeedCommand;

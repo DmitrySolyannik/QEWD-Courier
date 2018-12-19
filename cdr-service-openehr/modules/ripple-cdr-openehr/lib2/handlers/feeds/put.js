@@ -24,11 +24,11 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  15 December 2018
+  19 December 2018
 
 */
 
-const CreateTop3ThingsCommand = require('../../commands/top3Things/create');
+const PutFeedCommand = require('../../commands/feeds/put');
 const { getResponseError } = require('../../errors');
 
 /**
@@ -37,8 +37,8 @@ const { getResponseError } = require('../../errors');
  */
 module.exports = async function (args, finished) {
   try {
-    const command = new CreateTop3ThingsCommand(args.req.ctx, args.session);
-    const responseObj = await command.execute(args.patientId, args.req.body);
+    const command = new PutFeedCommand(args.req.ctx, args.session);
+    const responseObj = await command.execute(args.sourceId, args.req.body);
 
     finished(responseObj);
   } catch (err) {

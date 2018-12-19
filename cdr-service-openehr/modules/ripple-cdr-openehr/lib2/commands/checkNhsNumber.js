@@ -24,10 +24,11 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  14 December 2018
+  19 December 2018
 
 */
 
+const { BadRequestError } = require('../errors');
 const { RecordStatus } = require('../shared/enums');
 const { isPatientIdValid } = require('../shared/validation');
 const debug = require('debug')('ripple-cdr-openehr:commands:check-nhs-number');
@@ -48,7 +49,10 @@ class CheckNhsNumberCommand {
     const patientId = this.session.nhsNumber;
     debug('patientId: %s', patientId);
 
-    isPatientIdValid(patientId);
+    const valid = isPatientIdValid(patientId);
+    if (!valid.ok) {
+      throw new BadRequestError(valid.error);
+    }
 
     state = await this.statusService.check();
     debug('state: %j', state);

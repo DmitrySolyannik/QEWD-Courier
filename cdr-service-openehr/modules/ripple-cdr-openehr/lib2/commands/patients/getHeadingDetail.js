@@ -24,41 +24,62 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  16 December 2018
+  19 December 2018
 
 */
 
 'use strict';
 
-const ExtraHeading = Object.freeze({
-  FINISHED: 'finished'
-});
+const { BadRequestError } = require('../../errors');
+const { isHeadingValid, isPatientIdValid, isSourceIdValid } = require('../../shared/validation');
+const { Heading } = require('../../shared/enums');
+const debug = require('debug')('ripple-cdr-openehr:commands:patients:get-heading-detail');
 
-const Heading = Object.freeze({
-  COUNTS: 'counts',
-  FEEDS: 'feeds',
-  TOP_3_THINGS: 'top3Things'
-});
+class GetPatientHeadingDetailCommand {
+  constructor(ctx, session) {
+    this.ctx = ctx;
+    this.session = session;
+  }
 
-const RecordStatus = Object.freeze({
-  LOADING: 'loading_data',
-  READY: 'ready'
-});
+  /**
+   * @param  {string} patientId
+   * @param  {string} heading
+   * @param  {string} sourceId
+   * @return {Object}
+   */
+  async execute(patientId, heading, sourceId) {
+    debug('patientId: %s, heading: %s, sourceId: %s', patientId, heading, sourceId);
+    debug('role: %s', this.session.role);
 
-const ResponseFormat = Object.freeze({
-  JUMPER: 'openehr-jumper',
-  PULSETILE: 'pulsetile'
-});
+    if (this.session.role === Role.PHR_USER) {
+      patientId = this.session.nhsNumber;
+    }
 
-const Role = Object.freeze({
-  ADMIN: 'admin',
-  PHR_USER: 'phrUser'
-});
+    const patientValid = isPatientIdValid(patientId);
+    if (!patientValid.ok) {
+      throw new BadRequestError(patientValid.error);
+    }
 
-module.exports = {
-  ExtraHeading,
-  Heading,
-  RecordStatus,
-  ResponseFormat,
-  Role
-};
+    const headingValid = isHeadingValid(this.ctx.headingsConfig, heading);
+    if (!headingValid.ok) {
+      throw new BadRequestError(headingValid.error);
+    }
+
+    const sourceIdValid = isSourceIdValid(sourceId);
+    if (!sourceIdValid.ok) {
+      return [];
+    }
+
+    isHeadingValid(this.ctx.headingsConfig, heading);
+
+    const { headingService, discoveryService } = this.ctx.services;
+    await headingService.fetchAll(patientId, heading);
+
+    const responseObj = await headingService.delete(patientId, heading, sourceId);
+    await discoveryService.delete(sourceId);
+
+    return responseObj;
+  }
+}
+
+module.exports = GetPatientHeadingDetailCommand;

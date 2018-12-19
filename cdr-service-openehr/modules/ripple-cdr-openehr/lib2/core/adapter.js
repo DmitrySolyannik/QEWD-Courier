@@ -47,17 +47,17 @@ class QewdCacheAdapter {
   get(key) {
     logger.debug('core/adapter|get', { key });
 
-    return this.qewdSession.data.$(key).exists ?
-      this.qewdSession.data.$(key).value :
-      null;
+    return this.qewdSession.data.$(key).exists
+      ? this.qewdSession.data.$(key).value
+      : null;
   }
 
   getObject(key) {
     logger.debug('core/adapter|getObject', { key });
 
-    return this.qewdSession.data.$(key).exists ?
-      this.qewdSession.data.$(key).getDocument() :
-      null;
+    return this.qewdSession.data.$(key).exists
+      ? this.qewdSession.data.$(key).getDocument()
+      : null;
   }
 
   put(key, value) {

@@ -24,17 +24,17 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  17 December 2018
+  19 December 2018
 
 */
 
 'use strict';
 
-const { ExecutionContextMock } = require('../../mocks');
-const { BadRequestError, ForbiddenError } = require('../../../lib2/errors');
-const DeletePatientHeadingCommand = require('../../../lib2/commands/deletePatientHeading');
+const { ExecutionContextMock } = require('../../../mocks');
+const { BadRequestError, ForbiddenError } = require('../../../../lib2/errors');
+const DeletePatientHeadingCommand = require('../../../../lib2/commands/patients/deleteHeading');
 
-describe('ripple-cdr-openehr/lib/commands/deletePatientHeading', () => {
+describe('ripple-cdr-openehr/lib/commands/patients/deleteHeading', () => {
   let ctx;
   let session;
 

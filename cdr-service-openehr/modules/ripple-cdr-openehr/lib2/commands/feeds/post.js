@@ -24,41 +24,44 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  16 December 2018
+  19 December 2018
 
 */
 
 'use strict';
 
-const ExtraHeading = Object.freeze({
-  FINISHED: 'finished'
-});
+const { BadRequestError } = require('../../errors');
+const { isFeedPayloadValid } = require('../../shared/validation');
+const debug = require('debug')('ripple-cdr-openehr:commands:feeds:post');
 
-const Heading = Object.freeze({
-  COUNTS: 'counts',
-  FEEDS: 'feeds',
-  TOP_3_THINGS: 'top3Things'
-});
+class PostFeedCommand {
+  constructor(ctx, session) {
+    this.ctx = ctx;
+    this.session = session;
+  }
 
-const RecordStatus = Object.freeze({
-  LOADING: 'loading_data',
-  READY: 'ready'
-});
+  /**
+   * @param  {Object} payload
+   * @return {Promise.<Object>}
+   */
+  async execute(payload) {
+    debug('payload: %j', payload);
 
-const ResponseFormat = Object.freeze({
-  JUMPER: 'openehr-jumper',
-  PULSETILE: 'pulsetile'
-});
+    const valid = isFeedPayloadValid(payload);
+    if (!valid.ok) {
+      throw new BadRequestError(valid.error);
+    }
 
-const Role = Object.freeze({
-  ADMIN: 'admin',
-  PHR_USER: 'phrUser'
-});
+    const feed = {
+      ...payload,
+      email: this.session.email
+    };
+    debug('create a new feed: %j', feed);
+    const { phrFeedService } = this.ctx.services;
+    const responseObj = await phrFeedService.create(feed);
 
-module.exports = {
-  ExtraHeading,
-  Heading,
-  RecordStatus,
-  ResponseFormat,
-  Role
-};
+    return responseObj;
+  }
+}
+
+module.exports = PostFeedCommand;

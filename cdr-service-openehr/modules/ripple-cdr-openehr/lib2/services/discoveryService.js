@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  18 December 2018
+  19 December 2018
 
 */
 
@@ -100,7 +100,7 @@ class DiscoveryService {
       };
 
       const { headingService } = this.ctx.services;
-      const responseObj = await headingService.post(patientId, heading, data);
+      const responseObj = await headingService.post(host, patientId, heading, data);
       debug('response: %j', responseObj);
       if (!responseObj.ok) return result;
 
