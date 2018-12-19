@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  18 December 2018
+  20 December 2018
 
 */
 
@@ -35,10 +35,12 @@ const byDate = require('./byDate');
 const byHeading = require('./byHeading');
 const byHost = require('./byHost');
 const bySourceId = require('./bySourceId');
+const fetchCount = require('./fetchCount');
 
 module.exports = {
   byDate,
   byHeading,
   byHost,
-  bySourceId
+  bySourceId,
+  fetchCount
 };

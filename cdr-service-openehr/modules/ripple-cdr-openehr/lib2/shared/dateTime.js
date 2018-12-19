@@ -24,18 +24,19 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  18 December 2018
+  20 December 2018
 
 */
 
-// TODO: refactor it
+'use strict';
 
 const moment = require('moment-timezone');
-const timezone = 'Europe/London';
+const config = require('../config');
 
 function format(date) {
   if (typeof date !== 'object') date = new Date(date);
-  return moment(date).tz(timezone).format();
+
+  return moment(date).tz(config.timezone).format();
 }
 
 function now() {
@@ -44,40 +45,46 @@ function now() {
 
 function isDST(date) {
   if (typeof date !== 'object') date = new Date(date);
-  return moment(date).tz(timezone).isDST();
+
+  return moment(date).tz(config.timezone).isDST();
 }
 
 function toSqlPASFormat(date) {
   if (typeof date !== 'object') date = new Date(date);
-  return moment(date).tz(timezone).format('YYYY-MM-DD');
+
+  return moment(date).tz(config.timezone).format('YYYY-MM-DD');
 }
 
 function toGMT(date) {
   // if a date is in summer time, return as GMT, ie with an hour deducted
-  var result = date;
-  if (moment(date).tz(timezone).isDST()) result = new Date(date.getTime() - 3600000);
+  let result = date;
+  if (moment(date).tz(config.timezone).isDST()) result = new Date(date.getTime() - 3600000);
+
   return result;
 }
 
 function getRippleTime(date, host) {
-  //console.log('*** host = ' + host);
   if (date === '') return date;
-  var dt = new Date(date);
+
+  let dt = new Date(date);
   if (host === 'ethercis') dt = toGMT(dt);
+
   return dt.getTime();
 }
 
 function msSinceMidnight(date, host, GMTCheck) {
-  var e = new Date(date);
-  //if (host === 'ethercis') e = toGMT(e);
+  let e = new Date(date);
+
   if (GMTCheck) e = toGMT(e);
+
   return e.getTime() - e.setHours(0,0,0,0);
 }
 
 function msAtMidnight(date, host, GMTCheck) {
-  var e = new Date(date);
-  //if (host === 'ethercis') e = toGMT(e);
+  let e = new Date(date);
+
   if (GMTCheck) e = toGMT(e);
+
   return e.setHours(0,0,0,0);
 }
 

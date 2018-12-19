@@ -28,61 +28,24 @@
 
 */
 
-const { BadRequestError } = require('../../errors');
-const { isHeadingValid, isEmpty, isPatientIdValid } = require('../../shared/validation');
-const { PostHeadingFormat, Role } = require('../../shared/enums');
-const debug = require('debug')('ripple-cdr-openehr:commands:patients:post-heading');
+const GetPatientHeadingDetailCommand = require('../../commands/patients/getHeadingDetail');
+const { getResponseError } = require('../../errors');
 
-class PostPatientHeadingCommand {
-  constructor(ctx, session) {
-    this.ctx = ctx;
-    this.session = session;
+/**
+ * @param  {Object} args
+ * @param  {Function} finished
+ */
+module.exports = async function (args, finished) {
+  try {
+    const command = new GetPatientHeadingDetailCommand(args.req.ctx, args.session);
+    const responseObj = await command.execute(args.session.nhsNumber, args.heading, args.sourceId);
+
+    finished(responseObj);
+  } catch (err) {
+    const responseError = getResponseError(err);
+
+    finished(responseError);
   }
+};
 
-  /**
-   * @param  {string} patientId
-   * @param  {string} heading
-   * @param  {Object} query
-   * @param  {Object} payload
-   * @return {Object}
-   */
-  async execute(patientId, heading, query, payload) {
-    debug('patientId: %s, heading: %s', patientId, heading);
-    debug('role: %s', this.session.role);
 
-    // override patientId for PHR Users - only allowed to see their own data
-    if (this.session.role === Role.PHR_USER) {
-      patientId = this.session.nhsNumber;
-    }
-
-    const patientValid = isPatientIdValid(patientId);
-    if (!patientValid.ok) {
-      throw new BadRequestError(patientValid.error);
-    }
-
-    const headingValid = isHeadingValid(this.ctx.headingsConfig, heading);
-    if (!headingValid.ok) {
-      throw new BadRequestError(headingValid.error);
-    }
-
-    if (isEmpty(payload)) {
-      throw new BadRequestError(`No body content was posted for heading ${heading}`);
-    }
-
-    const host = this.ctx.defaultHost;
-    const data = {
-      data: payload,
-      format: query.format === PostHeadingFormat.JUMPER
-        ? PostHeadingFormat.JUMPER
-        : PostHeadingFormat.PULSETILE
-    };
-
-    const { headingService } = this.ctx.services;
-    const responseObj = await headingService.post(host, patientId, heading, data);
-    debug('response: %j', responseObj);
-
-    return responseObj;
-  }
-}
-
-module.exports = PostPatientHeadingCommand;

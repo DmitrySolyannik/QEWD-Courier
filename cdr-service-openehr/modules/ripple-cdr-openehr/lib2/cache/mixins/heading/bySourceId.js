@@ -24,13 +24,14 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  18 December 2018
+  20 December 2018
 
 */
 
 'use strict';
 
 const { logger } = require('../../../core');
+const debug = require('debug')('ripple-cdr-openehr:cache:heading:bySourceId');
 
 module.exports = (adapter) => {
   return {
@@ -39,13 +40,13 @@ module.exports = (adapter) => {
 
       const key = ['headings', 'bySourceId', sourceId];
 
-      return adapter.getObject(key);
+      return adapter.getObjectWithArrays(key);
     },
 
     set: async (sourceId, data) => {
-      logger.info('cache/headingCache|bySourceId|set', { sourceId, data });
+      logger.info('cache/headingCache|bySourceId|set', { sourceId, data: typeof data });
 
-      //TODO: put data to debug
+      debug('data: %j', data);
 
       const key = ['headings', 'bySourceId', sourceId];
       adapter.putObject(key, data);

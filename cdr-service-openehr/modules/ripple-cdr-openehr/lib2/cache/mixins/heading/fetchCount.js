@@ -24,22 +24,23 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  16 December 2018
+  20 December 2018
 
 */
 
 'use strict';
 
-module.exports = {
-  /**
-   * OpenEHR Session timeout is 2 minutes in ms
-   * @type {int}
-   */
-  sessionTimeout: 120 * 1000,
+const { logger } = require('../../../core');
 
-  /**
-   * Max number of OpenEHR Sessions
-   * @type {int}
-   */
-  sessionMaxNumber: 75
+module.exports = (adapter) => {
+  return {
+    increment: async (patientId, heading) => {
+      logger.info('cache/headingCache|fetchCount|increment', { patientId, heading });
+
+      const qewdSession = adapter.qewdSession;
+      const key = ['headings', 'byPatientId', patientId, heading, 'fetch_count'];
+
+      return qewdSession.data.$(key).increment();
+    }
+  };
 };

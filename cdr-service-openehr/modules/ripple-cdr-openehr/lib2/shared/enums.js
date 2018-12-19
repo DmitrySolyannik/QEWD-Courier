@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  16 December 2018
+  20 December 2018
 
 */
 
@@ -40,25 +40,36 @@ const Heading = Object.freeze({
   TOP_3_THINGS: 'top3Things'
 });
 
+const PostHeadingFormat = Object.freeze({
+  JUMPER: 'openehr-jumper',
+  PULSETILE: 'pulsetile'
+});
+
 const RecordStatus = Object.freeze({
   LOADING: 'loading_data',
   READY: 'ready'
 });
 
 const ResponseFormat = Object.freeze({
-  JUMPER: 'openehr-jumper',
-  PULSETILE: 'pulsetile'
+  DETAIL: 'detail',
+  SUMMARY: 'summary',
+  SYNOPSIS: 'synopsis'
 });
 
 const Role = Object.freeze({
-  ADMIN: 'admin',
   PHR_USER: 'phrUser'
+});
+
+const UserMode = Object.freeze({
+  ADMIN: 'admin'
 });
 
 module.exports = {
   ExtraHeading,
   Heading,
+  PostHeadingFormat,
   RecordStatus,
   ResponseFormat,
-  Role
+  Role,
+  UserMode
 };

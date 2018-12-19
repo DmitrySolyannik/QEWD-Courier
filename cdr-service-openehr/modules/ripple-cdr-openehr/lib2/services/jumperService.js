@@ -24,22 +24,13 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  16 December 2018
+  20 December 2018
 
 */
 
 'use strict';
 
-// let postHeadingByJumper;
-
-// try {
-//   postHeadingByJumper = require('../../../ripple-openehr-jumper/lib/postHeading');
-// }
-// catch(err) {
-//   debug('Unable to load')
-//   console.log('*** unable to load postHeading ***');
-// }
-
+const { jumper, logger } = require('../core');
 
 class JumperService {
   constructor(ctx) {
@@ -50,8 +41,85 @@ class JumperService {
     return new JumperService(ctx);
   }
 
-  async create() {
+  check(heading, method) {
+    logger.info('services/jumperService|check', { heading, method });
 
+    const headingConfig = this.ctx.getHeadingConfig(heading);
+    const result = jumper[method] && headingConfig && headingConfig.template && headingConfig.name;
+
+    const jumperObj = {
+      ok: result
+    };
+
+    if (headingConfig.synopsisField) {
+      jumperObj.synopsisField = headingConfig.synopsisField;
+    }
+
+    if (headingConfig.summaryTableFields) {
+      jumperObj.summaryTableFields = headingConfig.summaryTableFields.slice(0);
+    }
+
+    return jumperObj;
+  }
+
+  async getBySourceId(sourceId) {
+    logger.info('services/jumperService|getBySourceId', { sourceId });
+
+    const format = 'pulsetile';
+
+    return jumper.getBySourceId.call(this.worker, sourceId, format, this.ctx.qewdSession);
+  }
+
+  async query(host, patientId, heading) {
+    logger.info('services/jumperService|query', { host, patientId, heading });
+
+    const { ehrSessionService, patientService } = this.ctx.services;
+    const { sessionId } = await ehrSessionService.start(host);
+    const ehrId = await patientService.getEhrId(host, sessionId, patientId);
+
+    // TODO: pass openEHR
+    // openEHR.request only is used in jumper.query to make query request
+    // need adapter
+    return new Promise((resolve, reject) => {
+      const params = {
+        host,
+        patientId,
+        heading,
+        ehrId,
+        // openEHR: openEHR
+        openEHRSession: {
+          id: sessionId
+        },
+        qewdSession: this.ctx.qewdSession
+      };
+
+      jumper.query.call(this.worker, params, (responseObj) => {
+        if (responseObj.error) return reject(responseObj);
+
+        return resolve(responseObj);
+      });
+    });
+  }
+
+  async post(host, patientId, heading, data) {
+    logger.info('services/jumperService|post', { host, patientId, heading, data: typeof data});
+
+    return new Promise((resolve, reject) => {
+      const params = {
+        defaultHost: host,
+        patientId,
+        heading,
+        data,
+        method: 'post',
+        qewdSession: this.ctx.qewdSession
+      };
+
+      jumper.post.call(this.worker, params, (responseObj) => {
+        if (responseObj.error) return reject(responseObj);
+
+        return resolve(responseObj);
+      });
+    });
   }
 }
 

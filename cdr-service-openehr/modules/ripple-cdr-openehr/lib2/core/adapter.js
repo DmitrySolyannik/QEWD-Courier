@@ -25,7 +25,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  18 December 2018
+  20 December 2018
 
 */
 
@@ -57,6 +57,14 @@ class QewdCacheAdapter {
 
     return this.qewdSession.data.$(key).exists
       ? this.qewdSession.data.$(key).getDocument()
+      : null;
+  }
+
+  getObjectWithArrays(key) {
+    logger.debug('core/adapter|getObjectWithArrays', { key });
+
+    return this.qewdSession.data.$(key).exists
+      ? this.qewdSession.data.$(key).getDocument(true)
       : null;
   }
 

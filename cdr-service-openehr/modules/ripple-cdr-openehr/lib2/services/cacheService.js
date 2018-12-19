@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  18 December 2018
+  20 December 2018
 
 */
 
@@ -51,7 +51,7 @@ class CacheService {
       const ctx = ExecutionContext.fromQewdSession(this.ctx.worker, session);
       const { headingCache } = ctx.cache;
 
-      await headingCache.deleteAllForHost(patientId, heading, host);
+      await headingCache.deleteAll(host, patientId, heading);
       await headingCache.byHeading.deleteAll(heading);
     });
   }

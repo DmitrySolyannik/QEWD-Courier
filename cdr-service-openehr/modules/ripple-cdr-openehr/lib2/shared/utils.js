@@ -24,14 +24,12 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  16 December 2018
+  20 December 2018
 
 */
 
 'use strict';
 
-// const path = require('path');
-// const fs = require('fs');
 const traverse = require('traverse');
 const { isNumeric } = require('./validation');
 
@@ -101,22 +99,6 @@ function lazyLoadAdapter(target) {
     }
   });
 }
-
-// function loadAqlFile(heading)
-
-// function getTextFromFile(fileName) {
-//   var text = '';
-//   if (fs.existsSync(fileName)) {
-//     text = fs.readFileSync(fileName).toString().split(/\r?\n/).join(' ');
-//   }
-//   return text;
-// }
-
-// function loadAQLFile(headingName) {
-//   var aqlFile = path.join(__dirname, '/../headings/' + headingName + '.aql');
-//   console.log('loading aqlFile ' + aqlFile);
-//   return getTextFromFile(aqlFile);
-// }
 
 module.exports = {
   buildSourceId,

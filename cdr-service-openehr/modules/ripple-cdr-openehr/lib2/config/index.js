@@ -24,18 +24,42 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  16 December 2018
+  20 December 2018
 
 */
 
 'use strict';
 
-const headings = require('./headings');
-const logging = require('./logging');
-const openehr = require('./openehr');
-
 module.exports = {
-  headings,
-  logging,
-  openehr
+
+  logging: {
+
+    /**
+     * Default log level
+     * @type {string}
+     */
+    defaultLevel: 'debug'
+  },
+
+  openehr: {
+
+    /**
+     * OpenEHR Session timeout is 2 minutes in ms
+     * @type {int}
+     */
+    sessionTimeout: 120 * 1000,
+
+    /**
+     * Max number of OpenEHR Sessions
+     * @type {int}
+     */
+    sessionMaxNumber: 75
+  },
+
+  /**
+   * Timezone
+   * @type {string}
+   */
+  timezone: 'Europe/London'
+
 };

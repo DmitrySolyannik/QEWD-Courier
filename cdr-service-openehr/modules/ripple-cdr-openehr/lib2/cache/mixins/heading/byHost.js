@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  18 December 2018
+  20 December 2018
 
 */
 
@@ -54,6 +54,20 @@ module.exports = (adapter) => {
 
       const key = ['headings', 'byPatientId', patientId, heading, 'byHost', host, sourceId];
       adapter.put(key, 'true');
+    },
+
+    async getAllSourceIds(patientId, heading) {
+      logger.info('cache/headingCache|byHost|getAllSourceIds', { patientId, heading });
+
+      const sourceIds = [];
+      const qewdSession = adapter.qewdSession;
+      const byHost = qewdSession.data.$(['headings', 'byPatientId', patientId, heading, 'byHost']);
+
+      byHost.forEachChild((host, node) => {
+        node.forEachChild(sourceId => sourceIds.push(sourceId));
+      });
+
+      return sourceIds;
     }
   };
 };

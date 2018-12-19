@@ -31,10 +31,11 @@
 'use strict';
 
 const { ExecutionContextMock } = require('../../../mocks');
-const { BadRequestError, ForbiddenError } = require('../../../../lib2/errors');
-const DeletePatientHeadingCommand = require('../../../../lib2/commands/patients/deleteHeading');
+const { BadRequestError } = require('../../../../lib2/errors');
+const { Role } = require('../../../../lib2/shared/enums');
+const GetPatientHeadingDetailCommand = require('../../../../lib2/commands/patients/getHeadingDetail');
 
-describe('ripple-cdr-openehr/lib/commands/patients/deleteHeading', () => {
+describe('ripple-cdr-openehr/lib/commands/patients/getHeadingDetail', () => {
   let ctx;
   let session;
 
@@ -43,12 +44,11 @@ describe('ripple-cdr-openehr/lib/commands/patients/deleteHeading', () => {
   let sourceId;
 
   let headingService;
-  let discoveryService;
 
   beforeEach(() => {
     ctx = new ExecutionContextMock();
     session = {
-      userMode: 'admin'
+      nhsNumber: 9999999000
     };
 
     patientId = 9999999111;
@@ -56,77 +56,87 @@ describe('ripple-cdr-openehr/lib/commands/patients/deleteHeading', () => {
     sourceId = 'ethercis-eaf394a9-5e05-49c0-9c69-c710c77eda76';
 
     headingService = ctx.services.headingService;
-    discoveryService = ctx.services.discoveryService;
 
-    headingService.delete.and.resolveValue({
-      deleted: true,
-      patientId: 9999999111,
-      heading: 'procedures',
-      compositionId: '188a6bbe-d823-4fca-a79f-11c64af5c2e6::vm01.ethercis.org::1',
-      host: 'ethercis'
-    });
-  });
-
-  it('should throw invalid request error', async () => {
-    delete session.userMode;
-
-    const command = new DeletePatientHeadingCommand(ctx, session);
-    const actual = command.execute(patientId, heading, sourceId);
-
-    await expectAsync(actual).toBeRejectedWith(new ForbiddenError('Invalid request'));
+    headingService.fetchOne.and.resolveValue({ ok: true });
+    headingService.getBySourceId.and.resolveValue({ foo: 'bar' });
   });
 
   it('should throw invalid or missing patientId error', async () => {
     patientId = 'foo';
 
-    const command = new DeletePatientHeadingCommand(ctx, session);
+    const command = new GetPatientHeadingDetailCommand(ctx, session);
     const actual = command.execute(patientId, heading, sourceId);
 
     await expectAsync(actual).toBeRejectedWith(new BadRequestError('patientId foo is invalid'));
   });
 
-  it('should throw cannot delete feeds records error', async () => {
-    heading = 'feeds';
+  it('should return empty array when heading has not yet been added to middle-tier processing', async () => {
+    const expected = [];
 
-    const command = new DeletePatientHeadingCommand(ctx, session);
-    const actual = command.execute(patientId, heading, sourceId);
-
-    await expectAsync(actual).toBeRejectedWith(new BadRequestError('Cannot delete feeds records'));
-  });
-
-  it('should throw cannot delete top3Things records error', async () => {
-    heading = 'top3Things';
-
-    const command = new DeletePatientHeadingCommand(ctx, session);
-    const actual = command.execute(patientId, heading, sourceId);
-
-    await expectAsync(actual).toBeRejectedWith(new BadRequestError('Cannot delete top3Things records'));
-  });
-
-  it('should throw invalid or missing heading error', async () => {
     heading = 'bar';
 
-    const command = new DeletePatientHeadingCommand(ctx, session);
-    const actual = command.execute(patientId, heading, sourceId);
+    const command = new GetPatientHeadingDetailCommand(ctx, session);
+    const actual = await command.execute(patientId, heading, sourceId);
 
-    await expectAsync(actual).toBeRejectedWith(new BadRequestError('Invalid or missing heading: bar'));
+    expect(actual).toEqual(expected);
   });
 
-  it('should delete patient heading and return response', async () => {
-    const expected = {
-      deleted: true,
-      patientId: 9999999111,
-      heading: 'procedures',
-      compositionId: '188a6bbe-d823-4fca-a79f-11c64af5c2e6::vm01.ethercis.org::1',
-      host: 'ethercis'
-    };
+  it('should return empty array when invalid sourceId', async () => {
+    const expected = [];
 
-    const command = new DeletePatientHeadingCommand(ctx, session);
+    sourceId = 'foobar';
+
+    const command = new GetPatientHeadingDetailCommand(ctx, session);
+    const actual = await command.execute(patientId, heading, sourceId);
+
+    expect(actual).toEqual(expected);
+  });
+
+  it('should return empty array when no results could be returned from the OpenEHR servers for heading', async () => {
+    const expected = [];
+
+    const result = { ok: false };
+    headingService.fetchOne.and.resolveValue(result);
+
+    const command = new GetPatientHeadingDetailCommand(ctx, session);
     const actual = await command.execute(patientId, heading, sourceId);
 
     expect(headingService.fetchOne).toHaveBeenCalledWith(9999999111, 'procedures');
-    expect(headingService.delete).toHaveBeenCalledWith(9999999111, 'procedures', 'ethercis-eaf394a9-5e05-49c0-9c69-c710c77eda76');
-    expect(discoveryService.delete).toHaveBeenCalledWith('ethercis-eaf394a9-5e05-49c0-9c69-c710c77eda76');
+    expect(actual).toEqual(expected);
+  });
+
+  it('should return details', async () => {
+    const expected = {
+      responseFrom: 'phr_service',
+      results: {
+        foo: 'bar'
+      }
+    };
+
+    const command = new GetPatientHeadingDetailCommand(ctx, session);
+    const actual = await command.execute(patientId, heading, sourceId);
+
+    expect(headingService.fetchOne).toHaveBeenCalledWith(9999999111, 'procedures');
+    expect(headingService.getBySourceId).toHaveBeenCalledWith('ethercis-eaf394a9-5e05-49c0-9c69-c710c77eda76', 'detail');
+
+    expect(actual).toEqual(expected);
+  });
+
+  it('should return details (PHR user)', async () => {
+    const expected = {
+      responseFrom: 'phr_service',
+      results: {
+        foo: 'bar'
+      }
+    };
+
+    session.role = Role.PHR_USER;
+
+    const command = new GetPatientHeadingDetailCommand(ctx, session);
+    const actual = await command.execute(patientId, heading, sourceId);
+
+    expect(headingService.fetchOne).toHaveBeenCalledWith(9999999000, 'procedures');
+    expect(headingService.getBySourceId).toHaveBeenCalledWith('ethercis-eaf394a9-5e05-49c0-9c69-c710c77eda76', 'detail');
 
     expect(actual).toEqual(expected);
   });

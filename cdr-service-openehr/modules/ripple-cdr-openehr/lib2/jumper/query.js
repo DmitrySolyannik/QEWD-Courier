@@ -28,61 +28,19 @@
 
 */
 
-const { BadRequestError } = require('../../errors');
-const { isHeadingValid, isEmpty, isPatientIdValid } = require('../../shared/validation');
-const { PostHeadingFormat, Role } = require('../../shared/enums');
-const debug = require('debug')('ripple-cdr-openehr:commands:patients:post-heading');
+'use strict';
 
-class PostPatientHeadingCommand {
-  constructor(ctx, session) {
-    this.ctx = ctx;
-    this.session = session;
-  }
+const { logger } = require('../core');
 
-  /**
-   * @param  {string} patientId
-   * @param  {string} heading
-   * @param  {Object} query
-   * @param  {Object} payload
-   * @return {Object}
-   */
-  async execute(patientId, heading, query, payload) {
-    debug('patientId: %s, heading: %s', patientId, heading);
-    debug('role: %s', this.session.role);
+let getHeadingFromOpenEHRServer;
 
-    // override patientId for PHR Users - only allowed to see their own data
-    if (this.session.role === Role.PHR_USER) {
-      patientId = this.session.nhsNumber;
-    }
-
-    const patientValid = isPatientIdValid(patientId);
-    if (!patientValid.ok) {
-      throw new BadRequestError(patientValid.error);
-    }
-
-    const headingValid = isHeadingValid(this.ctx.headingsConfig, heading);
-    if (!headingValid.ok) {
-      throw new BadRequestError(headingValid.error);
-    }
-
-    if (isEmpty(payload)) {
-      throw new BadRequestError(`No body content was posted for heading ${heading}`);
-    }
-
-    const host = this.ctx.defaultHost;
-    const data = {
-      data: payload,
-      format: query.format === PostHeadingFormat.JUMPER
-        ? PostHeadingFormat.JUMPER
-        : PostHeadingFormat.PULSETILE
-    };
-
-    const { headingService } = this.ctx.services;
-    const responseObj = await headingService.post(host, patientId, heading, data);
-    debug('response: %j', responseObj);
-
-    return responseObj;
-  }
+try {
+  getHeadingFromOpenEHRServer = require('../../../ripple-openehr-jumper/lib/getHeadingFromOpenEHRServer');
+}
+catch(err) {
+  logger.error('jumper/query|err: ' + err.message);
+  logger.error('jumper/query|stack: ' + err.stack);
+  getHeadingFromOpenEHRServer = false;
 }
 
-module.exports = PostPatientHeadingCommand;
+module.exports = getHeadingFromOpenEHRServer;

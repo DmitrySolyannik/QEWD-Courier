@@ -24,14 +24,14 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  18 December 2018
+  20 December 2018
 
 */
 
 'use strict';
 
 const { logger } = require('../core');
-const { byDate, byHeading, byHost, bySourceId } = require('./mixins/heading');
+const { byDate, byHeading, byHost, bySourceId, fetchCount } = require('./mixins/heading');
 
 class HeadingCache {
   constructor(adapter) {
@@ -40,14 +40,15 @@ class HeadingCache {
     this.byHeading = byHeading(adapter);
     this.byHost = byHost(adapter);
     this.bySourceId = bySourceId(adapter);
+    this.fetchCount = fetchCount(adapter);
   }
 
   static create(adapter) {
     return new HeadingCache(adapter);
   }
 
-  async deleteAllForHost(patientId, heading, host) {
-    logger.info('cache/headingCache|deleteAllForHost', { patientId, heading, host });
+  async deleteAll(host, patientId, heading) {
+    logger.info('cache/headingCache|deleteAll', { host, patientId, heading });
 
     const qewdSession = this.adapter.qewdSession;
     const byPatientHeading = qewdSession.data.$(['headings', 'byPatientId', patientId, heading]);

@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  18 December 2018
+  20 December 2018
 
 */
 
@@ -33,49 +33,49 @@
 const P = require('bluebird');
 const template = require('qewd-template');
 const { transform } = require('qewd-transform-json');
-const config = require('../config');
 const { logger } = require('../core');
 const { NotFoundError, UnprocessableEntityError } = require('../errors');
-const { Heading } = require('../shared/enums');
+const { Heading, ResponseFormat } = require('../shared/enums');
+const { headingHelpers, getHeadingMap, getHeadingAql } = require('../shared/headings');
 const { buildSourceId, flatten } = require('../shared/utils');
-const dateTime = require('../shared/dateTime');
+const debug = require('debug')('ripple-cdr-openehr:services:heading');
 
 class HeadingService {
-  constructor(ctx, headings) {
+  constructor(ctx) {
     this.ctx = ctx;
-    this.headings = headings;
-    //this.jumperService = ctx.services.jumperService;
   }
 
   static create(ctx) {
-    return new HeadingService(ctx, config.headings);
+    return new HeadingService(ctx);
   }
 
   async post(host, patientId, heading, data) {
-    logger.info('services/headingService|create', { host, patientId, heading, data });
+    logger.info('services/headingService|create', { host, patientId, heading, data: typeof data });
 
-    // TODO: implement jumper
+    debug('data: %j', data);
 
-    logger.debug('jumper is not used for creating this record');
+    const { jumperService } = this.ctx.services;
+    const jumper = jumperService.check(heading, jumperService.post.name);
 
-    if (!this.headings[heading].post) {
+    if (jumper.ok) {
+      return jumperService.post(host, patientId, heading, data);
+    }
+
+    const headingMap = getHeadingMap(heading, 'post');
+    if (!headingMap) {
       throw new UnprocessableEntityError(`heading ${heading} not recognised, or no POST definition available`);
     }
 
-    const postMap = this.headings[heading].post;
     const { ehrSessionService, patientService } = this.ctx.services;
     const { sessionId } = await ehrSessionService.start(host);
     const ehrId = await patientService.getEhrId(host, sessionId, patientId);
 
-    const helpers = {
-      ...postMap.helperFunctions,
-      now: dateTime.now
-    };
-    const output = transform(postMap.transformTemplate, data, helpers);
+    const helpers = headingHelpers(host, heading, 'post');
+    const output = transform(headingMap.transformTemplate, data.data, helpers);
     const postData = flatten(output);
 
     const ehrRestService = this.ctx.openehr[host];
-    const responseObj = await ehrRestService.postHeading(sessionId, ehrId, postMap.templateId, postData);
+    const responseObj = await ehrRestService.postHeading(sessionId, ehrId, headingMap.templateId, postData);
 
     await ehrSessionService.stop(host, sessionId);
 
@@ -91,16 +91,21 @@ class HeadingService {
       };
   }
 
-  async get(host, patientId, heading) {
-    logger.info('services/headingService|get', { host, patientId, heading });
+  async query(host, patientId, heading) {
+    logger.info('services/headingService|query', { host, patientId, heading });
 
-    // TODO: implement jumper
+    const { jumperService } = this.ctx.services;
+    const jumper = jumperService.check(heading, jumperService.query.name);
+
+    if (jumper.ok) {
+      return jumperService.query(host, patientId, heading);
+    }
 
     const { ehrSessionService, patientService } = this.ctx.services;
     const { sessionId } = await ehrSessionService.start(host);
     const ehrId = await patientService.getEhrId(host, sessionId, patientId);
 
-    const aql = this.headings[heading].aql;
+    const aql = getHeadingAql(heading);
     const subs = {
       ehrId
     };
@@ -116,11 +121,139 @@ class HeadingService {
       : [];
   }
 
-  async fetchAll(patientId, heading) {
-    logger.info('services/headingService|fetchAll', { patientId, heading });
+  async getBySourceId(sourceId, format = ResponseFormat.DETAIL) {
+    logger.info('services/headingService|getBySourceId', { sourceId, format });
+
+    let responseObj = {};
+
+    const { headingCache } = this.ctx.cache;
+    const dbData = await headingCache.bySourceId.get(sourceId);
+    if (!dbData) return responseObj;
+
+    const heading = dbData.heading;
+    const headingMap = getHeadingMap(heading, 'get');
+    if (!headingMap) {
+      throw new UnprocessableEntityError(`heading ${heading} not recognised, or no GET definition available`);
+    }
+
+    const { jumperService } = this.ctx.services;
+    const jumper = jumperService.check(heading, jumperService.getBySourceId.name);
+
+    const synopsisField = jumper.ok
+      ? jumper.synopsisField
+      : headingMap.textFieldName;
+    const summaryFields  = jumper.ok
+      ? jumper.summaryFields
+      : headingMap.headingTableFields.slice(0);
+
+    if (dbData.pulsetile) {
+      responseObj = dbData.pulsetile;
+    }
+    else if (jumper.ok && dbData.jumperFormatData) {
+      // fetch PulseTile-format data from cache if it hasn't been converted to PulseTile format
+      // this will do so and cache it in that format
+      responseObj = await jumperService.getBySourceId(sourceId);
+    }
+    else {
+      const host = dbData.host;
+      const helpers = headingHelpers(host, heading, 'get');
+
+      responseObj = transform(headingMap.transformTemplate, dbData.data, helpers);
+      responseObj.source = dbData.host;
+      responseObj.sourceId = sourceId;
+
+      dbData.pulsetile = responseObj;
+      await headingCache.bySourceId.get(sourceId, dbData);
+    }
+
+    // check if this is a mapped record from discovery
+    const { discoveryDb } = this.ctx.db;
+    const found = await discoveryDb.checkBySourceId(sourceId);
+    if (found) {
+      responseObj.source = 'GP';
+    }
+
+    // only return the synopsis headings
+    if (format === ResponseFormat.SYNOPSIS) {
+      return {
+        sourceId: sourceId,
+        source: responseObj.source,
+        text: responseObj[synopsisField] || ''
+      };
+    }
+
+    // only return the summary headings
+    if (format === ResponseFormat.SUMMARY) {
+      const resultObj = {};
+      const commonSummaryFields = ['source', 'sourceId'];
+
+      [
+        ...commonSummaryFields,
+        ...summaryFields
+      ].forEach(x => resultObj[x] = responseObj[x] || '');
+
+      return resultObj;
+    }
+
+    return responseObj;
+  }
+
+  async getSummary(patientId, heading) {
+    logger.info('services/headingService|getSummary', { patientId, heading });
+
+    const { headingCache } = this.ctx.cache;
+    const sourceIds = await headingCache.byHost.getAllSourceIds(patientId, heading);
+
+    const results = await P.mapSeries(sourceIds, x => this.getBySourceId(x, ResponseFormat.SUMMARY));
+    const fetchCount = await headingCache.fetchCount.increment(patientId, heading);
+
+    return {
+      results,
+      fetchCount
+    };
+  }
+
+  async getSynopses(patientId, headings, limit) {
+    logger.info('services/headingService|getSynopses', { patientId, headings, limit });
+
+    const resultObj = {};
+
+    await P.each(headings, async (heading) => {
+      const { results } = await this.getSynopsis(patientId, heading, limit);
+      resultObj[heading] = results;
+    });
+
+    return resultObj;
+  }
+
+  async getSynopsis(patientId, heading, limit) {
+    logger.info('services/headingService|getSynopsis', { patientId, heading, limit });
+
+    const { headingCache } = this.ctx.cache;
+    const sourceIds = await headingCache.byDate.getAllSourceIds(patientId, heading, { limit });
+
+    const results = await P.mapSeries(sourceIds, x => this.getBySourceId(x, ResponseFormat.SYNOPSIS));
+
+    return {
+      results
+    };
+  }
+
+  async fetchMany(patientId, headings) {
+    logger.info('services/headingService|fetchMany', { patientId, headings });
+
+    await P.each(headings, heading => this.fetchOne(patientId, heading));
+
+    return {
+      ok: true
+    };
+  }
+
+  async fetchOne(patientId, heading) {
+    logger.info('services/headingService|fetchOne', { patientId, heading });
 
     const hosts = Object.keys(this.ctx.servers);
-    await P.each(hosts, (host) => this.fetch(host, patientId, heading));
+    await P.each(hosts, host => this.fetch(host, patientId, heading));
 
     return {
       ok: true
@@ -136,7 +269,7 @@ class HeadingService {
     if (exists) return;
 
     try {
-      const data = await this.get(host, patientId, heading);
+      const data = await this.query(host, patientId, heading);
       const now = Date.now();
 
       await P.each(data, async (result) => {

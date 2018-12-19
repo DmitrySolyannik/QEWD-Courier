@@ -24,22 +24,29 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  16 December 2018
+  20 December 2018
 
 */
 
-'use strict';
+const GetPatientHeadingSummaryCommand = require('../../commands/patients/getHeadingSummary');
+const { getResponseError } = require('../../errors');
 
-module.exports = {
-  /**
-   * OpenEHR Session timeout is 2 minutes in ms
-   * @type {int}
-   */
-  sessionTimeout: 120 * 1000,
+/**
+ * @param  {Object} args
+ * @param  {Function} finished
+ */
+module.exports = async function (args, finished) {
+  try {
+    const query = args.req.query || {};
+    const command = new GetPatientHeadingSummaryCommand(args.req.ctx, args.session);
+    const responseObj = await command.execute(args.patientId, args.heading, query);
 
-  /**
-   * Max number of OpenEHR Sessions
-   * @type {int}
-   */
-  sessionMaxNumber: 75
+    finished(responseObj);
+  } catch (err) {
+    const responseError = getResponseError(err);
+
+    finished(responseError);
+  }
 };
+
+

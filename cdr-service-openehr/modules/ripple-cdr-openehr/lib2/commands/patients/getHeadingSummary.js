@@ -28,12 +28,14 @@
 
 */
 
-const { BadRequestError } = require('../../errors');
-const { isHeadingValid, isEmpty, isPatientIdValid } = require('../../shared/validation');
-const { PostHeadingFormat, Role } = require('../../shared/enums');
-const debug = require('debug')('ripple-cdr-openehr:commands:patients:post-heading');
+'use strict';
 
-class PostPatientHeadingCommand {
+const { BadRequestError } = require('../../errors');
+const { isHeadingValid, isPatientIdValid } = require('../../shared/validation');
+const { Role } = require('../../shared/enums');
+const debug = require('debug')('ripple-cdr-openehr:commands:patients:get-heading-summary');
+
+class GetPatientHeadingSummaryCommand {
   constructor(ctx, session) {
     this.ctx = ctx;
     this.session = session;
@@ -43,11 +45,10 @@ class PostPatientHeadingCommand {
    * @param  {string} patientId
    * @param  {string} heading
    * @param  {Object} query
-   * @param  {Object} payload
    * @return {Object}
    */
-  async execute(patientId, heading, query, payload) {
-    debug('patientId: %s, heading: %s', patientId, heading);
+  async execute(patientId, heading, query) {
+    debug('patientId: %s, heading: %s, query: %j', patientId, heading, query);
     debug('role: %s', this.session.role);
 
     // override patientId for PHR Users - only allowed to see their own data
@@ -62,27 +63,35 @@ class PostPatientHeadingCommand {
 
     const headingValid = isHeadingValid(this.ctx.headingsConfig, heading);
     if (!headingValid.ok) {
-      throw new BadRequestError(headingValid.error);
+      return [];
     }
-
-    if (isEmpty(payload)) {
-      throw new BadRequestError(`No body content was posted for heading ${heading}`);
-    }
-
-    const host = this.ctx.defaultHost;
-    const data = {
-      data: payload,
-      format: query.format === PostHeadingFormat.JUMPER
-        ? PostHeadingFormat.JUMPER
-        : PostHeadingFormat.PULSETILE
-    };
 
     const { headingService } = this.ctx.services;
-    const responseObj = await headingService.post(host, patientId, heading, data);
-    debug('response: %j', responseObj);
+    const result = await headingService.fetchOne(patientId, heading);
+    if (!result.ok) {
+      debug('No results could be returned from the OpenEHR servers for heading %s', heading);
+
+      return [];
+    }
+
+    debug('heading %s for %s is cached', heading, patientId);
+    const { results, fetchCount } = await headingService.getSummary(patientId, heading);
+
+    const responseObj = {
+      responseFrom: 'phr_service',
+      patientId,
+      heading,
+      results,
+      fetch_count: fetchCount
+    };
+
+    // TODO: ask do we need it?
+    if (query.discovery_sync === 'no') {
+      responseObj.discovery_sync = false;
+    }
 
     return responseObj;
   }
 }
 
-module.exports = PostPatientHeadingCommand;
+module.exports = GetPatientHeadingSummaryCommand;

@@ -33,12 +33,12 @@
 const mockery = require('mockery');
 const { CommandMock, ExecutionContextMock } = require('../../../mocks');
 
-describe('ripple-cdr-openehr/lib/handlers/patients/deleteHeading', () => {
+describe('ripple-cdr-openehr/lib/handlers/me/postHeading', () => {
   let args;
   let finished;
 
   let command;
-  let DeletePatientHeadingCommand;
+  let PostPatientHeadingCommand;
 
   let handler;
 
@@ -56,23 +56,27 @@ describe('ripple-cdr-openehr/lib/handlers/patients/deleteHeading', () => {
     args = {
       patientId: 9999999111,
       heading: 'procedures',
-      sourceId: 'ethercis-eaf394a9-5e05-49c0-9c69-c710c77eda76',
       req: {
-        ctx: new ExecutionContextMock()
+        ctx: new ExecutionContextMock(),
+        query: {
+          format: 'openehr-jumper'
+        },
+        body: {
+          foo: 'bar'
+        }
       },
       session: {
-        nhsNumber: 9999999000,
-        email: 'john.doe@example.org'
+        nhsNumber: 9999999000
       }
     };
     finished = jasmine.createSpy();
 
     command = new CommandMock();
-    DeletePatientHeadingCommand = jasmine.createSpy().and.returnValue(command);
-    mockery.registerMock('../../commands/patients/deleteHeading', DeletePatientHeadingCommand);
+    PostPatientHeadingCommand = jasmine.createSpy().and.returnValue(command);
+    mockery.registerMock('../../commands/patients/postHeading', PostPatientHeadingCommand);
 
-    delete require.cache[require.resolve('../../../../lib2/handlers/patients/deleteHeading')];
-    handler = require('../../../../lib2/handlers/patients/deleteHeading');
+    delete require.cache[require.resolve('../../../../lib2/handlers/me/postHeading')];
+    handler = require('../../../../lib2/handlers/me/postHeading');
   });
 
   afterEach(() => {
@@ -81,18 +85,36 @@ describe('ripple-cdr-openehr/lib/handlers/patients/deleteHeading', () => {
 
   it('should return response object', async () => {
     const responseObj = {
-      deleted: true,
-      patientId: 9999999111,
+      ok: true,
+      host: 'ethercis',
       heading: 'procedures',
-      compositionId: '188a6bbe-d823-4fca-a79f-11c64af5c2e6::vm01.ethercis.org::1',
-      host: 'ethercis'
+      compositionUid: '188a6bbe-d823-4fca-a79f-11c64af5c2e6::vm01.ethercis.org::1'
     };
     command.execute.and.resolveValue(responseObj);
 
     await handler(args, finished);
 
-    expect(DeletePatientHeadingCommand).toHaveBeenCalledWith(args.req.ctx, args.session);
-    expect(command.execute).toHaveBeenCalledWith(args.patientId, args.heading, args.sourceId);
+    expect(PostPatientHeadingCommand).toHaveBeenCalledWith(args.req.ctx, args.session);
+    expect(command.execute).toHaveBeenCalledWith(args.session.nhsNumber, args.heading, args.req.query, args.req.body);
+
+    expect(finished).toHaveBeenCalledWith(responseObj);
+  });
+
+  it('should pass empty query when query is not defined', async () => {
+    delete args.req.query;
+
+    const responseObj = {
+      ok: true,
+      host: 'ethercis',
+      heading: 'procedures',
+      compositionUid: '188a6bbe-d823-4fca-a79f-11c64af5c2e6::vm01.ethercis.org::1'
+    };
+    command.execute.and.resolveValue(responseObj);
+
+    await handler(args, finished);
+
+    expect(PostPatientHeadingCommand).toHaveBeenCalledWith(args.req.ctx, args.session);
+    expect(command.execute).toHaveBeenCalledWith(args.session.nhsNumber, args.heading, {}, args.req.body);
 
     expect(finished).toHaveBeenCalledWith(responseObj);
   });
@@ -102,8 +124,8 @@ describe('ripple-cdr-openehr/lib/handlers/patients/deleteHeading', () => {
 
     await handler(args, finished);
 
-    expect(DeletePatientHeadingCommand).toHaveBeenCalledWith(args.req.ctx, args.session);
-    expect(command.execute).toHaveBeenCalledWith(args.patientId, args.heading, args.sourceId);
+    expect(PostPatientHeadingCommand).toHaveBeenCalledWith(args.req.ctx, args.session);
+    expect(command.execute).toHaveBeenCalledWith(args.session.nhsNumber, args.heading, args.req.query, args.req.body);
 
     expect(finished).toHaveBeenCalledWith({
       error: 'custom error'

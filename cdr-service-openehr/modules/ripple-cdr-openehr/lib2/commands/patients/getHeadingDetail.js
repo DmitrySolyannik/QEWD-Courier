@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  19 December 2018
+  20 December 2018
 
 */
 
@@ -32,7 +32,7 @@
 
 const { BadRequestError } = require('../../errors');
 const { isHeadingValid, isPatientIdValid, isSourceIdValid } = require('../../shared/validation');
-const { Heading } = require('../../shared/enums');
+const { Role, ResponseFormat } = require('../../shared/enums');
 const debug = require('debug')('ripple-cdr-openehr:commands:patients:get-heading-detail');
 
 class GetPatientHeadingDetailCommand {
@@ -51,6 +51,7 @@ class GetPatientHeadingDetailCommand {
     debug('patientId: %s, heading: %s, sourceId: %s', patientId, heading, sourceId);
     debug('role: %s', this.session.role);
 
+    // override patientId for PHR Users - only allowed to see their own data
     if (this.session.role === Role.PHR_USER) {
       patientId = this.session.nhsNumber;
     }
@@ -62,7 +63,7 @@ class GetPatientHeadingDetailCommand {
 
     const headingValid = isHeadingValid(this.ctx.headingsConfig, heading);
     if (!headingValid.ok) {
-      throw new BadRequestError(headingValid.error);
+      return [];
     }
 
     const sourceIdValid = isSourceIdValid(sourceId);
@@ -70,15 +71,21 @@ class GetPatientHeadingDetailCommand {
       return [];
     }
 
-    isHeadingValid(this.ctx.headingsConfig, heading);
+    const { headingService } = this.ctx.services;
+    const result = await headingService.fetchOne(patientId, heading);
+    if (!result.ok) {
+      debug('No results could be returned from the OpenEHR servers for heading %s', heading);
 
-    const { headingService, discoveryService } = this.ctx.services;
-    await headingService.fetchAll(patientId, heading);
+      return [];
+    }
 
-    const responseObj = await headingService.delete(patientId, heading, sourceId);
-    await discoveryService.delete(sourceId);
+    debug('heading %s for %s is cached', heading, patientId);
+    const responseObj = await headingService.getBySourceId(sourceId, ResponseFormat.DETAIL);
 
-    return responseObj;
+    return {
+      responseFrom: 'phr_service',
+      results: responseObj
+    };
   }
 }
 

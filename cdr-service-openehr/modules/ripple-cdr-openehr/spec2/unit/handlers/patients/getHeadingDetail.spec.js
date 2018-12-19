@@ -24,23 +24,23 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  19 July 2018
+  20 December 2018
 
 */
 
 'use strict';
 
 const mockery = require('mockery');
-const Worker = require('../../mocks/worker');
+const { CommandMock, ExecutionContextMock } = require('../../../mocks');
 
-describe('ripple-cdr-openehr/lib/handlers/postMyHeading', () => {
-  let postMyHeading;
-
-  let q;
+describe('ripple-cdr-openehr/lib/handlers/patients/getHeadingDetail', () => {
   let args;
   let finished;
 
-  let postPatientHeading;
+  let command;
+  let GetPatientHeadingDetailCommand;
+
+  let handler;
 
   beforeAll(() => {
     mockery.enable({
@@ -53,32 +53,56 @@ describe('ripple-cdr-openehr/lib/handlers/postMyHeading', () => {
   });
 
   beforeEach(() => {
-    q = new Worker();
-
     args = {
-      patientId: 9999999000,
+      patientId: 9999999111,
+      heading: 'procedures',
+      sourceId: 'ethercis-eaf394a9-5e05-49c0-9c69-c710c77eda76',
+      req: {
+        ctx: new ExecutionContextMock()
+      },
       session: {
-        nhsNumber: 9434765919
+        nhsNumber: 9999999000,
+        email: 'john.doe@example.org'
       }
     };
     finished = jasmine.createSpy();
 
-    postPatientHeading = jasmine.createSpy();
-    mockery.registerMock('./postPatientHeading', postPatientHeading);
+    command = new CommandMock();
+    GetPatientHeadingDetailCommand = jasmine.createSpy().and.returnValue(command);
+    mockery.registerMock('../../commands/patients/getHeadingDetail', GetPatientHeadingDetailCommand);
 
-    delete require.cache[require.resolve('../../../lib/handlers/postMyHeading')];
-    postMyHeading = require('../../../lib/handlers/postMyHeading');
+    delete require.cache[require.resolve('../../../../lib2/handlers/patients/getHeadingDetail')];
+    handler = require('../../../../lib2/handlers/patients/getHeadingDetail');
   });
 
   afterEach(() => {
     mockery.deregisterAll();
-    q.db.reset();
   });
 
-  xit('should return get heading summary for correct patientId', () => {
-    postMyHeading.call(q, args, finished);
+  it('should return response object', async () => {
+    const responseObj = {
+      foo: 'bar'
+    };
+    command.execute.and.resolveValue(responseObj);
 
-    expect(args.patientId).toBe(9434765919);
-    expect(postPatientHeading).toHaveBeenCalledWithContext(q, args, finished);
+    await handler(args, finished);
+
+    expect(GetPatientHeadingDetailCommand).toHaveBeenCalledWith(args.req.ctx, args.session);
+    expect(command.execute).toHaveBeenCalledWith(args.patientId, args.heading, args.sourceId);
+
+    expect(finished).toHaveBeenCalledWith(responseObj);
+  });
+
+  it('should return error object', async () => {
+    command.execute.and.rejectValue(new Error('custom error'));
+
+    await handler(args, finished);
+
+    expect(GetPatientHeadingDetailCommand).toHaveBeenCalledWith(args.req.ctx, args.session);
+    expect(command.execute).toHaveBeenCalledWith(args.patientId, args.heading, args.sourceId);
+
+    expect(finished).toHaveBeenCalledWith({
+      error: 'custom error'
+    });
   });
 });

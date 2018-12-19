@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  19 December 2018
+  20 December 2018
 
 */
 
@@ -91,7 +91,9 @@ function isEmpty(obj) {
   if (typeof obj !== 'object') return true;
 
   for (let name in obj) {
-    return false;
+    if (obj.hasOwnProperty(name)) {
+      return false;
+    }
   }
 
   return true;
@@ -166,7 +168,9 @@ function isSourceIdValid(sourceId) {
   const guid = pieces.join('-');
   if (!isGuid(guid)) return false;
 
-  return true;
+  return {
+    ok: true
+  };
 }
 
 module.exports = {

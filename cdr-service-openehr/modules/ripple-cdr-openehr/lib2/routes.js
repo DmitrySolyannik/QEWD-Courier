@@ -24,24 +24,52 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  19 December 2018
+  20 December 2018
 
 */
 
 'use strict';
 
+const checkNhsNumber = require('./handlers/checkNhsNumber');
 const { postFeed, putFeed, getFeedSummary, getFeedDetail } = require('./handlers/feeds');
 const { getTop3ThingsSummary, getTop3ThingsDetail, postTop3Things } = require('./handlers/top3Things');
 const { mergeDiscoveryData, revertDiscoveryData, revertAllDiscoveryData } = require('./handlers/discovery');
-const checkNhsNumber = require('./handlers/checkNhsNumber');
+const { getHeadingSummaryFields } = require('./handlers/headings');
 
-const postPatientHeading = require('./handlers/patients/postHeading');
+const getMyHeadingDetail = require('./handlers/me/getHeadingDetail');
+const getMyHeadingSummary = require('./handlers/me/getHeadingSummary');
+const getMySynopsis = require('./handlers/me/getSynopsis');
+const postMyPatientHeading = require('./handlers/me/postHeading');
+
+const getPatientHeadingDetail = require('./handlers/patients/getHeadingDetail');
+const getPatientHeadingSummary = require('./handlers/patients/getHeadingSummary');
+const getPatientHeadingSynopsis = require('./handlers/patients/getHeadingSynopsis');
+const getPatientSynopsis = require('./handlers/patients/getSynopsis');
 const deletePatientHeading = require('./handlers/patients/deleteHeading');
-const getHeadingDetail = require('./handlers/patients/getHeadingDetail');
+const postPatientHeading = require('./handlers/patients/postHeading');
 
 module.exports = {
   '/api/openehr/check': {
     GET: checkNhsNumber
+  },
+  '/api/heading/:heading/fields/summary': {
+    GET: getHeadingSummaryFields
+  },
+  '/api/my/heading/:heading': {
+    GET: getMyHeadingSummary,
+    POST: postMyPatientHeading
+  },
+  '/api/my/heading/:heading/:sourceId': {
+    GET: getMyHeadingDetail
+  },
+  '/api/my/headings/synopsis': {
+    GET: getMySynopsis
+  },
+  '/api/patients/:patientId/headings/synopsis': {
+    GET: getPatientSynopsis
+  },
+  '/api/patients/:patientId/synopsis/:heading': {
+    GET: getPatientHeadingSynopsis
   },
   '/api/patients/:patientId/top3Things': {
     POST: postTop3Things,
@@ -52,11 +80,11 @@ module.exports = {
     GET: getTop3ThingsDetail
   },
   '/api/patients/:patientId/:heading': {
-    // GET:  getHeadingSummary,
+    GET:  getPatientHeadingSummary,
     POST: postPatientHeading
   },
   '/api/patients/:patientId/:heading/:sourceId': {
-    GET: getHeadingDetail,
+    GET: getPatientHeadingDetail,
     // PUT: editPatientHeading,
     DELETE: deletePatientHeading
   },

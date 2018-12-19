@@ -24,15 +24,15 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  19 December 2018
+  20 December 2018
 
 */
 
 'use strict';
 
 const { BadRequestError, ForbiddenError } = require('../../errors');
+const { Heading, UserMode } = require('../../shared/enums');
 const { isHeadingValid, isPatientIdValid } = require('../../shared/validation');
-const { Heading } = require('../../shared/enums');
 const debug = require('debug')('ripple-cdr-openehr:commands:patients:delete-heading');
 
 class DeletePatientHeadingCommand {
@@ -41,7 +41,7 @@ class DeletePatientHeadingCommand {
     this.session = session;
   }
 
-  get forbiddenHeadings() {
+  get blacklistHeadings() {
     return [
       Heading.FEEDS,
       Heading.TOP_3_THINGS
@@ -56,9 +56,9 @@ class DeletePatientHeadingCommand {
    */
   async execute(patientId, heading, sourceId) {
     debug('patientId: %s, heading: %s, sourceId: %s', patientId, heading, sourceId);
-    debug('role: %s', this.session.role);
+    debug('user mode: %s', this.session.userMode);
 
-    if (this.session.userMode !== 'admin') {
+    if (this.session.userMode !== UserMode.ADMIN) {
       throw new ForbiddenError('Invalid request');
     }
 
@@ -67,7 +67,7 @@ class DeletePatientHeadingCommand {
       throw new BadRequestError(patientValid.error);
     }
 
-    if (heading && this.forbiddenHeadings.includes(heading)) {
+    if (heading && this.blacklistHeadings.includes(heading)) {
       throw new BadRequestError(`Cannot delete ${heading} records`);
     }
 
@@ -77,7 +77,7 @@ class DeletePatientHeadingCommand {
     }
 
     const { headingService, discoveryService } = this.ctx.services;
-    await headingService.fetchAll(patientId, heading);
+    await headingService.fetchOne(patientId, heading);
 
     const responseObj = await headingService.delete(patientId, heading, sourceId);
     await discoveryService.delete(sourceId);

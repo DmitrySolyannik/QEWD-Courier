@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  18 December 2018
+  20 December 2018
 
 */
 
@@ -63,12 +63,20 @@ class ExecutionContext {
     return this.userDefined.headings;
   }
 
+  get synopsisConfig() {
+    return this.userDefined.synopsis;
+  }
+
   get serversConfig() {
     return this.userDefined.openehr;
   }
 
   get activeSessions() {
     return this.worker.sessions.active();
+  }
+
+  getHeadingConfig(heading) {
+    return this.userDefined.headings[heading];
   }
 }
 

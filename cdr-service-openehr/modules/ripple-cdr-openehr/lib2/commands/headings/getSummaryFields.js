@@ -28,36 +28,41 @@
 
 */
 
-const { BadRequestError } = require('../../errors');
-const { isHeadingValid, isEmpty, isPatientIdValid } = require('../../shared/validation');
-const { PostHeadingFormat, Role } = require('../../shared/enums');
-const debug = require('debug')('ripple-cdr-openehr:commands:patients:post-heading');
+'use strict';
 
-class PostPatientHeadingCommand {
+const { BadRequestError, ForbiddenError } = require('../../errors');
+const { Heading, UserMode } = require('../../shared/enums');
+const { getHeadingDefinition } = require('../shared/headings');
+const { isHeadingValid } = require('../../shared/validation');
+const debug = require('debug')('ripple-cdr-openehr:commands:headings:get-summary-fields');
+
+class GetHeadingSummaryFieldsCommand {
   constructor(ctx, session) {
     this.ctx = ctx;
     this.session = session;
   }
 
-  /**
-   * @param  {string} patientId
-   * @param  {string} heading
-   * @param  {Object} query
-   * @param  {Object} payload
-   * @return {Object}
-   */
-  async execute(patientId, heading, query, payload) {
-    debug('patientId: %s, heading: %s', patientId, heading);
-    debug('role: %s', this.session.role);
+  get blacklistHeadings() {
+    return [
+      Heading.FEEDS,
+      Heading.TOP_3_THINGS
+    ];
+  }
 
-    // override patientId for PHR Users - only allowed to see their own data
-    if (this.session.role === Role.PHR_USER) {
-      patientId = this.session.nhsNumber;
+  /**
+   * @param  {string} heading
+   * @return {Promise.<string[]>}
+   */
+  async execute(heading) {
+    debug('heading: %s', heading);
+    debug('user mode: %s', this.session.userMode);
+
+    if (this.session.userMode !== UserMode.ADMIN) {
+      throw new ForbiddenError('Invalid request');
     }
 
-    const patientValid = isPatientIdValid(patientId);
-    if (!patientValid.ok) {
-      throw new BadRequestError(patientValid.error);
+    if (heading && this.blacklistHeadings.includes(heading)) {
+      throw new BadRequestError(`${heading} records are not maintained on OpenEHR`);
     }
 
     const headingValid = isHeadingValid(this.ctx.headingsConfig, heading);
@@ -65,24 +70,16 @@ class PostPatientHeadingCommand {
       throw new BadRequestError(headingValid.error);
     }
 
-    if (isEmpty(payload)) {
-      throw new BadRequestError(`No body content was posted for heading ${heading}`);
+    let headingConfig = this.ctx.getHeadingConfig(heading);
+    if (headingConfig === true) {
+      const headingDefinition = getHeadingDefinition(heading);
+      headingConfig = {
+        summaryTableFields: headingDefinition.headingTableFields
+      };
     }
 
-    const host = this.ctx.defaultHost;
-    const data = {
-      data: payload,
-      format: query.format === PostHeadingFormat.JUMPER
-        ? PostHeadingFormat.JUMPER
-        : PostHeadingFormat.PULSETILE
-    };
-
-    const { headingService } = this.ctx.services;
-    const responseObj = await headingService.post(host, patientId, heading, data);
-    debug('response: %j', responseObj);
-
-    return responseObj;
+    return headingConfig.summaryTableFields;
   }
 }
 
-module.exports = PostPatientHeadingCommand;
+module.exports = GetHeadingSummaryFieldsCommand;
