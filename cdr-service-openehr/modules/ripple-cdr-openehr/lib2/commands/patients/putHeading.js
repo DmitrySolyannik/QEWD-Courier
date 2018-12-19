@@ -32,10 +32,10 @@
 
 const { BadRequestError } = require('../../errors');
 const { isHeadingValid, isEmpty, isPatientIdValid } = require('../../shared/validation');
-const { PostHeadingFormat, Role } = require('../../shared/enums');
-const debug = require('debug')('ripple-cdr-openehr:commands:patients:post-heading');
+const { Role } = require('../../shared/enums');
+const debug = require('debug')('ripple-cdr-openehr:commands:patients:put-heading');
 
-class PostPatientHeadingCommand {
+class PutPatientHeadingCommand {
   constructor(ctx, session) {
     this.ctx = ctx;
     this.session = session;
@@ -44,12 +44,12 @@ class PostPatientHeadingCommand {
   /**
    * @param  {string} patientId
    * @param  {string} heading
-   * @param  {Object} query
+   * @param  {string} sourceId
    * @param  {Object} payload
    * @return {Object}
    */
-  async execute(patientId, heading, query, payload) {
-    debug('patientId: %s, heading: %s, query: %j, payload: %j', patientId, heading, query, payload);
+  async execute(patientId, heading, sourceId, payload) {
+    debug('patientId: %s, heading: %s, sourceId: %s, payload: %j', patientId, heading, sourceId, payload);
     debug('role: %s', this.session.role);
 
     // override patientId for PHR Users - only allowed to see their own data
@@ -68,20 +68,13 @@ class PostPatientHeadingCommand {
     }
 
     if (isEmpty(payload)) {
-      throw new BadRequestError(`No body content was posted for heading ${heading}`);
+      throw new BadRequestError(`No body content was sent for heading ${heading}`);
     }
 
     const host = this.ctx.defaultHost;
-    const data = {
-      data: payload,
-      format: query.format === PostHeadingFormat.JUMPER
-        ? PostHeadingFormat.JUMPER
-        : PostHeadingFormat.PULSETILE
-    };
-
     const { headingService, cacheService } = this.ctx.services;
 
-    const responseObj = await headingService.post(host, patientId, heading, data);
+    const responseObj = await headingService.put(host, patientId, heading, sourceId, payload);
     debug('response: %j', responseObj);
 
     await cacheService.delete(host, patientId, heading);
@@ -90,4 +83,4 @@ class PostPatientHeadingCommand {
   }
 }
 
-module.exports = PostPatientHeadingCommand;
+module.exports = PutPatientHeadingCommand;

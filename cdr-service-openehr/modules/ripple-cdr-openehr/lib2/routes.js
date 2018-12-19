@@ -47,6 +47,7 @@ const getPatientHeadingSynopsis = require('./handlers/patients/getHeadingSynopsi
 const getPatientSynopsis = require('./handlers/patients/getSynopsis');
 const deletePatientHeading = require('./handlers/patients/deleteHeading');
 const postPatientHeading = require('./handlers/patients/postHeading');
+const putPatientHeading = require('./handlers/patients/putHeading');
 
 module.exports = {
   '/api/openehr/check': {
@@ -85,7 +86,7 @@ module.exports = {
   },
   '/api/patients/:patientId/:heading/:sourceId': {
     GET: getPatientHeadingDetail,
-    // PUT: editPatientHeading,
+    PUT: putPatientHeading,
     DELETE: deletePatientHeading
   },
   '/api/feeds': {

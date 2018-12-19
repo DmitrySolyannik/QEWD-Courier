@@ -33,6 +33,7 @@
 const request = require('request');
 const config = require('../config');
 const { logger } = require('../core');
+const debug = require('debug')('ripple-cdr-openehr:services:ehr-rest');
 
 function requestAsync(options) {
   return new Promise((resolve, reject) => {
@@ -131,7 +132,9 @@ class EhrRestService {
   }
 
   async postHeading(sessionId, ehrId, templateId, data) {
-    logger.info(`services/ehrRestService|${this.host}|postEhr`, { sessionId, ehrId, templateId, data });
+    logger.info(`services/ehrRestService|${this.host}|postEhr`, { sessionId, ehrId, templateId, data: typeof data });
+
+    debug('data: %j', data);
 
     const options = {
       url: `${this.hostConfig.url}/rest/v1/composition`,
@@ -139,6 +142,28 @@ class EhrRestService {
       qs: {
         templateId: templateId,
         ehrId: ehrId,
+        format: 'FLAT'
+      },
+      body: data,
+      headers: {
+        'ehr-session': sessionId
+      },
+      json: true
+    };
+
+    return await requestAsync(options);
+  }
+
+  async putHeading(sessionId, compositionId, templateId, data) {
+    logger.info(`services/ehrRestService|${this.host}|putHeading`, { sessionId, compositionId, templateId, data: typeof data });
+
+    debug('data: %j', data);
+
+    const options = {
+      url: `${this.hostConfig.url}/rest/v1/composition/${compositionId}`,
+      method: 'PUT',
+      qs: {
+        templateId: templateId,
         format: 'FLAT'
       },
       body: data,

@@ -121,6 +121,28 @@ class JumperService {
       });
     });
   }
+
+  async put(host, patientId, heading, compositionId, data) {
+    logger.info('services/jumperService|put', { host, patientId, heading, compositionId, data: typeof data});
+
+    return new Promise((resolve, reject) => {
+      const params = {
+        defaultHost: host,
+        patientId,
+        heading,
+        compositionId,
+        data,
+        method: 'put',
+        qewdSession: this.ctx.qewdSession
+      };
+
+      jumper.post.call(this.worker, params, (responseObj) => {
+        if (responseObj.error) return reject(responseObj);
+
+        return resolve(responseObj);
+      });
+    });
+  }
 }
 
 module.exports = JumperService;

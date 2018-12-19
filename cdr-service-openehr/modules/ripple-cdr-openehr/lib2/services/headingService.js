@@ -50,7 +50,7 @@ class HeadingService {
   }
 
   async post(host, patientId, heading, data) {
-    logger.info('services/headingService|create', { host, patientId, heading, data: typeof data });
+    logger.info('services/headingService|post', { host, patientId, heading, data: typeof data });
 
     debug('data: %j', data);
 
@@ -73,18 +73,73 @@ class HeadingService {
     const helpers = headingHelpers(host, heading, 'post');
     const output = transform(headingMap.transformTemplate, data.data, helpers);
     const postData = flatten(output);
-
     const ehrRestService = this.ctx.openehr[host];
     const responseObj = await ehrRestService.postHeading(sessionId, ehrId, headingMap.templateId, postData);
+    debug('response: %j', responseObj);
 
     await ehrSessionService.stop(host, sessionId);
 
-    return responseObj && responseObj.data && responseObj.data.compositionUid
+    return responseObj && responseObj.compositionUid
       ? {
         ok: true,
         host: host,
         heading: heading,
-        compositionUid: responseObj.data.compositionUid
+        compositionUid: responseObj.compositionUid
+      }
+      : {
+        ok: false
+      };
+  }
+
+  async put(host, patientId, heading, sourceId, data) {
+    logger.info('services/headingService|put', { host, patientId, heading, sourceId, data: typeof data });
+
+    debug('data: %j', data);
+
+    const { headingCache } = this.ctx.cache;
+    const dbData = await headingCache.bySourceId.get(sourceId);
+    if (!dbData) {
+      throw new NotFoundError(`No existing ${heading} record found for sourceId: ${sourceId}`);
+    }
+
+    const compositionId = dbData.uid;
+    if (!compositionId) {
+      throw new NotFoundError(`Composition Id not found for sourceId: ${sourceId}`);
+    }
+
+    const { jumperService } = this.ctx.services;
+    const jumper = jumperService.check(heading, jumperService.put.name);
+
+    if (jumper.ok) {
+      return jumperService.put(host, patientId, heading, compositionId, data);
+    }
+
+    const headingMap = getHeadingMap(heading, 'post');
+    if (!headingMap) {
+      throw new UnprocessableEntityError(`heading ${heading} not recognised, or no POST definition available`);
+    }
+
+    const { ehrSessionService, patientService } = this.ctx.services;
+    const { sessionId } = await ehrSessionService.start(host);
+    await patientService.getEhrId(host, sessionId, patientId);
+    // TODO: ask about ehrId passed to ehrRestService.putHeading
+
+    const helpers = headingHelpers(host, heading, 'post');
+    const output = transform(headingMap.transformTemplate, data, helpers);
+    const postData = flatten(output);
+    const ehrRestService = this.ctx.openehr[host];
+    const responseObj = await ehrRestService.putHeading(sessionId, compositionId, headingMap.templateId, postData);
+    debug('response: %j', responseObj);
+
+    await ehrSessionService.stop(host, sessionId);
+
+    return responseObj && responseObj.compositionUid
+      ? {
+        ok: true,
+        host: host,
+        heading: heading,
+        compositionUid: responseObj.compositionUid,
+        action: responseObj.action
       }
       : {
         ok: false
