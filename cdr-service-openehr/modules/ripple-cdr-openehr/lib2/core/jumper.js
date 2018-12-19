@@ -31,11 +31,13 @@
 'use strict';
 
 const getBySourceId = require('../jumper/getBySourceId');
+const OpenEhrAdapter = require('../jumper/adapter');
 const post = require('../jumper/post');
 const query = require('../jumper/query');
 
 module.exports = {
   getBySourceId,
+  OpenEhrAdapter,
   post,
   query
 };

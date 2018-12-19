@@ -30,25 +30,75 @@
 
 'use strict';
 
-const { createLogger, format, transports } = require('winston');
-const jsonStringify = require('fast-safe-stringify');
-const config = require('../config');
+const request = require('request');
 
-const { combine, timestamp, colorize, printf, metadata, splat } = format;
-const printLog = (info) => `${info.timestamp} ${info.level}: ${info.message} - ${jsonStringify(info.metadata)}`;
-const logger = createLogger({
-  transports: [
-    new transports.Console({
-      level: config.logging.defaultLevel,
-      format: combine(
-        splat(),
-        colorize(),
-        metadata(),
-        timestamp(),
-        printf(printLog)
-      )
-    })
-  ]
-});
+/**
+ * Adapter to OpenEhr that is used in ripple-openehr-jumper
+ */
+class OpenEhrAdapter {
+  constructor(ctx) {
+    this.ctx = ctx;
+  }
 
-module.exports = logger;
+  request(params, userObj) {
+    const servers = this.ctx.serversConfig;
+
+    /* eslint-disable */
+    const host = params.host;
+    const url = servers[host].url + params.url;
+    const options = {
+      url: url,
+      method: params.method || 'GET',
+      json: true
+    };
+
+    if (params.session) {
+      options.headers = {
+        'Ehr-Session': params.session
+      };
+    }
+
+    if (params.queryString) options.qs = params.queryString;
+
+    if (params.options) {
+      for (let param in params.options) {
+        options[param] = params.options[param];
+      }
+    }
+
+    if (params.headers) {
+      if (!options.headers) options.headers = {};
+      for (let name in params.headers) {
+        options.headers[name] = params.headers[name];
+      }
+    }
+
+    console.log('%s: request to %s: %j', process.pid, host, options)
+    request(options, (error, response, body) => {
+      if (error) {
+        console.log('%s: error returned from %s: %j', process.pid, host, error);
+      } else {
+        if (params.logResponse === false) {
+          console.log('%s: response received from %s', process.pid, host);
+        } else {
+          console.log('%s: response received from %s: %j', process.pid, host, body);
+        }
+
+        if (body && typeof body === 'string') {
+          console.log('body returned from %s is a string:\n%s\n', host, body);
+        }
+
+        if (params.processBody) params.processBody(body, userObj);
+      }
+
+      if (params.callback) {
+        console.log('%s: invoking callback', process.pid);
+        params.callback(userObj);
+      }
+    });
+
+    /*eslint-enable */
+  }
+}
+
+module.exports = OpenEhrAdapter;

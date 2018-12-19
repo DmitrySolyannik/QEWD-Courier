@@ -31,6 +31,7 @@
 'use strict';
 
 const { jumper, logger } = require('../core');
+const OpenEhrAdapter = jumper.OpenEhrAdapter;
 
 class JumperService {
   constructor(ctx) {
@@ -76,17 +77,15 @@ class JumperService {
     const { ehrSessionService, patientService } = this.ctx.services;
     const { sessionId } = await ehrSessionService.start(host);
     const ehrId = await patientService.getEhrId(host, sessionId, patientId);
+    const adapter = new OpenEhrAdapter(this.ctx);
 
-    // TODO: pass openEHR
-    // openEHR.request only is used in jumper.query to make query request
-    // need adapter
     return new Promise((resolve, reject) => {
       const params = {
         host,
         patientId,
         heading,
         ehrId,
-        // openEHR: openEHR
+        openEHR: adapter,
         openEHRSession: {
           id: sessionId
         },
