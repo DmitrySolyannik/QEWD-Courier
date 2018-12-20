@@ -39,5 +39,6 @@ module.exports = {
   getBySourceId,
   OpenEhrAdapter,
   post,
+  put: post,
   query
 };
