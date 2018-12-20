@@ -34,14 +34,13 @@ const { createLogger, format, transports } = require('winston');
 const jsonStringify = require('fast-safe-stringify');
 const config = require('../config');
 
-const { combine, timestamp, colorize, printf, metadata, splat } = format;
+const { combine, timestamp, colorize, printf, metadata } = format;
 const printLog = (info) => `${info.timestamp} ${info.level}: ${info.message} - ${jsonStringify(info.metadata)}`;
 const logger = createLogger({
   transports: [
     new transports.Console({
       level: config.logging.defaultLevel,
       format: combine(
-        splat(),
         colorize(),
         metadata(),
         timestamp(),
