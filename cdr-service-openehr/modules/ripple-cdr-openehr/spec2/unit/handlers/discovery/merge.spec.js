@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  18 December 2018
+  22 December 2018
 
 */
 
@@ -72,7 +72,7 @@ describe('ripple-cdr-openehr/lib/handlers/discovery/merge', () => {
 
     command = new CommandMock();
     MergeDiscoveryDataCommand = jasmine.createSpy().and.returnValue(command);
-    mockery.registerMock('../../commands/discovery/merge', MergeDiscoveryDataCommand);
+    mockery.registerMock('../../commands/discovery', { MergeDiscoveryDataCommand });
 
     delete require.cache[require.resolve('../../../../lib2/handlers/discovery/merge')];
     handler = require('../../../../lib2/handlers/discovery/merge');

@@ -73,7 +73,7 @@ describe('ripple-cdr-openehr/lib/handlers/me/postHeading', () => {
 
     command = new CommandMock();
     PostPatientHeadingCommand = jasmine.createSpy().and.returnValue(command);
-    mockery.registerMock('../../commands/patients/postHeading', PostPatientHeadingCommand);
+    mockery.registerMock('../../commands/patients', { PostPatientHeadingCommand });
 
     delete require.cache[require.resolve('../../../../lib2/handlers/me/postHeading')];
     handler = require('../../../../lib2/handlers/me/postHeading');

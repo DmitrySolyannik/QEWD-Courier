@@ -56,6 +56,8 @@ describe('ripple-cdr-openehr/lib/commands/feeds/post', () => {
     };
 
     phrFeedService = ctx.services.phrFeedService;
+
+    ctx.services.freeze();
   });
 
   it('should throw author missing or empty error', async () => {

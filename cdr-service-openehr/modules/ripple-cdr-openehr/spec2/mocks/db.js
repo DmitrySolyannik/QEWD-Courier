@@ -33,13 +33,23 @@
 const { lazyLoadAdapter } = require('../../lib2/shared/utils');
 
 class DbRegistryMock {
+  constructor() {
+    this.freezed = false;
+  }
+
   initialise(id) {
+    if (this.freezed) return;
+
     const Db = require(`../../lib2/db/${id}`);
     const methods = Reflect
       .ownKeys(Db.prototype)
       .filter(x => x !== 'constructor');
 
     return jasmine.createSpyObj(id, methods);
+  }
+
+  freeze() {
+    this.freezed = true;
   }
 
   static create() {

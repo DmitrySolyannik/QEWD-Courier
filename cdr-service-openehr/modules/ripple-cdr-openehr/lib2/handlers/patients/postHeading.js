@@ -24,18 +24,18 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  19 December 2018
+  22 December 2018
 
 */
 
-const PostPatientHeadingCommand = require('../../commands/patients/postHeading');
+const { PostPatientHeadingCommand } = require('../../commands/patients');
 const { getResponseError } = require('../../errors');
 
 /**
  * @param  {Object} args
  * @param  {Function} finished
  */
-module.exports = async function (args, finished) {
+module.exports = async function postPatientHeading(args, finished) {
   try {
     const query = args.req.query || {};
     const payload = args.req.body;

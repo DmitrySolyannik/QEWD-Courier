@@ -24,18 +24,18 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  18 December 2018
+  22 December 2018
 
 */
 
-const RevertDiscoveryDataCommand = require('../../commands/discovery/revert');
+const { RevertDiscoveryDataCommand } = require('../../commands/discovery');
 const { getResponseError } = require('../../errors');
 
 /**
  * @param  {Object} args
  * @param  {Function} finished
  */
-module.exports = async function (args, finished) {
+module.exports = async function revertDiscoveryData(args, finished) {
   try {
     const command = new RevertDiscoveryDataCommand(args.req.ctx);
     const responseObj = await command.execute(args.patientId, args.heading);

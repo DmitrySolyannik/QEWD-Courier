@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  18 December 2018
+  22 December 2018
 
 */
 
@@ -63,6 +63,8 @@ describe('ripple-cdr-openehr/lib/commands/discovery/merge', () => {
     cacheService = ctx.services.cacheService;
 
     discoveryService.mergeAll.and.resolveValue(false);
+
+    ctx.services.freeze();
   });
 
   it('should return refresh needed when heading is finished', async () => {

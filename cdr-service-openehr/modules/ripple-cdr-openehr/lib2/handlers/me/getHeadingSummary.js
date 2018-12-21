@@ -24,18 +24,18 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  20 December 2018
+  22 December 2018
 
 */
 
-const GetPatientHeadingSummaryCommand = require('../../commands/patients/getHeadingSummary');
+const { GetPatientHeadingSummaryCommand } = require('../../commands/patients');
 const { getResponseError } = require('../../errors');
 
 /**
  * @param  {Object} args
  * @param  {Function} finished
  */
-module.exports = async function (args, finished) {
+module.exports = async function getMyHeadingSummary(args, finished) {
   try {
     const query = args.req.query || {};
     const command = new GetPatientHeadingSummaryCommand(args.req.ctx, args.session);

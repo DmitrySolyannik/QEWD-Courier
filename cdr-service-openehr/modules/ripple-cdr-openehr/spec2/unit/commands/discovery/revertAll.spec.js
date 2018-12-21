@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  18 December 2018
+  22 December 2018
 
 */
 
@@ -79,6 +79,8 @@ describe('ripple-cdr-openehr/lib/commands/discovery/revertAll', () => {
         host: 'ethercis'
       }
     );
+
+    ctx.services.freeze();
   });
 
   it('should revert all discovery data', async () => {

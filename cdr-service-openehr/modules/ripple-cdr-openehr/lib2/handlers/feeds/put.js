@@ -24,18 +24,18 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  19 December 2018
+  22 December 2018
 
 */
 
-const PutFeedCommand = require('../../commands/feeds/put');
+const { PutFeedCommand } = require('../../commands/feeds');
 const { getResponseError } = require('../../errors');
 
 /**
  * @param  {Object} args
  * @param  {Function} finished
  */
-module.exports = async function (args, finished) {
+module.exports = async function putFeed(args, finished) {
   try {
     const command = new PutFeedCommand(args.req.ctx, args.session);
     const responseObj = await command.execute(args.sourceId, args.req.body);

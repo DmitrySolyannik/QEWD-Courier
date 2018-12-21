@@ -9,12 +9,16 @@
     "test": "jasmine --config=spec/support/jasmine.json",
     "test2": "jasmine --config=spec2/support/jasmine.json",
     "coverage": "nyc --reporter=html --reporter=text jasmine --config=spec/support/jasmine.json",
+    "coverage2": "nyc --reporter=html --reporter=text jasmine --config=spec2/support/jasmine.json",
     "coveralls": "nyc report --reporter=text-lcov | coveralls"
   },
   "nyc": {
     "all": true,
     "include": [
-      "lib/**/*.js"
+      "lib2/**/*.js"
+    ],
+    "exclude": [
+      "lib2/headings/**/*.js"
     ]
   },
   "dependencies": {
@@ -41,7 +45,7 @@
     "jshint": "^2.9.7",
     "mock-fs": "^4.5.0",
     "mockery": "^2.1.0",
-    "nock": "^9.4.1",
+    "nock": "^10.0.4",
     "nyc": "^13.1.0"
   }
 }

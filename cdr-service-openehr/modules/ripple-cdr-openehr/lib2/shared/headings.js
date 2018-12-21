@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  20 December 2018
+  22 December 2018
 
 */
 
@@ -74,7 +74,7 @@ function headingHelpers(host, heading, method = 'get') {
 
   if (!headings[heading]) {
     debug('loading heading: %s', heading);
-    headings[heading] = require('../headings/' + heading);
+    headings[heading] = require(`../headings/${heading}/${heading}`);
   }
 
   if (headings[heading][method] && headings[heading][method].helperFunctions) {
@@ -89,7 +89,7 @@ function headingHelpers(host, heading, method = 'get') {
 
 function getHeadingAql(heading) {
   if (!aql[heading]) {
-    const filename = path.join(__dirname, `../headings/${heading}.aql`);
+    const filename = path.join(__dirname, `../headings/${heading}/${heading}.aql`);
     debug('loading aql file: %s', filename);
     aql[heading] = fs.existsSync(filename)
       ? fs.readFileSync(filename).toString().split(/\r?\n/).join(' ')
@@ -102,7 +102,7 @@ function getHeadingAql(heading) {
 function getHeadingDefinition(heading) {
   if (!headings[heading]) {
     debug('loading heading: %s', heading);
-    headings[heading] = require('../headings/' + heading);
+    headings[heading] = require(`../headings/${heading}/${heading}`);
   }
 
   return headings[heading];
@@ -111,7 +111,7 @@ function getHeadingDefinition(heading) {
 function getHeadingMap(heading, method = 'get') {
   if (!headings[heading]) {
     debug('loading heading: %s', heading);
-    headings[heading] = require('../headings/' + heading);
+    headings[heading] = require(`../headings/${heading}/${heading}`);
   }
 
   return headings[heading][method];

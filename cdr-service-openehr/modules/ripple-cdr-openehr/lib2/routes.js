@@ -41,11 +41,11 @@ const getMyHeadingSummary = require('./handlers/me/getHeadingSummary');
 const getMySynopsis = require('./handlers/me/getSynopsis');
 const postMyPatientHeading = require('./handlers/me/postHeading');
 
+const deletePatientHeading = require('./handlers/patients/deleteHeading');
 const getPatientHeadingDetail = require('./handlers/patients/getHeadingDetail');
 const getPatientHeadingSummary = require('./handlers/patients/getHeadingSummary');
 const getPatientHeadingSynopsis = require('./handlers/patients/getHeadingSynopsis');
 const getPatientSynopsis = require('./handlers/patients/getSynopsis');
-const deletePatientHeading = require('./handlers/patients/deleteHeading');
 const postPatientHeading = require('./handlers/patients/postHeading');
 const putPatientHeading = require('./handlers/patients/putHeading');
 

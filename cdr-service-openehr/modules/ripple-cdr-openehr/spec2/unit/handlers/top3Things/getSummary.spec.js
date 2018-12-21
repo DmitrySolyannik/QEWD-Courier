@@ -67,7 +67,7 @@ describe('ripple-cdr-openehr/lib/handlers/top3Things/getSummary', () => {
 
     command = new CommandMock();
     GetTop3ThingsSummaryCommand = jasmine.createSpy().and.returnValue(command);
-    mockery.registerMock('../../commands/top3Things/getSummary', GetTop3ThingsSummaryCommand);
+    mockery.registerMock('../../commands/top3Things', { GetTop3ThingsSummaryCommand });
 
     delete require.cache[require.resolve('../../../../lib2/handlers/top3Things/getSummary')];
     handler = require('../../../../lib2/handlers/top3Things/getSummary');

@@ -32,7 +32,7 @@
 
 const { BadRequestError, ForbiddenError } = require('../../errors');
 const { Heading, UserMode } = require('../../shared/enums');
-const { getHeadingDefinition } = require('../shared/headings');
+const { getHeadingDefinition } = require('../../shared/headings');
 const { isHeadingValid } = require('../../shared/validation');
 const debug = require('debug')('ripple-cdr-openehr:commands:headings:get-summary-fields');
 

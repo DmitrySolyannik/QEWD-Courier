@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  20 December 2018
+  22 December 2018
 
 */
 
@@ -297,7 +297,15 @@ class HeadingService {
   async fetchMany(patientId, headings) {
     logger.info('services/headingService|fetchMany', { patientId, headings });
 
-    await P.each(headings, heading => this.fetchOne(patientId, heading));
+    await P.each(headings, (heading) => {
+      try {
+        this.fetchOne(patientId, heading);
+      } catch (err) {
+        logger.error('services/headingService|fetchMany|heading: ' + heading);
+        logger.error('services/headingService|fetchMany|err: ' + err.message);
+        logger.error('services/headingService|fetchMany|stack: ' + err.stack);
+      }
+    });
 
     return {
       ok: true

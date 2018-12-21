@@ -35,7 +35,7 @@ const { getResponseError } = require('../errors');
  * @param  {Object} args
  * @param  {Function} finished
  */
-module.exports = async function (args, finished) {
+module.exports = async function checkNhsNumber(args, finished) {
   try {
     const command = new CheckNhsNumberCommand(args.req.ctx, args.session);
     const responseObj = await command.execute();

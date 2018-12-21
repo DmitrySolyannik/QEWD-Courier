@@ -24,18 +24,18 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  15 December 2018
+  22 December 2018
 
 */
 
-const GetTop3ThingsDetailCommand = require('../../commands/top3Things/getDetail');
+const { GetTop3ThingsDetailCommand } = require('../../commands/top3Things');
 const { getResponseError } = require('../../errors');
 
 /**
  * @param  {Object} args
  * @param  {Function} finished
  */
-module.exports = async function (args, finished) {
+module.exports = async function getTop3ThingsDetail(args, finished) {
   try {
     const command = new GetTop3ThingsDetailCommand(args.req.ctx, args.session);
     const responseObj = await command.execute(args.patientId);

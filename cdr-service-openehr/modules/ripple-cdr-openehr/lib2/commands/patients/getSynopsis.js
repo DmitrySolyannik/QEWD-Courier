@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  20 December 2018
+  22 December 2018
 
 */
 
@@ -65,6 +65,7 @@ class GetPatientSynopsisCommand {
 
     const { headingService } = this.ctx.services;
     await headingService.fetchMany(patientId, synopsisConfig.headings);
+
     debug('headings %s for %s is cached', synopsisConfig.headings, patientId);
 
     const synopsisCount = query.maximum || synopsisConfig.maximum;

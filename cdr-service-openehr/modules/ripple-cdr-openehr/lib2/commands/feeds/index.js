@@ -24,20 +24,20 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  19 December 2018
+  22 December 2018
 
 */
 
 'use strict';
 
-const postFeed = require('./post');
-const putFeed = require('./put');
-const getFeedSummary = require('./getSummary');
-const getFeedDetail = require('./getDetail');
+const GetFeedDetailCommand = require('./getDetail');
+const GetFeedsSummaryCommand = require('./getSummary');
+const PostFeedCommand = require('./post');
+const PutFeedCommand = require('./put');
 
 module.exports = {
-  postFeed,
-  putFeed,
-  getFeedSummary,
-  getFeedDetail
+  GetFeedDetailCommand,
+  GetFeedsSummaryCommand,
+  PostFeedCommand,
+  PutFeedCommand
 };

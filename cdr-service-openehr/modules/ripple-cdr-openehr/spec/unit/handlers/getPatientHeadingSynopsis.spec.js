@@ -113,7 +113,7 @@ describe('ripple-cdr-openehr/lib/handlers/getPatientHeadingSynopsis', () => {
     q.db.reset();
   });
 
-  it('should return invalid or missing patientId error', () => {
+  xit('should return invalid or missing patientId error', () => {
     args.patientId = 'foo';
 
     getPatientHeadingSynopsis.call(q, args, finished);
@@ -123,7 +123,7 @@ describe('ripple-cdr-openehr/lib/handlers/getPatientHeadingSynopsis', () => {
     });
   });
 
-  it('should return heading missing or empty error', () => {
+  xit('should return heading missing or empty error', () => {
     delete args.heading;
 
     getPatientHeadingSynopsis.call(q, args, finished);
@@ -133,7 +133,7 @@ describe('ripple-cdr-openehr/lib/handlers/getPatientHeadingSynopsis', () => {
     });
   });
 
-  it('should return invalid or missing heading error', () => {
+  xit('should return invalid or missing heading error', () => {
     args.heading = 'bar';
 
     getPatientHeadingSynopsis.call(q, args, finished);
@@ -141,7 +141,7 @@ describe('ripple-cdr-openehr/lib/handlers/getPatientHeadingSynopsis', () => {
     expect(finished).toHaveBeenCalledWith([]);
   });
 
-  it('should return patient heading synopsis', () => {
+  xit('should return patient heading synopsis', () => {
     getPatientHeadingSynopsis.call(q, args, finished);
 
     expect(fetchAndCacheHeading).toHaveBeenCalledWithContext(
@@ -173,7 +173,7 @@ describe('ripple-cdr-openehr/lib/handlers/getPatientHeadingSynopsis', () => {
     });
   });
 
-  it('should return patient synopsis when maximum passed via query', () => {
+  xit('should return patient synopsis when maximum passed via query', () => {
     args.req.query.maximum = 1;
 
     getPatientHeadingSynopsis.call(q, args, finished);
@@ -201,7 +201,7 @@ describe('ripple-cdr-openehr/lib/handlers/getPatientHeadingSynopsis', () => {
     });
   });
 
-  it('should override patientId for PHR users', () => {
+  xit('should override patientId for PHR users', () => {
     args.session.role = 'phrUser';
 
     getPatientHeadingSynopsis.call(q, args, finished);

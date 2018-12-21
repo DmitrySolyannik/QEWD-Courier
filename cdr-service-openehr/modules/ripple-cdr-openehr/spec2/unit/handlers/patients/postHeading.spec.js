@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  19 December 2018
+  22 December 2018
 
 */
 
@@ -67,14 +67,14 @@ describe('ripple-cdr-openehr/lib/handlers/patients/postHeading', () => {
       },
       session: {
         nhsNumber: 9999999000,
-        role: 'admin'
+        email: 'john.doe@example.org'
       }
     };
     finished = jasmine.createSpy();
 
     command = new CommandMock();
     PostPatientHeadingCommand = jasmine.createSpy().and.returnValue(command);
-    mockery.registerMock('../../commands/patients/postHeading', PostPatientHeadingCommand);
+    mockery.registerMock('../../commands/patients', { PostPatientHeadingCommand });
 
     delete require.cache[require.resolve('../../../../lib2/handlers/patients/postHeading')];
     handler = require('../../../../lib2/handlers/patients/postHeading');

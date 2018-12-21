@@ -24,18 +24,18 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  14 December 2018
+  22 December 2018
 
 */
 
-const GetFeedsSummaryCommand = require('../../commands/feeds/getSummary');
+const { GetFeedsSummaryCommand } = require('../../commands/feeds');
 const { getResponseError } = require('../../errors');
 
 /**
  * @param  {Object} args
  * @param  {Function} finished
  */
-module.exports = async function (args, finished) {
+module.exports = async function getFeedSummary(args, finished) {
   try {
     const command = new GetFeedsSummaryCommand(args.req.ctx, args.session);
     const responseObj = await command.execute();

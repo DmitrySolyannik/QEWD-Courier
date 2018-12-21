@@ -24,18 +24,18 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  20 December 2018
+  22 December 2018
 
 */
 
-const GetPatientHeadingDetailCommand = require('../../commands/patients/getHeadingDetail');
+const { GetPatientHeadingDetailCommand } = require('../../commands/patients');
 const { getResponseError } = require('../../errors');
 
 /**
  * @param  {Object} args
  * @param  {Function} finished
  */
-module.exports = async function (args, finished) {
+module.exports = async function getMyHeadingDetail(args, finished) {
   try {
     const command = new GetPatientHeadingDetailCommand(args.req.ctx, args.session);
     const responseObj = await command.execute(args.session.nhsNumber, args.heading, args.sourceId);

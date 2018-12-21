@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  20 December 2018
+  22 December 2018
 
 */
 
@@ -70,9 +70,6 @@ class GetPatientHeadingSynopsisCommand {
       return [];
     }
 
-    const synopsisConfig = this.ctx.synopsisConfig;
-    debug('synopsis config: %j', synopsisConfig);
-
     const { headingService } = this.ctx.services;
     const result = await headingService.fetchOne(patientId, heading);
     if (!result.ok) {
@@ -82,6 +79,9 @@ class GetPatientHeadingSynopsisCommand {
     }
 
     debug('heading %s for %s is cached', heading, patientId);
+
+    const synopsisConfig = this.ctx.synopsisConfig;
+    debug('synopsis config: %j', synopsisConfig);
 
     const synopsisCount = query.maximum || synopsisConfig.maximum;
     debug('synopsis max count: %s', synopsisCount);

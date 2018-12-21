@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  17 December 2018
+  22 December 2018
 
 */
 
@@ -52,6 +52,8 @@ describe('ripple-cdr-openehr/lib/commands/checkNhsNumber', () => {
     statusService = ctx.services.statusService;
     patientService = ctx.services.patientService;
     phrFeedService = ctx.services.phrFeedService;
+
+    ctx.services.freeze();
   });
 
   it('should throw invalid or missing patientId error', async () => {

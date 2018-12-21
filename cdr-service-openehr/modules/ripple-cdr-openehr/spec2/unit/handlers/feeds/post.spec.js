@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  14 December 2018
+  22 December 2018
 
 */
 
@@ -72,7 +72,7 @@ describe('ripple-cdr-openehr/lib/handlers/feeds/post', () => {
 
     command = new CommandMock();
     PostFeedCommand = jasmine.createSpy().and.returnValue(command);
-    mockery.registerMock('../../commands/feeds/post', PostFeedCommand);
+    mockery.registerMock('../../commands/feeds', { PostFeedCommand });
 
     delete require.cache[require.resolve('../../../../lib2/handlers/feeds/post')];
     handler = require('../../../../lib2/handlers/feeds/post');

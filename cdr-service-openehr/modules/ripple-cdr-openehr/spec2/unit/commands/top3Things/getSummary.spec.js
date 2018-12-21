@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  17 December 2018
+  22 December 2018
 
 */
 
@@ -32,6 +32,7 @@
 
 const { ExecutionContextMock } = require('../../../mocks');
 const { BadRequestError } = require('../../../../lib2/errors');
+const { Role } = require('../../../../lib2/shared/enums');
 const GetTop3ThingsSummaryCommand = require('../../../../lib2/commands/top3Things/getSummary');
 
 describe('ripple-cdr-openehr/lib/commands/top3Things/getSummary', () => {
@@ -58,6 +59,8 @@ describe('ripple-cdr-openehr/lib/commands/top3Things/getSummary', () => {
       name2: 'foo2',
       name3: 'foo3'
     });
+
+    ctx.services.freeze();
   });
 
   it('should throw invalid or missing patientId error', async () => {
@@ -96,7 +99,7 @@ describe('ripple-cdr-openehr/lib/commands/top3Things/getSummary', () => {
       name3: 'foo3'
     };
 
-    session.role = 'phrUser';
+    session.role = Role.PHR_USER;
 
     const command = new GetTop3ThingsSummaryCommand(ctx, session);
     const actual = await command.execute(patientId);

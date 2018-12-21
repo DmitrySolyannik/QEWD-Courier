@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  18 December 2018
+  22 December 2018
 
 */
 
@@ -64,7 +64,7 @@ describe('ripple-cdr-openehr/lib/handlers/discovery/revert', () => {
 
     command = new CommandMock();
     RevertDiscoveryDataCommand = jasmine.createSpy().and.returnValue(command);
-    mockery.registerMock('../../commands/discovery/revert', RevertDiscoveryDataCommand);
+    mockery.registerMock('../../commands/discovery', { RevertDiscoveryDataCommand });
 
     delete require.cache[require.resolve('../../../../lib2/handlers/discovery/revert')];
     handler = require('../../../../lib2/handlers/discovery/revert');

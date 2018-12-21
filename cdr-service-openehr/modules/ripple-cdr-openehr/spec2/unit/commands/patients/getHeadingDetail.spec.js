@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  20 December 2018
+  22 December 2018
 
 */
 
@@ -59,6 +59,8 @@ describe('ripple-cdr-openehr/lib/commands/patients/getHeadingDetail', () => {
 
     headingService.fetchOne.and.resolveValue({ ok: true });
     headingService.getBySourceId.and.resolveValue({ foo: 'bar' });
+
+    ctx.services.freeze();
   });
 
   it('should throw invalid or missing patientId error', async () => {

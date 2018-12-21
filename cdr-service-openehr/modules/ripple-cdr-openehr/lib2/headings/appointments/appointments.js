@@ -24,11 +24,11 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  15 January 2018
+  22 December 2018
 
 */
 
-var dateTime = require('../src/dateTime');
+var dateTime = require('../../shared/dateTime');
 
 module.exports = {
   name: 'appointments',

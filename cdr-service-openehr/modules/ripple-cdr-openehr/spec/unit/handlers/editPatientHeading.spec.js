@@ -100,7 +100,7 @@ describe('ripple-cdr-openehr/lib/handlers/editPatientHeading', () => {
     q.db.reset();
   });
 
-  it('should return invalid or missing patientId error', () => {
+  xit('should return invalid or missing patientId error', () => {
     args.patientId = 'foo';
 
     editPatientHeading.call(q, args, finished);
@@ -110,7 +110,7 @@ describe('ripple-cdr-openehr/lib/handlers/editPatientHeading', () => {
     });
   });
 
-  it('should return invalid or missing heading error', () => {
+  xit('should return invalid or missing heading error', () => {
     args.heading = 'bar';
 
     editPatientHeading.call(q, args, finished);
@@ -120,7 +120,7 @@ describe('ripple-cdr-openehr/lib/handlers/editPatientHeading', () => {
     });
   });
 
-  it('should return no existing heading record found for sourceId error', () => {
+  xit('should return no existing heading record found for sourceId error', () => {
     args.sourceId = 'ethercis-foobar';
 
     editPatientHeading.call(q, args, finished);
@@ -150,7 +150,7 @@ describe('ripple-cdr-openehr/lib/handlers/editPatientHeading', () => {
     });
   });
 
-  it('should update patient heading', () => {
+  xit('should update patient heading', () => {
     putHeading.and.callFake((patientId, heading, compositionId, body, session, callback) => {
       callback({
         ok: true,
@@ -175,7 +175,7 @@ describe('ripple-cdr-openehr/lib/handlers/editPatientHeading', () => {
     });
   });
 
-  it('should override patientId for PHR users', () => {
+  xit('should override patientId for PHR users', () => {
     args.session.role = 'phrUser';
 
     putHeading.and.callFake((patientId, heading, compositionId, body, session, callback) => {

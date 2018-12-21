@@ -24,18 +24,18 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  19 December 2018
+  22 December 2018
 
 */
 
 'use strict';
 
-const mergeDiscoveryData = require('./merge');
-const revertDiscoveryData = require('./revert');
-const revertAllDiscoveryData = require('./revertAll');
+const MergeDiscoveryDataCommand = require('./merge');
+const RevertDiscoveryDataCommand = require('./revert');
+const RevertAllDiscoveryDataCommand = require('./revertAll');
 
 module.exports = {
-  mergeDiscoveryData,
-  revertDiscoveryData,
-  revertAllDiscoveryData
+  MergeDiscoveryDataCommand,
+  RevertDiscoveryDataCommand,
+  RevertAllDiscoveryDataCommand
 };

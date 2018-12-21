@@ -24,18 +24,18 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  19 December 2018
+  22 December 2018
 
 */
 
 'use strict';
 
-const getTop3ThingsSummary  = require('./getSummary');
-const getTop3ThingsDetail = require('./getDetail');
-const postTop3Things = require('./post');
+const GetTop3ThingsDetailCommand = require('./getDetail');
+const GetTop3ThingsSummaryCommand  = require('./getSummary');
+const PostTop3ThingsCommand = require('./post');
 
 module.exports = {
-  getTop3ThingsSummary,
-  getTop3ThingsDetail,
-  postTop3Things
+  GetTop3ThingsDetailCommand,
+  GetTop3ThingsSummaryCommand,
+  PostTop3ThingsCommand
 };

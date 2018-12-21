@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  20 December 2018
+  22 December 2018
 
 */
 
@@ -65,6 +65,8 @@ describe('ripple-cdr-openehr/lib/commands/patients/deleteHeading', () => {
       compositionId: '188a6bbe-d823-4fca-a79f-11c64af5c2e6::vm01.ethercis.org::1',
       host: 'ethercis'
     });
+
+    ctx.services.freeze();
   });
 
   it('should throw invalid request error', async () => {

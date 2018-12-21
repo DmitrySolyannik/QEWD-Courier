@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  19 December 2018
+  22 December 2018
 
 */
 
@@ -45,6 +45,7 @@ describe('ripple-cdr-openehr/lib/commands/patients/postHeading', () => {
   let payload;
 
   let headingService;
+  let cacheService;
 
   beforeEach(() => {
     ctx = new ExecutionContextMock();
@@ -63,12 +64,17 @@ describe('ripple-cdr-openehr/lib/commands/patients/postHeading', () => {
     };
 
     headingService = ctx.services.headingService;
+    cacheService = ctx.services.cacheService;
+    ctx.services.freeze();
+
     headingService.post.and.resolveValue({
       ok: true,
       host: 'ethercis',
       heading: 'procedures',
       compositionUid: '188a6bbe-d823-4fca-a79f-11c64af5c2e6::vm01.ethercis.org::1'
     });
+
+    ctx.services.freeze();
   });
 
   it('should throw invalid or missing patientId error', async () => {
@@ -98,7 +104,7 @@ describe('ripple-cdr-openehr/lib/commands/patients/postHeading', () => {
     await expectAsync(actual).toBeRejectedWith(new BadRequestError('No body content was posted for heading procedures'));
   });
 
-  it('should post patient heading and return response (openehr-jumper)', async () => {
+  it('should post patient heading, delete cache and return response (openehr-jumper)', async () => {
     const expected = {
       ok: true,
       host: 'ethercis',
@@ -115,10 +121,12 @@ describe('ripple-cdr-openehr/lib/commands/patients/postHeading', () => {
       },
       format: 'openehr-jumper'
     });
+    expect(cacheService.delete).toHaveBeenCalledWith('ethercis', 9999999111, 'procedures');
+
     expect(actual).toEqual(expected);
   });
 
-  it('should post patient heading and return response (pulsetile)', async () => {
+  it('should post patient heading, delete cache and return response (pulsetile)', async () => {
     const expected = {
       ok: true,
       host: 'ethercis',
@@ -137,10 +145,12 @@ describe('ripple-cdr-openehr/lib/commands/patients/postHeading', () => {
       },
       format: 'pulsetile'
     });
+    expect(cacheService.delete).toHaveBeenCalledWith('ethercis', 9999999111, 'procedures');
+
     expect(actual).toEqual(expected);
   });
 
-  it('should post patient heading and return response (PHR users)', async () => {
+  it('should post patient heading, delete cache and return response (PHR users)', async () => {
     const expected = {
       ok: true,
       host: 'ethercis',
@@ -159,6 +169,8 @@ describe('ripple-cdr-openehr/lib/commands/patients/postHeading', () => {
       },
       format: 'openehr-jumper'
     });
+    expect(cacheService.delete).toHaveBeenCalledWith('ethercis', 9999999000, 'procedures');
+
     expect(actual).toEqual(expected);
   });
 });

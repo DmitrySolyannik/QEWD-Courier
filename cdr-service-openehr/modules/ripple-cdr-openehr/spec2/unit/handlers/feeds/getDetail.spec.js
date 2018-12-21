@@ -67,7 +67,7 @@ describe('ripple-cdr-openehr/lib/handlers/feeds/getDetail', () => {
 
     command = new CommandMock();
     GetFeedDetailCommand = jasmine.createSpy().and.returnValue(command);
-    mockery.registerMock('../../commands/feeds/getDetail', GetFeedDetailCommand);
+    mockery.registerMock('../../commands/feeds', { GetFeedDetailCommand });
 
     delete require.cache[require.resolve('../../../../lib2/handlers/feeds/getDetail')];
     handler = require('../../../../lib2/handlers/feeds/getDetail');

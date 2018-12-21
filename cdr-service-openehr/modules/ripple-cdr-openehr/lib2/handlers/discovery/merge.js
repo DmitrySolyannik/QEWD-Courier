@@ -24,18 +24,18 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  16 December 2018
+  22 December 2018
 
 */
 
-const MergeDiscoveryDataCommand = require('../../commands/discovery/merge');
+const { MergeDiscoveryDataCommand } = require('../../commands/discovery');
 const { getResponseError } = require('../../errors');
 
 /**
  * @param  {Object} args
  * @param  {Function} finished
  */
-module.exports = async function (args, finished) {
+module.exports = async function mergeDiscoveryData(args, finished) {
   try {
     const command = new MergeDiscoveryDataCommand(args.req.ctx, args.session);
     const responseObj = await command.execute(args.heading, args.req.data);

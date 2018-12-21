@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  17 December 2018
+  22 December 2018
 
 */
 
@@ -33,13 +33,23 @@
 const { lazyLoadAdapter } = require('../../lib2/shared/utils');
 
 class ServiceRegistryMock {
+  constructor() {
+    this.freezed = false;
+  }
+
   initialise(id) {
+    if (this.freezed) return;
+
     const Service = require(`../../lib2/services/${id}`);
     const methods = Reflect
       .ownKeys(Service.prototype)
       .filter(x => x !== 'constructor');
 
     return jasmine.createSpyObj(id, methods);
+  }
+
+  freeze() {
+    this.freezed = true;
   }
 
   static create() {
