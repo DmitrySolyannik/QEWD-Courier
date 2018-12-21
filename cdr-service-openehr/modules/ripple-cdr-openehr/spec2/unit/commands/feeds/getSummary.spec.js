@@ -31,7 +31,7 @@
 'use strict';
 
 const { ExecutionContextMock } = require('../../../mocks');
-const GetFeedsSummaryCommand = require('../../../../lib2/commands/feeds/getSummary');
+const { GetFeedsSummaryCommand } = require('../../../../lib2/commands/feeds');
 
 describe('ripple-cdr-openehr/lib/commands/feeds/getSummary', () => {
   let ctx;

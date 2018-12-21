@@ -32,7 +32,7 @@
 
 const { ExecutionContextMock } = require('../../../mocks');
 const { BadRequestError, NotFoundError } = require('../../../../lib2/errors');
-const GetFeedDetailCommand = require('../../../../lib2/commands/feeds/getDetail');
+const { GetFeedDetailCommand } = require('../../../../lib2/commands/feeds');
 
 describe('ripple-cdr-openehr/lib/commands/feeds/getDetail', () => {
   let ctx;

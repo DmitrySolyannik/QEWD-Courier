@@ -32,7 +32,7 @@
 
 const { ExecutionContextMock } = require('../../../mocks');
 const { BadRequestError, ForbiddenError } = require('../../../../lib2/errors');
-const DeletePatientHeadingCommand = require('../../../../lib2/commands/patients/deleteHeading');
+const { DeletePatientHeadingCommand } = require('../../../../lib2/commands/patients');
 
 describe('ripple-cdr-openehr/lib/commands/patients/deleteHeading', () => {
   let ctx;

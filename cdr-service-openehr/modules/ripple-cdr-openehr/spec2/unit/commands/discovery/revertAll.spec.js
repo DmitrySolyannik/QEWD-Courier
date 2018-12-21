@@ -31,7 +31,7 @@
 'use strict';
 
 const { ExecutionContextMock } = require('../../../mocks');
-const RevertAllDiscoveryDataCommand = require('../../../../lib2/commands/discovery/revertAll');
+const { RevertAllDiscoveryDataCommand } = require('../../../../lib2/commands/discovery');
 
 describe('ripple-cdr-openehr/lib/commands/discovery/revertAll', () => {
   let ctx;

@@ -31,7 +31,7 @@
 'use strict';
 
 const { ExecutionContextMock } = require('../../../mocks');
-const MergeDiscoveryDataCommand = require('../../../../lib2/commands/discovery/merge');
+const { MergeDiscoveryDataCommand } = require('../../../../lib2/commands/discovery');
 
 describe('ripple-cdr-openehr/lib/commands/discovery/merge', () => {
   let ctx;

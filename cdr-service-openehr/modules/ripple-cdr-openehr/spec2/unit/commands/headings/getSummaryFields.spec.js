@@ -32,7 +32,7 @@
 
 const { ExecutionContextMock } = require('../../../mocks');
 const { BadRequestError, ForbiddenError } = require('../../../../lib2/errors');
-const GetHeadingSummaryFieldsCommand = require('../../../../lib2/commands/headings/getSummaryFields');
+const { GetHeadingSummaryFieldsCommand } = require('../../../../lib2/commands/headings');
 
 describe('ripple-cdr-openehr/lib/commands/headings/getSummaryFields', () => {
   let ctx;

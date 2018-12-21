@@ -33,7 +33,7 @@
 const { ExecutionContextMock } = require('../../../mocks');
 const { BadRequestError } = require('../../../../lib2/errors');
 const { Role } = require('../../../../lib2/shared/enums');
-const PostTop3ThingsCommand = require('../../../../lib2/commands/top3Things/post');
+const { PostTop3ThingsCommand } = require('../../../../lib2/commands/top3Things');
 
 describe('ripple-cdr-openehr/lib/commands/top3Things/post', () => {
   let ctx;
