@@ -30,12 +30,12 @@
 
 'use strict';
 
-const ExecutionContext = require('./context');
-const QewdCacheAdapter = require('./adapter');
-const logger = require('./logger');
+const HeadingCache = require('./headingCache');
+const SessionCache = require('./sessionCache');
+const StatusCache = require('./statusCache');
 
 module.exports = {
-  ExecutionContext,
-  QewdCacheAdapter,
-  logger
+  HeadingCache,
+  SessionCache,
+  StatusCache
 };

@@ -24,16 +24,17 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  18 December 2018
+  23 December 2018
 
 */
 
 'use strict';
 
-const { ExecutionContext } = require('../../lib2/core');
+const { ExecutionContext, QewdCacheAdapter } = require('../../lib2/core');
 const WorkerMock = require('./worker');
-const ServiceRegistryMock = require('./services');
+const CacheRegistryMock = require('./cache');
 const DbRegistryMock = require('./db');
+const ServiceRegistryMock = require('./services');
 
 class ExecutionContextMock extends ExecutionContext {
   constructor(q) {
@@ -42,8 +43,10 @@ class ExecutionContextMock extends ExecutionContext {
 
     super(q, { qewdSession });
 
-    this.services = ServiceRegistryMock.create();
+    this.adapter = new QewdCacheAdapter(qewdSession);
+    this.cache = CacheRegistryMock.create();
     this.db = DbRegistryMock.create();
+    this.services = ServiceRegistryMock.create();
   }
 }
 
