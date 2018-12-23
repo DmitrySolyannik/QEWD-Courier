@@ -40,6 +40,7 @@ describe('ripple-cdr-openehr/lib/services/cacheService', () => {
   let session1;
   let session2;
 
+  // TODO: fix seeds
   function seeds(q) {
     // session 1
     session1 = q.sessions.create('app1');

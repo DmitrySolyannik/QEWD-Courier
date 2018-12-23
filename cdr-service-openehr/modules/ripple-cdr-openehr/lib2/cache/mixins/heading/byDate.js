@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  20 December 2018
+  23 December 2018
 
 */
 
@@ -48,7 +48,7 @@ module.exports = (adapter) => {
       adapter.delete(key);
     },
 
-    getAllSourceIds: async (patientId, heading, { direction = 'reverse', limit = 1 }) => {
+    getAllSourceIds: async (patientId, heading, { direction = 'reverse', limit = 1 } = {}) => {
       logger.info('cache/headingCache|byDate|getAllSourceIds', { patientId, heading, direction, limit });
 
       const sourceIds = [];

@@ -66,20 +66,6 @@ describe('ripple-cdr-openehr/lib/cache/statusCache', () => {
       expect(actual).toEqual(jasmine.any(StatusCache));
       expect(actual.adapter).toBe(ctx.adapter);
     });
-
-    it('should return status', async () => {
-      const expected = {
-        new_patient: true,
-        requestNo: 1,
-        status: 'loading_data'
-      };
-
-      seeds();
-
-      const actual = await statusCache.get();
-
-      expect(actual).toEqual(expected);
-    });
   });
 
   describe('#get', () => {
