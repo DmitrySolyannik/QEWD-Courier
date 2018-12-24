@@ -1,9 +1,9 @@
 /*
 
  ----------------------------------------------------------------------------
- | ripple-cdr-discovery: Ripple Discovery Interface                         |
+ | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
  |                                                                          |
- | Copyright (c) 2017-18 Ripple Foundation Community Interest Company       |
+ | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,8 +24,14 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  08 October 2018
+  23 December 2018
 
 */
 
-module.exports = require('./lib2/index');
+'use strict';
+
+const TokenCache = require('./tokenCache');
+
+module.exports = {
+  TokenCache
+};

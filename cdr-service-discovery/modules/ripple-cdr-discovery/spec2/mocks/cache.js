@@ -1,9 +1,9 @@
 /*
 
  ----------------------------------------------------------------------------
- | ripple-cdr-discovery: Ripple Discovery Interface                         |
+ | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
  |                                                                          |
- | Copyright (c) 2017-18 Ripple Foundation Community Interest Company       |
+ | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,8 +24,37 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  08 October 2018
+  23 December 2018
 
 */
 
-module.exports = require('./lib2/index');
+'use strict';
+
+const { lazyLoadAdapter } = require('../../lib2/shared/utils');
+
+class CacheRegistryMock {
+  constructor() {
+    this.freezed = false;
+  }
+
+  initialise(id) {
+    if (this.freezed) return;
+
+    const Cache = require(`../../lib2/cache/${id}`);
+    const methods = Reflect
+      .ownKeys(Cache.prototype)
+      .filter(x => x !== 'constructor');
+
+    return jasmine.createSpyObj(id, methods);
+  }
+
+  freeze() {
+    this.freezed = true;
+  }
+
+  static create() {
+    return lazyLoadAdapter(new CacheRegistryMock());
+  }
+}
+
+module.exports = CacheRegistryMock;

@@ -1,9 +1,9 @@
 /*
 
  ----------------------------------------------------------------------------
- | ripple-cdr-discovery: Ripple Discovery Interface                         |
+ | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
  |                                                                          |
- | Copyright (c) 2017-18 Ripple Foundation Community Interest Company       |
+ | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,8 +24,30 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  08 October 2018
+  20 December 2018
 
 */
 
-module.exports = require('./lib2/index');
+'use strict';
+
+const { createLogger, format, transports } = require('winston');
+const jsonStringify = require('fast-safe-stringify');
+const config = require('../config');
+
+const { combine, timestamp, colorize, printf, metadata } = format;
+const printLog = (info) => `${info.timestamp} ${info.level}: ${info.message} - ${jsonStringify(info.metadata)}`;
+const logger = createLogger({
+  transports: [
+    new transports.Console({
+      level: config.logging.defaultLevel,
+      format: combine(
+        colorize(),
+        metadata(),
+        timestamp(),
+        printf(printLog)
+      )
+    })
+  ]
+});
+
+module.exports = logger;

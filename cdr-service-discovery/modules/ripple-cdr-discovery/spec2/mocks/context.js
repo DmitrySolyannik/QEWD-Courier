@@ -1,9 +1,9 @@
 /*
 
  ----------------------------------------------------------------------------
- | ripple-cdr-discovery: Ripple Discovery Interface                         |
+ | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
  |                                                                          |
- | Copyright (c) 2017-18 Ripple Foundation Community Interest Company       |
+ | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,8 +24,29 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  08 October 2018
+  23 December 2018
 
 */
 
-module.exports = require('./lib2/index');
+'use strict';
+
+const { ExecutionContext, QewdCacheAdapter } = require('../../lib2/core');
+const WorkerMock = require('./worker');
+const CacheRegistryMock = require('./cache');
+const DbRegistryMock = require('./db');
+const ServiceRegistryMock = require('./services');
+
+class ExecutionContextMock extends ExecutionContext {
+  constructor(q) {
+    q = q || new WorkerMock();
+    const qewdSession = q.sessions.create('mock');
+
+    super(q, { qewdSession });
+    this.adapter = new QewdCacheAdapter(qewdSession);
+    this.cache = CacheRegistryMock.create();
+    this.db = DbRegistryMock.create();
+    this.services = ServiceRegistryMock.create();
+  }
+}
+
+module.exports = ExecutionContextMock;

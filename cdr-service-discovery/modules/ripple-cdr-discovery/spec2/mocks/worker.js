@@ -1,9 +1,9 @@
 /*
 
  ----------------------------------------------------------------------------
- | ripple-cdr-discovery: Ripple Discovery Interface                         |
+ | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
  |                                                                          |
- | Copyright (c) 2017-18 Ripple Foundation Community Interest Company       |
+ | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,8 +24,41 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  08 October 2018
+  12 December 2018
 
 */
 
-module.exports = require('./lib2/index');
+'use strict';
+
+const DocumentStore = require('ewd-document-store');
+const DbGlobals = require('ewd-memory-globals');
+const sessions = require('ewd-session');
+const userDefined = require('../support/userDefined.json');
+const { clone } = require('../helpers/utils');
+
+module.exports = function (config) {
+  this.db = new DbGlobals();
+  this.documentStore = new DocumentStore(this.db);
+
+  userDefined.config = config || {};
+
+  sessions.init(this.documentStore);
+  this.sessions = sessions;
+
+  this.jwt = {};
+  this.userDefined = clone(userDefined);
+
+  this.db.reset = () => this.db.store.reset();
+  this.db.use = (documentName, ...subscripts) => {
+    if (subscripts.length === 1 && Array.isArray(subscripts[0])) {
+      subscripts = subscripts[0];
+    }
+
+    return new this.documentStore.DocumentNode(documentName, subscripts);
+  };
+
+  this.qewdSessionByJWT = jasmine.createSpy();
+  this.jwt.handlers = {
+    validateRestRequest: jasmine.createSpy()
+  };
+};

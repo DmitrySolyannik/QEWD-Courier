@@ -1,9 +1,9 @@
 /*
 
  ----------------------------------------------------------------------------
- | ripple-cdr-discovery: Ripple Discovery Interface                         |
+ | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
  |                                                                          |
- | Copyright (c) 2017-18 Ripple Foundation Community Interest Company       |
+ | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,8 +24,42 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  08 October 2018
+  20 December 2018
 
 */
 
-module.exports = require('./lib2/index');
+'use strict';
+
+module.exports = {
+
+  logging: {
+
+    /**
+     * Default log level
+     * @type {string}
+     */
+    defaultLevel: 'debug'
+  },
+
+  openehr: {
+
+    /**
+     * OpenEHR Session timeout is 2 minutes in ms
+     * @type {int}
+     */
+    sessionTimeout: 120 * 1000,
+
+    /**
+     * Max number of OpenEHR Sessions
+     * @type {int}
+     */
+    sessionMaxNumber: 75
+  },
+
+  /**
+   * Timezone
+   * @type {string}
+   */
+  timezone: 'Europe/London'
+
+};

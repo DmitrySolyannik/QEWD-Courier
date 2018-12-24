@@ -1,9 +1,9 @@
 /*
 
  ----------------------------------------------------------------------------
- | ripple-cdr-discovery: Ripple Discovery Interface                         |
+ | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
  |                                                                          |
- | Copyright (c) 2017-18 Ripple Foundation Community Interest Company       |
+ | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,8 +24,61 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  08 October 2018
+  15 December 2018
 
 */
 
-module.exports = require('./lib2/index');
+'use strict';
+
+// const {logger} = require('../core');
+// const debug = require('debug')('ripple-cdr-discove:services:patient');
+const config = require('../config/credentials');
+const request = require('request');
+
+function requestAsync(options) {
+  return new Promise((resolve, reject) => {
+    request(options, (err, response, body) => {
+      if (err) return reject(err);
+      return resolve(body);
+    });
+  });
+}
+
+class AuthenticateService {
+  constructor(ctx) {
+    this.ctx = ctx;
+  }
+
+  static create(ctx) {
+    return new AuthenticateService(ctx);
+  }
+
+  /**
+   *
+   * @param {Object} session
+   * @returns {Promise<*>}
+   */
+  async login(session) {
+    let isTokenExpired = true;
+    const { tokenCache } = this.ctx.cache;
+    const cachedToken = await tokenCache.get();
+    if (cachedToken.createdAt && cachedToken.jwt) {
+      if ((Date.now() - cachedToken.createdAt) < 55000) {
+        isTokenExpired = false;
+      }
+    }
+    if (!isTokenExpired) {
+      return cachedToken.jwt;
+    }
+    const params = {
+      url: config.auth.url,
+      method: 'POST',
+      form: config.auth.credentials,
+      json: true
+    };
+    return requestAsync(params)
+  }
+
+}
+
+module.exports = AuthenticateService;

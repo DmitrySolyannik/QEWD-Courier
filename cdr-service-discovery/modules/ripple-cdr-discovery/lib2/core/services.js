@@ -1,9 +1,9 @@
 /*
 
  ----------------------------------------------------------------------------
- | ripple-cdr-discovery: Ripple Discovery Interface                         |
+ | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
  |                                                                          |
- | Copyright (c) 2017-18 Ripple Foundation Community Interest Company       |
+ | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,8 +24,36 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  08 October 2018
+  14 December 2018
 
 */
 
-module.exports = require('./lib2/index');
+'use strict';
+
+const { lazyLoadAdapter } = require('../shared/utils');
+const logger = require('./logger');
+
+class ServiceRegistry {
+  constructor(ctx) {
+    this.ctx = ctx;
+  }
+
+  initialise(id) {
+    console.log('init', id);
+    logger.info('core/services|initialise', { id });
+
+    const Service = require(`../services/${id}`);
+
+    if (!Service.create) {
+      throw new Error(`${id} service does not support lazy load initialisation.`);
+    }
+
+    return Service.create(this.ctx);
+  }
+
+  static create(ctx) {
+    return lazyLoadAdapter(new ServiceRegistry(ctx));
+  }
+}
+
+module.exports = ServiceRegistry;

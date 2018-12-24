@@ -1,9 +1,9 @@
 /*
 
  ----------------------------------------------------------------------------
- | ripple-cdr-discovery: Ripple Discovery Interface                         |
+ | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
  |                                                                          |
- | Copyright (c) 2017-18 Ripple Foundation Community Interest Company       |
+ | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,8 +24,33 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  08 October 2018
+  20 December 2018
 
 */
 
-module.exports = require('./lib2/index');
+'use strict';
+
+const P = require('bluebird');
+const { BadRequestError } = require('../errors');
+const { isHeadingValid, isPatientIdValid, isSourceIdValid } = require('../shared/validation');
+const { Role } = require('../shared/enums');
+const debug = require('debug')('ripple-cdr-discovery:commands:get-heading-detail-command');
+
+class getHeadingSummaryCommand {
+  constructor(ctx, session) {
+    this.ctx = ctx;
+    this.session = session;
+  }
+
+  /**
+   * @param  {string} patientId
+   * @param  {string} heading
+   * @param  {Object} session
+   * @return {Object}
+   */
+  async execute(patientId, heading, session) {
+
+  }
+}
+
+module.exports = getHeadingSummaryCommand;

@@ -1,9 +1,9 @@
 /*
 
  ----------------------------------------------------------------------------
- | ripple-cdr-discovery: Ripple Discovery Interface                         |
+ | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
  |                                                                          |
- | Copyright (c) 2017-18 Ripple Foundation Community Interest Company       |
+ | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,8 +24,52 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  08 October 2018
+  20 December 2018
 
 */
 
-module.exports = require('./lib2/index');
+'use strict';
+
+const ExtraHeading = Object.freeze({
+  FINISHED: 'finished'
+});
+
+const Heading = Object.freeze({
+  COUNTS: 'counts',
+  FEEDS: 'feeds',
+  TOP_3_THINGS: 'top3Things'
+});
+
+const PostHeadingFormat = Object.freeze({
+  JUMPER: 'openehr-jumper',
+  PULSETILE: 'pulsetile'
+});
+
+const RecordStatus = Object.freeze({
+  LOADING: 'loading_data',
+  READY: 'ready'
+});
+
+const ResponseFormat = Object.freeze({
+  DETAIL: 'detail',
+  SUMMARY: 'summary',
+  SYNOPSIS: 'synopsis'
+});
+
+const Role = Object.freeze({
+  PHR_USER: 'phrUser'
+});
+
+const UserMode = Object.freeze({
+  ADMIN: 'admin'
+});
+
+module.exports = {
+  ExtraHeading,
+  Heading,
+  PostHeadingFormat,
+  RecordStatus,
+  ResponseFormat,
+  Role,
+  UserMode
+};

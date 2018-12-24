@@ -1,9 +1,9 @@
 /*
 
  ----------------------------------------------------------------------------
- | ripple-cdr-discovery: Ripple Discovery Interface                         |
+ | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
  |                                                                          |
- | Copyright (c) 2017-18 Ripple Foundation Community Interest Company       |
+ | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,8 +24,61 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  08 October 2018
+  18 December 2018
 
 */
 
-module.exports = require('./lib2/index');
+'use strict';
+
+const { logger } = require('../core');
+
+class TokenCache {
+  constructor(adapter) {
+    this.adapter = adapter;
+  }
+
+  static create(adapter) {
+    return new TokenCache(adapter);
+  }
+
+  /**
+   * Gets status
+   *
+   * @return {Promise.<Object|null>}
+   */
+  async get() {
+    logger.info('cache/tokenCache|get');
+
+    const key = ['discoveryToken'];
+
+    return this.adapter.getObject(key);
+  }
+
+  /**
+   * Sets status
+   *
+   * @param  {Object} data
+   * @return {Promise}
+   */
+  async set(data) {
+    logger.info('cache/tokenCache|set', { data });
+
+    const key = ['discoveryToken'];
+    this.adapter.putObject(key, data);
+  }
+
+  /**
+   * Deletes a session for a host
+   *
+   * @param  {string} host
+   * @return {Promise}
+   */
+  async delete() {
+    logger.info('cache/tokenCache|delete');
+
+    const key = ['discoveryToken'];
+    this.adapter.delete(key);
+  }
+}
+
+module.exports = TokenCache;

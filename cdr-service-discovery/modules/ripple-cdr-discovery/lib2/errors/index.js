@@ -1,9 +1,9 @@
 /*
 
  ----------------------------------------------------------------------------
- | ripple-cdr-discovery: Ripple Discovery Interface                         |
+ | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
  |                                                                          |
- | Copyright (c) 2017-18 Ripple Foundation Community Interest Company       |
+ | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,8 +24,36 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  08 October 2018
+  18 December 2018
 
 */
 
-module.exports = require('./lib2/index');
+'use strict';
+
+const BadRequestError = require('./BadRequestError');
+// const EhrIdNotFoundError = require('./EhrIdNotFoundError');
+// const EhrSessionError = require('./EhrSessionError');
+// const ForbiddenError = require('./ForbiddenError');
+// const NotFoundError = require('./NotFoundError');
+// const UnprocessableEntityError = require('./UnprocessableEntityError');
+
+function qewdifyError(err) {
+  return {
+    error: err.userMessage || err.message
+  };
+}
+
+function getResponseError(err = new Error('Unknown error')) {
+  return  err.error ? err : qewdifyError(err);
+}
+
+module.exports = {
+  BadRequestError,
+  getResponseError,
+  // EhrIdNotFoundError,
+  // EhrSessionError,
+  // ForbiddenError,
+  // NotFoundError,
+  // UnprocessableEntityError,
+  // qewdifyError
+};
