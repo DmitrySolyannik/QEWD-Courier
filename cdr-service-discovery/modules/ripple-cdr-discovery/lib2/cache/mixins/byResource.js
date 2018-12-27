@@ -24,59 +24,23 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  15 December 2018
+  20 December 2018
 
 */
 
 'use strict';
 
-const {logger} = require('../core');
-// const debug = require('debug')('ripple-cdr-discove:services:patient');
-const credentials = require('../config/credentials');
-const config = require('../config');
-const request = require('request');
+const { logger } = require('../../core');
 
-class AuthenticateService {
-  constructor(ctx) {
-    this.ctx = ctx;
-  }
+module.exports = (adapter) => {
+  return {
 
-  static create(ctx) {
-    return new AuthenticateService(ctx);
-  }
+    exists: async (patientId, resource) => {
+      logger.info('cache/patientCache|byResource|exists', { patientId, resource });
 
-  /**
-   *
-   * @returns {Promise<string>}
-   */
-  async getToken() {
-    const { authCache } = this.ctx.cache;
-    const now = Date.now();
+      const key = ['Discovery', 'Patient', 'by_nhsNumber', patientId, 'resources', resource];
 
-    const auth = await authCache.get();
-    if (auth) {
-      if ((now - auth.createdAt) < config.auth.tokenTimeout) {
-        return auth.jwt;
-      }
+      return adapter.exists(key);
     }
-
-    const { authRestService } = this.ctx.services;
-    try {
-      const data = await authRestService.authenticate();
-      await authCache.set({
-        jwt: data.access_token,
-        createdAt: now
-      });
-
-      return data.access_token;
-    } catch (err) {
-      logger.error('authenticate/login|err: ' + err.message);
-      logger.error('authenticate/login|stack: ' + err.stack);
-      await authCache.delete();
-      throw err;
-    }
-  }
-
-}
-
-module.exports = AuthenticateService;
+  };
+};

@@ -30,53 +30,46 @@
 
 'use strict';
 
-const {logger} = require('../core');
+// const {logger} = require('../core');
 // const debug = require('debug')('ripple-cdr-discove:services:patient');
-const credentials = require('../config/credentials');
-const config = require('../config');
+const config = require('../config/credentials');
 const request = require('request');
 
-class AuthenticateService {
+function requestAsync(options) {
+  return new Promise((resolve, reject) => {
+    request(options, (err, response, body) => {
+      if (err) return reject(err);
+
+      return resolve(body);
+    });
+  });
+}
+
+class PatientService {
   constructor(ctx) {
     this.ctx = ctx;
   }
 
   static create(ctx) {
-    return new AuthenticateService(ctx);
+    return new PatientService(ctx);
   }
 
   /**
    *
-   * @returns {Promise<string>}
+   * @param {Object} session
+   * @returns {Promise<*>}
    */
-  async getToken() {
-    const { authCache } = this.ctx.cache;
-    const now = Date.now();
-
-    const auth = await authCache.get();
-    if (auth) {
-      if ((now - auth.createdAt) < config.auth.tokenTimeout) {
-        return auth.jwt;
-      }
-    }
-
-    const { authRestService } = this.ctx.services;
-    try {
-      const data = await authRestService.authenticate();
-      await authCache.set({
-        jwt: data.access_token,
-        createdAt: now
-      });
-
-      return data.access_token;
-    } catch (err) {
-      logger.error('authenticate/login|err: ' + err.message);
-      logger.error('authenticate/login|stack: ' + err.stack);
-      await authCache.delete();
-      throw err;
-    }
+  async requestData(session) {
+    //@TODO add cache implementation
+    // const params = {
+    //   url: config.auth.url,
+    //   method: 'POST',
+    //   form: config.auth.credentials,
+    //   json: true
+    // };
+    return requestAsync(params)
   }
 
 }
 
-module.exports = AuthenticateService;
+module.exports = PatientService;

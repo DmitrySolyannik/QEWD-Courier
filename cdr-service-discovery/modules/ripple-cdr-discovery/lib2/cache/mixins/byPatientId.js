@@ -24,58 +24,23 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  15 December 2018
+  20 December 2018
 
 */
 
 'use strict';
 
-// const {logger} = require('../core');
-// const debug = require('debug')('ripple-cdr-discove:services:patient');
-const request = require('request');
+const { logger } = require('../../core');
 
-function requestAsync(options) {
-  return new Promise((resolve, reject) => {
-    request(options, (err, response, body) => {
-      if (err) return reject(err);
+module.exports = (adapter) => {
+  return {
 
-      return resolve(body);
-    });
-  });
-}
+    exists: async (patientId) => {
+      logger.info('cache/headingCache|byHost|exists', { patientId });
 
-class getPatientsByNHSNumberService {
-  constructor(ctx) {
-    this.ctx = ctx;
-  }
+      const key = ['Discovery', 'Patient','by_nhsNumber', nhsNumber];
 
-  static create(ctx) {
-    return new getPatientsByNHSNumberService(ctx);
-  }
-
-  /**
-   *
-   * @param {string} nhsNumber
-   * @param {string} token
-   * @param {Object} session
-   * @returns {Promise<*>}
-   */
-  async requestData(nhsNumber, token, session) {
-    //@TODO add cache implementation
-    const params = {
-      url: uri,
-      method: 'GET',
-      headers: {
-        Authorization: 'Bearer ' + token
-      },
-      qs: {
-        nhsNumber: nhsNumber
-      }
-    };
-    return requestAsync(params)
-  }
-
-}
-
-module.exports = getPatientsByNHSNumberService;
-
+      return adapter.exists(key);
+    }
+  };
+};

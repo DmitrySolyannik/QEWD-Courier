@@ -24,59 +24,46 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  15 December 2018
+  17 December 2018
 
 */
 
 'use strict';
 
-const {logger} = require('../core');
-// const debug = require('debug')('ripple-cdr-discove:services:patient');
-const credentials = require('../config/credentials');
-const config = require('../config');
 const request = require('request');
+const config = require('../config');
+const { logger } = require('../core');
+const debug = require('debug')('ripple-cdr-discovery:services:request');
 
-class AuthenticateService {
-  constructor(ctx) {
-    this.ctx = ctx;
-  }
+function requestAsync(options) {
+  return new Promise((resolve, reject) => {
+    request(options, (err, response, body) => {
+      if (err) return reject(err);
+
+      return resolve(body);
+    });
+  });
+}
+
+class AuthRestService {
+    constructor(ctx) {
+      this.ctx = ctx;
+    }
 
   static create(ctx) {
-    return new AuthenticateService(ctx);
+    return new AuthRestService(ctx);
   }
 
-  /**
-   *
-   * @returns {Promise<string>}
-   */
-  async getToken() {
-    const { authCache } = this.ctx.cache;
-    const now = Date.now();
-
-    const auth = await authCache.get();
-    if (auth) {
-      if ((now - auth.createdAt) < config.auth.tokenTimeout) {
-        return auth.jwt;
-      }
-    }
-
-    const { authRestService } = this.ctx.services;
-    try {
-      const data = await authRestService.authenticate();
-      await authCache.set({
-        jwt: data.access_token,
-        createdAt: now
-      });
-
-      return data.access_token;
-    } catch (err) {
-      logger.error('authenticate/login|err: ' + err.message);
-      logger.error('authenticate/login|stack: ' + err.stack);
-      await authCache.delete();
-      throw err;
-    }
+  async authenticate() {
+    const params = {
+      url: config.auth.url,
+      method: 'POST',
+      form: config.auth.credentials,
+      json: true
+    };
+    return requestAsync(params)
   }
 
 }
 
-module.exports = AuthenticateService;
+module.exports = AuthRestService;

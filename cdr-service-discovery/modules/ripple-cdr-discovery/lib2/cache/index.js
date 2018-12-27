@@ -30,7 +30,7 @@
 
 'use strict';
 
-const TokenCache = require('./tokenCache');
+const TokenCache = require('./authCache');
 
 module.exports = {
   TokenCache

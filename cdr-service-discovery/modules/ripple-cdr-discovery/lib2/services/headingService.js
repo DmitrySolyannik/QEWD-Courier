@@ -36,47 +36,18 @@ const credentials = require('../config/credentials');
 const config = require('../config');
 const request = require('request');
 
-class AuthenticateService {
+//@TODO think about file name
+class HeadingService {
   constructor(ctx) {
     this.ctx = ctx;
   }
 
   static create(ctx) {
-    return new AuthenticateService(ctx);
+    return new HeadingService(ctx);
   }
 
-  /**
-   *
-   * @returns {Promise<string>}
-   */
-  async getToken() {
-    const { authCache } = this.ctx.cache;
-    const now = Date.now();
+  async getDetail(patientId, heading, format) {
 
-    const auth = await authCache.get();
-    if (auth) {
-      if ((now - auth.createdAt) < config.auth.tokenTimeout) {
-        return auth.jwt;
-      }
-    }
-
-    const { authRestService } = this.ctx.services;
-    try {
-      const data = await authRestService.authenticate();
-      await authCache.set({
-        jwt: data.access_token,
-        createdAt: now
-      });
-
-      return data.access_token;
-    } catch (err) {
-      logger.error('authenticate/login|err: ' + err.message);
-      logger.error('authenticate/login|stack: ' + err.stack);
-      await authCache.delete();
-      throw err;
-    }
   }
-
 }
-
-module.exports = AuthenticateService;
+module.exports = HeadingService;

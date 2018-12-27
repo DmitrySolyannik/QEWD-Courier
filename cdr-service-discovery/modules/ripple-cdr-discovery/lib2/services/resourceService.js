@@ -36,47 +36,78 @@ const credentials = require('../config/credentials');
 const config = require('../config');
 const request = require('request');
 
-class AuthenticateService {
+
+class ResourceService {
   constructor(ctx) {
     this.ctx = ctx;
   }
 
   static create(ctx) {
-    return new AuthenticateService(ctx);
+    return new ResourceService(ctx);
   }
 
   /**
    *
-   * @returns {Promise<string>}
+   * @param {string | int} patientId
+   * @param {string} token
+   * @return Promise
    */
-  async getToken() {
-    const { authCache } = this.ctx.cache;
-    const now = Date.now();
+  async fetchPatients(patientId, token) {
+    logger.info('services/resourceService|getPatients', {patientId});
 
-    const auth = await authCache.get();
-    if (auth) {
-      if ((now - auth.createdAt) < config.auth.tokenTimeout) {
-        return auth.jwt;
-      }
-    }
+    const {patientCache} = this.ctx.cache;
+    const exists = patientCache.byPatientId.exists(patientId);
+    if (!exists) return false;
 
-    const { authRestService } = this.ctx.services;
+    const { resourcesRestService } = this.ctx.services;
+    //@TODO think about resourceService.fetchPatients
     try {
-      const data = await authRestService.authenticate();
-      await authCache.set({
-        jwt: data.access_token,
-        createdAt: now
-      });
-
-      return data.access_token;
-    } catch (err) {
-      logger.error('authenticate/login|err: ' + err.message);
-      logger.error('authenticate/login|stack: ' + err.stack);
-      await authCache.delete();
+      const patient = await resourcesRestService.getPatients(patientId, token);
+      const filteredPatients = patient.filter(p => patientCache.byPatientId.exists(p.resource.patient.id));
+      patientCache.insertBulk(filteredPatients);
+    } catch(err) {
       throw err;
     }
   }
 
+  //@TODO think about name
+  /**
+   *
+   * @param {string | number} patientId
+   * @param {Object} resource
+   * @param {string} token
+   * @returns {Promise<*>}
+   */
+  async fetchPatientResources(patientId, resource, token) {
+    logger.info('services/resourceService|getPatientResources', {patientId, resource});
+
+    const { patientCache } = this.ctx.cache;
+    const existsByResource = patientCache.byResource.exists(patientId, resource);
+    if (!existsByResource) return false;
+
+    const data = {
+      resource: [resource],
+      patients: {
+        resourceType: 'Bundle',
+        entry: []
+      }
+    };
+    const { resourcesRestService } = this.ctx.services;
+    //@TODO think about resourceService.fetchPatientResources
+    const existsByBundle = patientCache.byPatientBundle.exists();
+    const patientBundle = patientCache.getPatientBundleCache(existsByBundle);
+
+    patientBundle.forEach(uuid => {
+        //@TODO How can I get nesting in cache (Create new cache or mixin?)
+      //@TODO push not uuid , but patients by uuid
+      data.patients.entry.push({
+        resource: uuid
+      });
+    });
+
+    const response = await resourcesRestService.getPatientResources(patientId, data, token);
+    //@TODO send data to patientCache by resource
+  }
 }
 
-module.exports = AuthenticateService;
+module.exports = ResourceService;

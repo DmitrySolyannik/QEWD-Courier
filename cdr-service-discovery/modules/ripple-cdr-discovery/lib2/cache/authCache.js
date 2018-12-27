@@ -32,13 +32,13 @@
 
 const { logger } = require('../core');
 
-class TokenCache {
+class authCache {
   constructor(adapter) {
     this.adapter = adapter;
   }
 
   static create(adapter) {
-    return new TokenCache(adapter);
+    return new authCache(adapter);
   }
 
   /**
@@ -47,7 +47,7 @@ class TokenCache {
    * @return {Promise.<Object|null>}
    */
   async get() {
-    logger.info('cache/tokenCache|get');
+    logger.info('cache/authCache|get');
 
     const key = ['discoveryToken'];
 
@@ -61,7 +61,7 @@ class TokenCache {
    * @return {Promise}
    */
   async set(data) {
-    logger.info('cache/tokenCache|set', { data });
+    logger.info('cache/authCache|set', { data });
 
     const key = ['discoveryToken'];
     this.adapter.putObject(key, data);
@@ -74,11 +74,11 @@ class TokenCache {
    * @return {Promise}
    */
   async delete() {
-    logger.info('cache/tokenCache|delete');
+    logger.info('cache/authCache|delete');
 
     const key = ['discoveryToken'];
     this.adapter.delete(key);
   }
 }
 
-module.exports = TokenCache;
+module.exports = authCache;

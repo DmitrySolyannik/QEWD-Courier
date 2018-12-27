@@ -9,6 +9,9 @@ module.exports = {
     }
   },
   patientByNHSNumber : {
-    url: 'https://deveds.endeavourhealth.net/data-assurance/api/fhir/patients'
+    url: 'https://deveds.endeavourhealth.net/data-assurance/api/fhir/patients',
+  },
+  getPatientResources: {
+    url : 'https://deveds.endeavourhealth.net/data-assurance/api/fhir/resources'
   }
 };

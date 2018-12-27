@@ -24,52 +24,19 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  15 December 2018
+  20 December 2018
 
 */
 
 'use strict';
 
-// const {logger} = require('../core');
-// const debug = require('debug')('ripple-cdr-discove:services:patient');
-const config = require('../config/credentials');
-const request = require('request');
 
-function requestAsync(options) {
-  return new Promise((resolve, reject) => {
-    request(options, (err, response, body) => {
-      if (err) return reject(err);
+const byPatientId = require('./byPatientId');
+const byResource = require('./byResource');
+const byPatientBundle = require('./byPatientBundle');
 
-      return resolve(body);
-    });
-  });
-}
-
-class getPatientResource {
-  constructor(ctx) {
-    this.ctx = ctx;
-  }
-
-  static create(ctx) {
-    return new getPatientResource(ctx);
-  }
-
-  /**
-   *
-   * @param {Object} session
-   * @returns {Promise<*>}
-   */
-  async requestData(session) {
-    //@TODO add cache implementation
-    // const params = {
-    //   url: config.auth.url,
-    //   method: 'POST',
-    //   form: config.auth.credentials,
-    //   json: true
-    // };
-    return requestAsync(params)
-  }
-
-}
-
-module.exports = getPatientResource;
+module.exports = {
+  byPatientId,
+  byResource,
+  byPatientBundle
+};

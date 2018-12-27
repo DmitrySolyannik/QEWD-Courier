@@ -41,25 +41,13 @@ module.exports = {
     defaultLevel: 'debug'
   },
 
-  openehr: {
+  auth: {
 
     /**
-     * OpenEHR Session timeout is 2 minutes in ms
+     * Token session ... @TODO
+     *
      * @type {int}
      */
-    sessionTimeout: 120 * 1000,
-
-    /**
-     * Max number of OpenEHR Sessions
-     * @type {int}
-     */
-    sessionMaxNumber: 75
-  },
-
-  /**
-   * Timezone
-   * @type {string}
-   */
-  timezone: 'Europe/London'
-
+    tokenTimeout: 55 * 1000,
+  }
 };

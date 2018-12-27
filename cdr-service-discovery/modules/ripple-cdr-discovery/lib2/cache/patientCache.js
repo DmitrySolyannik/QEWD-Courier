@@ -24,59 +24,81 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  15 December 2018
+  18 December 2018
 
 */
 
 'use strict';
 
-const {logger} = require('../core');
-// const debug = require('debug')('ripple-cdr-discove:services:patient');
-const credentials = require('../config/credentials');
-const config = require('../config');
-const request = require('request');
+const { logger } = require('../core');
+const { byPatientId, byResource, byPatientBundle } = require('./mixins');
 
-class AuthenticateService {
-  constructor(ctx) {
-    this.ctx = ctx;
+class PatientCache {
+  constructor(adapter) {
+    this.adapter = adapter;
+    this.byPatientId = byPatientId(adapter);
+    this.byResource = byResource(adapter);
+    this.byPatientBundle = byPatientBundle(adapter);
   }
 
-  static create(ctx) {
-    return new AuthenticateService(ctx);
+  static create(adapter) {
+    return new PatientCache(adapter);
   }
 
   /**
+   * Gets status
    *
-   * @returns {Promise<string>}
+   * @return {Promise.<Object|null>}
    */
-  async getToken() {
-    const { authCache } = this.ctx.cache;
-    const now = Date.now();
+  async get(key = 'Discovery') {
+    logger.info('cache/patientCache|get');
 
-    const auth = await authCache.get();
-    if (auth) {
-      if ((now - auth.createdAt) < config.auth.tokenTimeout) {
-        return auth.jwt;
-      }
-    }
-
-    const { authRestService } = this.ctx.services;
-    try {
-      const data = await authRestService.authenticate();
-      await authCache.set({
-        jwt: data.access_token,
-        createdAt: now
-      });
-
-      return data.access_token;
-    } catch (err) {
-      logger.error('authenticate/login|err: ' + err.message);
-      logger.error('authenticate/login|stack: ' + err.stack);
-      await authCache.delete();
-      throw err;
-    }
+    return this.adapter.getObject(key);
   }
 
+  async getObjectWithArrays(key) {
+    logger.info('cache/patientCache|getObjectWithArrays');
+
+    return this.adapter.getObjectWithArrays(key);
+  }
+
+  /**
+   * Sets status
+   *
+   * @param  {Object} data
+   * @param  {string} key
+   * @return {Promise}
+   */
+  async set(data, key = 'Discovery') {
+    logger.info('cache/patientCache|set', { data });
+
+    this.adapter.putObject(key, data);
+  }
+
+  /**
+   * Deletes a session for a host
+   *
+   * @return {Promise}
+   */
+  async delete() {
+    logger.info('cache/patientCache|delete');
+
+    const key = ['discoveryToken'];
+    this.adapter.delete(key);
+  }
+
+  insertBulk(arrValues, key) {
+    //@TODO in progress
+    logger.info('cache/patientCache|insertBulk');
+    arrValues.forEach(v => {
+      this.adapter.set(v, key);
+    })
+  }
+  getPatientBundleCache(exists) {
+    const key = exists ? ['Discovery', 'PatientBundle'] : ['Discovery', 'Patient'];
+
+    this.adapter.get(key);
+  }
 }
 
-module.exports = AuthenticateService;
+module.exports = PatientCache;

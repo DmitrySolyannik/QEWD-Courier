@@ -36,47 +36,59 @@ const credentials = require('../config/credentials');
 const config = require('../config');
 const request = require('request');
 
-class AuthenticateService {
+function requestAsync(options) {
+  return new Promise((resolve, reject) => {
+    request(options, (err, response, body) => {
+      if (err) return reject(err);
+
+      return resolve(body);
+    });
+  });
+}
+
+class ResourceRestService {
   constructor(ctx) {
     this.ctx = ctx;
   }
 
   static create(ctx) {
-    return new AuthenticateService(ctx);
+    return new ResourceRestService(ctx);
   }
 
-  /**
-   *
-   * @returns {Promise<string>}
-   */
-  async getToken() {
-    const { authCache } = this.ctx.cache;
-    const now = Date.now();
-
-    const auth = await authCache.get();
-    if (auth) {
-      if ((now - auth.createdAt) < config.auth.tokenTimeout) {
-        return auth.jwt;
-      }
-    }
-
-    const { authRestService } = this.ctx.services;
-    try {
-      const data = await authRestService.authenticate();
-      await authCache.set({
-        jwt: data.access_token,
-        createdAt: now
-      });
-
-      return data.access_token;
-    } catch (err) {
-      logger.error('authenticate/login|err: ' + err.message);
-      logger.error('authenticate/login|stack: ' + err.stack);
-      await authCache.delete();
-      throw err;
-    }
+  async getPatients(patientId, token) {
+    //@TODO change credentials config
+    const params = {
+      url: credentials.patientByNHSNumber.url,
+      method: 'GET',
+      headers: {
+        Authorization: 'Bearer ' + token
+      },
+      qs: {
+        nhsNumber: patientId
+      },
+      json: true
+    };
+    return requestAsync(params)
   }
 
+  async getPatientResources(patientId, data , token) {
+    //@TODO change credentials config
+    //@TODO think about change request structure
+    const params = {
+      url: credentials.getPatientResources.url,
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + token
+      },
+      body: data,
+      json: true
+    };
+    return requestAsync(params)
+  }
+
+  async getResources() {
+
+  }
 }
 
-module.exports = AuthenticateService;
+module.exports = ResourceRestService;

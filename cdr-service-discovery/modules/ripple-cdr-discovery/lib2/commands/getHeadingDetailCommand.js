@@ -71,18 +71,16 @@ class GetHeadingDetailCommand {
     // const sourceIdValid = isSourceIdValid(sourceId);
 
 
-    const { authenticateService } = this.ctx.services;
-    const resultAuth = await authenticateService.login(this.session);
-    // console.log('resultAuth = ', resultAuth);
-    // if (resultAuth.body_access) {
-    //   const resultPatient = await getPatientByNHSNumberService.requestData(patientId, resultAuth.body_access.token, this.session);
-    //   if (resultPatient) {
-    //     const resultPatientResource = await getPatientResourceService.requestData();
-    //     if (resultPatientResource) {
-    //       // return await getHeadingDetailService;
-    //     }
-    //   }
-    // }
+    const { resourceService, headingService, authenticateService } = this.ctx.services;
+    let token = await authenticateService.getToken();
+    await resourceService.fetchPatients(patientId, token);
+    await resourceService.fetchPatientResources(patientId, heading, token);
+    const responseObj = await headingService.getDetail(patientId, heading, 'pulsetile');
+
+    return {
+      responseFrom: 'discovery_service',
+      results: responseObj
+    }
   }
 }
 

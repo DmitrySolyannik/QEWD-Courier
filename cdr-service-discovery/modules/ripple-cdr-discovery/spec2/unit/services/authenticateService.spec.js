@@ -30,45 +30,55 @@
 
 'use strict';
 
-const { ExecutionContextMock } = require('../../mocks');
+const {ExecutionContextMock} = require('../../mocks');
 const AuthService = require('../../../lib2/services/authenticateService');
+const { TokenCache } = require('../../../lib2/cache');
 
 describe('ripple-cdr-discovery/lib/services/authService', () => {
   let ctx;
   let authService;
   let args;
 
-  let tokenCache;
+  let actualTokenCache;
 
+  let tokenCache;
 
 
   beforeEach(() => {
     ctx = new ExecutionContextMock();
+    actualTokenCache = new TokenCache(ctx.adapter);
     authService = new AuthService(ctx);
     tokenCache = ctx.cache.tokenCache;
     ctx.cache.freeze();
     args = {
-      session : {
+      session: {
         email: 'jon.snow@example.com',
         password: 'p@$$w0rd'
       }
     };
   });
 
-  // describe('#create (static)', () => {
-  //   it('should initialize a new instance', async () => {
-  //     const actual = tokenCache.create(ctx.adapter);
-  //
-  //     expect(actual).toEqual(jasmine.any(tokenCache));
-  //     expect(actual.adapter).toBe(ctx.adapter);
-  //   });
-  // });
+  describe('#create (static)', () => {
+    fit('should initialize a new instance', async () => {
+      const actual = actualTokenCache.create(ctx.adapter);
 
-  fit('should call authService', async () => {
-    tokenCache.get.and.resolveValue({
-     jwt: 'some-token'
+      expect(actual).toEqual(jasmine.any(actualTokenCache));
+      expect(actual.adapter).toBe(ctx.adapter);
     });
-    //@TODO Mock login method
+  });
+
+  fit('should call authService with token', async () => {
+    tokenCache.get.and.resolveValue({
+      jwt: 'some-token',
+      createdAt: Date.now()
+    });
+    await authService.login(args.session);
+  });
+
+  fit('should call authService without token', async () => {
+    tokenCache.get.and.resolveValue({
+      createdAt: Date.now()
+    });
     await authService.login(args.session);
   });
 });
