@@ -34,9 +34,11 @@
 const byPatientId = require('./byPatientId');
 const byResource = require('./byResource');
 const byPatientBundle = require('./byPatientBundle');
+const byNHSNumber = require('./byNHSNumber');
 
 module.exports = {
   byPatientId,
   byResource,
-  byPatientBundle
+  byPatientBundle,
+  byNHSNumber
 };

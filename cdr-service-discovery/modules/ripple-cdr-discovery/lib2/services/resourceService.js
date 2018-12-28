@@ -85,6 +85,7 @@ class ResourceService {
     const existsByResource = patientCache.byResource.exists(patientId, resource);
     if (!existsByResource) return false;
 
+    const { resourcesRestService } = this.ctx.services;
     const data = {
       resource: [resource],
       patients: {
@@ -92,20 +93,14 @@ class ResourceService {
         entry: []
       }
     };
-    const { resourcesRestService } = this.ctx.services;
-    //@TODO think about resourceService.fetchPatientResources
     const existsByBundle = patientCache.byPatientBundle.exists();
-    const patientBundle = patientCache.getPatientBundleCache(existsByBundle);
-
-    patientBundle.forEach(uuid => {
-        //@TODO How can I get nesting in cache (Create new cache or mixin?)
-      //@TODO push not uuid , but patients by uuid
-      data.patients.entry.push({
-        resource: uuid
-      });
-    });
+    const { patients, key } = patientCache.getPatientBundleCache(existsByBundle);
+    patients.forEach(uuid => data.patients.entry.push({
+      resource: patientCache.byNHSNumber.getByUuid(key, patientId, uuid)
+    }));
 
     const response = await resourcesRestService.getPatientResources(patientId, data, token);
+    if (!response.entry) return false;
     //@TODO send data to patientCache by resource
   }
 }

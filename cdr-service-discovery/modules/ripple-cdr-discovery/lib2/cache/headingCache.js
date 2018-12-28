@@ -31,19 +31,14 @@
 'use strict';
 
 const { logger } = require('../core');
-const { byPatientId, byResource, byPatientBundle, byNHSNumber } = require('./mixins');
 
-class PatientCache {
+class headingCache {
   constructor(adapter) {
     this.adapter = adapter;
-    this.byPatientId = byPatientId(adapter);
-    this.byResource = byResource(adapter);
-    this.byPatientBundle = byPatientBundle(adapter);
-    this.byNHSNumber = byNHSNumber(adapter);
   }
 
   static create(adapter) {
-    return new PatientCache(adapter);
+    return new headingCache(adapter);
   }
 
   /**
@@ -51,62 +46,47 @@ class PatientCache {
    *
    * @return {Promise.<Object|null>}
    */
-  async get(key = 'Discovery') {
-    logger.info('cache/patientCache|get');
+  async get() {
+    logger.info('cache/headingCache|get');
+
+    const key = ['Discovery', 'Patient'];
 
     return this.adapter.getObject(key);
   }
 
-  async getObjectWithArrays(key) {
-    logger.info('cache/patientCache|getObjectWithArrays');
+  async getResource() {
+    logger.info('cache/headingCache|getResource');
 
-    return this.adapter.getObjectWithArrays(key);
+    const key = ['Discovery', 'Patient'];
+
+    return;
   }
 
   /**
    * Sets status
    *
    * @param  {Object} data
-   * @param  {string} key
    * @return {Promise}
    */
-  async set(data, key = 'Discovery') {
-    logger.info('cache/patientCache|set', { data });
+  async set(data) {
+    logger.info('cache/headingCache|set', { data });
 
+    const key = ['Discovery', 'Patient'];
     this.adapter.putObject(key, data);
   }
 
   /**
    * Deletes a session for a host
    *
+   * @param  {string} host
    * @return {Promise}
    */
   async delete() {
-    logger.info('cache/patientCache|delete');
+    logger.info('cache/headingCache|delete');
 
-    const key = ['Discovery'];
+    const key = ['Discovery', 'Patient'];
     this.adapter.delete(key);
-  }
-
-  insertBulk(arrValues, key) {
-    //@TODO in progress
-    logger.info('cache/patientCache|insertBulk');
-    arrValues.forEach(v => {
-      this.adapter.set(v, key);
-    })
-  }
-
-  getPatientBundleCache(exists, nhsNumber) {
-    logger.info('cache/patientCache|getPatientBundleCache');
-
-    const initKey = exists ? ['Discovery', 'PatientBundle'] : ['Discovery', 'Patient'];
-    const key = [...initKey, 'by_nhsNumber', nhsNumber, 'Patient'];
-
-    return {
-      patients: this.adapter.getObjectWithArrays(key),
-      key: initKey
-    }
   }
 }
 
-module.exports = PatientCache;
+module.exports = headingCache;

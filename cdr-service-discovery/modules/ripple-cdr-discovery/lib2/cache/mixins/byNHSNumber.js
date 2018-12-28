@@ -34,13 +34,11 @@ const { logger } = require('../../core');
 
 module.exports = (adapter) => {
   return {
+    getByUuid: async (key, nhsNumber, uuid) => {
+      logger.info('cache/patientCache|byNHSNumber|getByUuid');
 
-    exists: async (patientId) => {
-      logger.info('cache/patientCache|byPatientId|exists', { patientId });
-
-      const key = ['Discovery', 'Patient', 'by_nhsNumber', nhsNumber];
-
-      return adapter.exists(key);
+      const key = [...key, 'by_nhsNumber', nhsNumber, 'Patient', 'by_uuid', uuid, 'data'];
+      return adapter.getObjectWithArrays(key);
     }
   };
 };
