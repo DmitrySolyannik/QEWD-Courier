@@ -30,33 +30,31 @@
 
 'use strict';
 
-const { ExecutionContext, QewdCacheAdapter } = require('../../lib2/core');
-const WorkerMock = require('./worker');
-const CacheRegistryMock = require('./cache');
-const DbRegistryMock = require('./db');
-const ServiceRegistryMock = require('./services');
-const OpenEhrRegistryMock = require('./openehr');
+const EhrRestService = require('../../lib2/services/ehrRestService');
+const { lazyLoadAdapter } = require('../../lib2/shared/utils');
 
-class ExecutionContextMock extends ExecutionContext {
-  constructor(q) {
-    q = q || new WorkerMock();
-    const qewdSession = q.sessions.create('mock');
+class OpenEhrRegistryMock {
+  constructor() {
+    this.freezed = false;
+  }
 
-    super(q, { qewdSession });
+  initialise(host) {
+    if (this.freezed) return;
 
-    this.adapter = new QewdCacheAdapter(qewdSession);
-    this.cache = CacheRegistryMock.create();
-    this.db = DbRegistryMock.create();
-    this.services = ServiceRegistryMock.create();
-    this.openehr = OpenEhrRegistryMock.create();
+    const methods = Reflect
+      .ownKeys(EhrRestService.prototype)
+      .filter(x => x !== 'constructor');
+
+    return jasmine.createSpyObj(host, methods);
   }
 
   freeze() {
-    this.cache.freeze();
-    this.db.freeze();
-    this.services.freeze();
-    this.openehr.freeze();
+    this.freezed = true;
+  }
+
+  static create() {
+    return lazyLoadAdapter(new OpenEhrRegistryMock());
   }
 }
 
-module.exports = ExecutionContextMock;
+module.exports = OpenEhrRegistryMock;

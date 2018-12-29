@@ -24,16 +24,16 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  20 December 2018
+  29 December 2018
 
 */
 
 'use strict';
 
-const getBySourceId = require('../jumper/getBySourceId');
-const OpenEhrAdapter = require('../jumper/adapter');
-const post = require('../jumper/post');
-const query = require('../jumper/query');
+const getBySourceId = require('./getBySourceId');
+const OpenEhrAdapter = require('./adapter');
+const post = require('./post');
+const query = require('./query');
 
 module.exports = {
   getBySourceId,

@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  18 December 2018
+  29 December 2018
 
 */
 
@@ -68,6 +68,15 @@ describe('ripple-cdr-openehr/lib/services/cacheService', () => {
     cacheService = new CacheService(ctx);
 
     seeds(ctx.worker);
+  });
+
+  describe('#create (static)', () => {
+    it('should initialize a new instance', async () => {
+      const actual = CacheService.create(ctx);
+
+      expect(actual).toEqual(jasmine.any(CacheService));
+      expect(actual.ctx).toBe(ctx);
+    });
   });
 
   describe('#delete', () => {

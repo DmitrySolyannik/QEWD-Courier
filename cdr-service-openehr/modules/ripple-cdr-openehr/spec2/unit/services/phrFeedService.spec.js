@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  15 December 2018
+  29 December 2018
 
 */
 
@@ -54,6 +54,15 @@ describe('ripple-cdr-openehr/lib/services/phrFeedService', () => {
 
   afterEach(() => {
     jasmine.clock().uninstall();
+  });
+
+  describe('#create (static)', () => {
+    it('should initialize a new instance', async () => {
+      const actual = PhrFeedService.create(ctx);
+
+      expect(actual).toEqual(jasmine.any(PhrFeedService));
+      expect(actual.ctx).toBe(ctx);
+    });
   });
 
   describe('#getBySourceId', () => {
