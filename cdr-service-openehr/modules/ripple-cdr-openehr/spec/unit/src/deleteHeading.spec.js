@@ -66,7 +66,7 @@ describe('ripple-cdr-openehr/lib/src/deleteHeading', () => {
     q.db.reset();
   });
 
-  it('should return unable to establish a session with host error', (done) => {
+  xit('should return unable to establish a session with host error', (done) => {
     const data = {};
 
     startSessionHttpMock(data);
@@ -83,7 +83,7 @@ describe('ripple-cdr-openehr/lib/src/deleteHeading', () => {
     }, 100);
   });
 
-  it('should delete heading', (done) => {
+  xit('should delete heading', (done) => {
     const data = {
       sessionId: '03134cc0-3741-4d3f-916a-a279a24448e5'
     };

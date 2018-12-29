@@ -68,7 +68,7 @@ describe('ripple-cdr-openehr/lib/src/getHeadingDetailFromCache', () => {
     q.db.reset();
   });
 
-  it('should call getHeadingBySourceId with correct parameters', () => {
+  xit('should call getHeadingBySourceId with correct parameters', () => {
     const expected = {foo: 'bar'};
 
     const output = {foo: 'bar'};
