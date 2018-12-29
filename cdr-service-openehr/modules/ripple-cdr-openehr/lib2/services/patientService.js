@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  15 December 2018
+  30 December 2018
 
 */
 
@@ -45,6 +45,8 @@ class PatientService {
   }
 
   /**
+   * Gets or create Ehr Id
+   *
    * @param  {string} host
    * @param  {string|int} patientId
    * @return {Object}
@@ -54,10 +56,10 @@ class PatientService {
 
     let data = null;
 
-    const ehrSession = await this.ehrSessionService.start(host);
+    const { sessionId } = await this.ehrSessionService.start(host);
 
     const ehrRestService = this.ctx.openehr[host];
-    data = await ehrRestService.getEhr(ehrSession.id, patientId);
+    data = await ehrRestService.getEhr(sessionId, patientId);
     debug('get ehr data: %j', data);
 
     if (data && typeof data !== 'string') {
@@ -67,7 +69,7 @@ class PatientService {
       };
     }
 
-    data = await ehrRestService.createEhr(ehrSession.id, patientId);
+    data = await ehrRestService.postEhr(sessionId, patientId);
     debug('create ehr data: %j', data);
 
     return {
@@ -77,6 +79,8 @@ class PatientService {
   }
 
   /**
+   * Gets EHR Id
+   *
    * @param  {string} host
    * @param  {string|int} patientId
    * @return {string}
@@ -92,8 +96,8 @@ class PatientService {
     }
 
     const ehrRestService = this.ctx.openehr[host];
-    const ehrSession = await this.ehrSessionService.start(host);
-    const data = await ehrRestService.getEhr(ehrSession.id, patientId);
+    const { sessionId } = await this.ehrSessionService.start(host);
+    const data = await ehrRestService.getEhr(sessionId, patientId);
 
     if (!data || !data.ehrId) {
       throw new EhrIdNotFoundError();

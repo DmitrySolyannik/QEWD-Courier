@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  29 December 2018
+  30 December 2018
 
 */
 
@@ -59,7 +59,7 @@ class HeadingService {
    * @param  {string|int} patientId
    * @param  {string} heading
    * @param  {Object} data
-   * @return {Object}
+   * @return {Promise.<Object>}
    */
   async post(host, patientId, heading, data) {
     logger.info('services/headingService|post', { host, patientId, heading, data: typeof data });
@@ -111,7 +111,7 @@ class HeadingService {
    * @param  {string} heading
    * @param  {string} sourceId
    * @param  {Object} data
-   * @return {Object}
+   * @return {Promise.<Object>}
    */
   async put(host, patientId, heading, sourceId, data) {
     logger.info('services/headingService|put', { host, patientId, heading, sourceId, data: typeof data });
@@ -174,7 +174,7 @@ class HeadingService {
    * @param  {string} host
    * @param  {string|int} patientId
    * @param  {string} heading
-   * @return {Object[]}
+   * @return {Promise.<Object[]>}
    */
   async query(host, patientId, heading) {
     logger.info('services/headingService|query', { host, patientId, heading });
@@ -211,7 +211,7 @@ class HeadingService {
    *
    * @param  {string} sourceId
    * @param  {string} format
-   * @return {Object}
+   * @return {Promise.<Object>}
    */
   async getBySourceId(sourceId, format = ResponseFormat.DETAIL) {
     logger.info('services/headingService|getBySourceId', { sourceId, format });
@@ -302,7 +302,7 @@ class HeadingService {
    *
    * @param  {string|int} patientId
    * @param  {string} headings
-   * @return {Object}
+   * @return {Promise.<Object>}
    */
   async getSummary(patientId, heading) {
     logger.info('services/headingService|getSummary', { patientId, heading });
@@ -325,7 +325,7 @@ class HeadingService {
    * @param  {string|int} patientId
    * @param  {string[]} headings
    * @param  {int} limit
-   * @return {Object}
+   * @return {Promise.<Object>}
    */
   async getSynopses(patientId, headings, limit) {
     logger.info('services/headingService|getSynopses', { patientId, headings, limit });
@@ -346,7 +346,7 @@ class HeadingService {
    * @param  {string|int} patientId
    * @param  {string} headings
    * @param  {int} limit
-   * @return {Object}
+   * @return {Promise.<Object>}
    */
   async getSynopsis(patientId, heading, limit) {
     logger.info('services/headingService|getSynopsis', { patientId, heading, limit });
@@ -366,7 +366,7 @@ class HeadingService {
    *
    * @param  {string|int} patientId
    * @param  {string[]} headings
-   * @return {Object}
+   * @return {Promise.<Object>}
    */
   async fetchMany(patientId, headings) {
     logger.info('services/headingService|fetchMany', { patientId, headings });
@@ -381,9 +381,7 @@ class HeadingService {
       }
     });
 
-    return {
-      ok: true
-    };
+    return ok();
   }
 
   /**
@@ -391,7 +389,7 @@ class HeadingService {
    *
    * @param  {string|int} patientId
    * @param  {string} heading
-   * @return {Object}
+   * @return {Promise.<Object>}
    */
   async fetchOne(patientId, heading) {
     logger.info('services/headingService|fetchOne', { patientId, heading });
@@ -399,9 +397,7 @@ class HeadingService {
     const hosts = Object.keys(this.ctx.serversConfig);
     await P.each(hosts, async (host) => await this.fetch(host, patientId, heading));
 
-    return {
-      ok: true
-    };
+    return ok();
   }
 
   /**
@@ -410,7 +406,7 @@ class HeadingService {
    * @param  {string} host
    * @param  {string|int} patientId
    * @param  {string} heading
-   * @return {Object|null}
+   * @return {Promise.<Object>}
    */
   async fetch(host, patientId, heading) {
     logger.info('services/headingService|fetch', { host, patientId, heading });
@@ -465,7 +461,7 @@ class HeadingService {
    * @param  {string|int} patientId
    * @param  {string} heading
    * @param  {string} sourceId
-   * @return {Object}
+   * @return {Promise<Object>}
    */
   async delete(patientId, heading, sourceId) {
     logger.info('services/headingService|delete', { patientId, heading, sourceId });

@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  29 December 2018
+  30 December 2018
 
 */
 
@@ -32,7 +32,7 @@
 
 const { ExecutionContextMock } = require('../../mocks');
 const { uuidV4Regex } = require('../../helpers/utils');
-const Top3ThingsService = require('../../../lib2/services/Top3ThingsService');
+const Top3ThingsService = require('../../../lib2/services/top3ThingsService');
 
 describe('ripple-cdr-openehr/lib/services/top3ThingsService', () => {
   let ctx;

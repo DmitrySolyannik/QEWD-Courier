@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  29 December 2018
+  30 December 2018
 
 */
 
@@ -42,7 +42,7 @@ describe('ripple-cdr-openehr/lib/services/phrFeedService', () => {
   let phrFeedDb;
 
   beforeEach(() => {
-    const nowTime = Date.UTC(2018, 0, 1); // 1514764800000, now
+    const nowTime = Date.UTC(2019, 0, 1); // 1546300800000, now
     jasmine.clock().install();
     jasmine.clock().mockDate(new Date(nowTime));
 
@@ -50,6 +50,8 @@ describe('ripple-cdr-openehr/lib/services/phrFeedService', () => {
     phrFeedService = new PhrFeedService(ctx);
 
     phrFeedDb = ctx.db.phrFeedDb;
+
+    ctx.freeze();
   });
 
   afterEach(() => {
@@ -207,10 +209,38 @@ describe('ripple-cdr-openehr/lib/services/phrFeedService', () => {
         name: 'NYTimes.com',
         rssFeedUrl: 'http://rss.nytimes.com/services/xml/rss/nyt/Health.xml',
         sourceId: jasmine.stringMatching(uuidV4Regex),
-        dateCreated: 1514764800000
+        dateCreated: 1546300800000
       });
 
       expect(actual).toMatch(uuidV4Regex);
+    });
+  });
+
+  describe('#update', () => {
+    it('should update phr feed', async () => {
+      const sourceId = 'eaf394a9-5e05-49c0-9c69-c710c77eda76';
+      const feed = {
+        author: 'bob.smith@gmail.com',
+        email: 'ivor.cox@ripple.foundation',
+        landingPageUrl: 'https://www.nytimes.com/section/health',
+        name: 'NYTimes.com',
+        rssFeedUrl: 'http://rss.nytimes.com/services/xml/rss/nyt/Health.xml'
+      };
+
+      await phrFeedService.update(sourceId, feed);
+
+      expect(phrFeedDb.update).toHaveBeenCalledWith(
+        'eaf394a9-5e05-49c0-9c69-c710c77eda76',
+        {
+          author: 'bob.smith@gmail.com',
+          email: 'ivor.cox@ripple.foundation',
+          landingPageUrl: 'https://www.nytimes.com/section/health',
+          name: 'NYTimes.com',
+          rssFeedUrl: 'http://rss.nytimes.com/services/xml/rss/nyt/Health.xml',
+          sourceId: 'eaf394a9-5e05-49c0-9c69-c710c77eda76',
+          dateCreated: 1546300800000
+        }
+      );
     });
   });
 });

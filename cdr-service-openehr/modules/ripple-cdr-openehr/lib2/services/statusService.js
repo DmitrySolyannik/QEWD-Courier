@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  16 December 2018
+  30 December 2018
 
 */
 
@@ -43,6 +43,11 @@ class StatusService {
     return new StatusService(ctx);
   }
 
+  /**
+   * Checks record status and increment request number if exists
+   *
+   * @return {Promise.<Object|null?}
+   */
   async check() {
     logger.info('services/statusService|check');
 

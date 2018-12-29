@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  20 December 2018
+  29 December 2018
 
 */
 
@@ -35,7 +35,9 @@ const jsonStringify = require('fast-safe-stringify');
 const config = require('../config');
 
 const { combine, timestamp, colorize, printf, metadata } = format;
-const printLog = (info) => `${info.timestamp} ${info.level}: ${info.message} - ${jsonStringify(info.metadata)}`;
+const printLog = (info) => info.metadata && Object.keys(info.metadata).length > 0
+  ? `${info.timestamp} ${info.level}: ${info.message} - ${jsonStringify(info.metadata)}`
+  : `${info.timestamp} ${info.level}: ${info.message}`;
 const logger = createLogger({
   transports: [
     new transports.Console({
