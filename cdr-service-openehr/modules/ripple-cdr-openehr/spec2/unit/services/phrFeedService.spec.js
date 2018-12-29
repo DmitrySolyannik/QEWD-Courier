@@ -64,6 +64,7 @@ describe('ripple-cdr-openehr/lib/services/phrFeedService', () => {
 
       expect(actual).toEqual(jasmine.any(PhrFeedService));
       expect(actual.ctx).toBe(ctx);
+      expect(actual.phrFeedDb).toBe(phrFeedDb);
     });
   });
 

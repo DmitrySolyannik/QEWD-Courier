@@ -73,6 +73,7 @@ describe('ripple-cdr-openehr/lib/services/top3ThingsService', () => {
 
       expect(actual).toEqual(jasmine.any(Top3ThingsService));
       expect(actual.ctx).toBe(ctx);
+      expect(actual.top3ThingsDb).toBe(top3ThingsDb);
     });
   });
 

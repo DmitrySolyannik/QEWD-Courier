@@ -54,6 +54,7 @@ describe('ripple-cdr-openehr/lib/services/statusService', () => {
 
       expect(actual).toEqual(jasmine.any(StatusService));
       expect(actual.ctx).toBe(ctx);
+      expect(actual.statusCache).toBe(statusCache);
     });
   });
 

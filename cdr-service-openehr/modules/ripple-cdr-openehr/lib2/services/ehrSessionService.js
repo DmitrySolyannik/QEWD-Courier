@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  17 December 2018
+  30 December 2018
 
 */
 
@@ -77,7 +77,7 @@ class EhrSessionService {
     const ehrRestService = this.ctx.openehr[host];
     const data = await ehrRestService.startSession();
     if (!data || !data.sessionId) {
-      logger.error('start session response was unexpected', data);
+      logger.error(`start session response was unexpected: ${JSON.stringify(data)}`);
       throw new EhrSessionError(`Unable to establish a session with ${host}`);
     }
 
@@ -98,7 +98,7 @@ class EhrSessionService {
    *
    * @param  {string} host
    * @param  {string} sessionId
-   * @return {Promise}
+   * @return {Promise.<bool>}
    */
   async stop(host, sessionId) {
     logger.info('services/ehrSessionService|stop', { host, sessionId });
@@ -113,7 +113,7 @@ class EhrSessionService {
         // don't stop this session or remove it from cache
         debug('%s cached session for %s not shut down', host);
 
-        return;
+        return false;
       }
 
       // remove cached session id and continue to send request to shut it down on OpenEHR system
@@ -123,6 +123,8 @@ class EhrSessionService {
 
     const ehrRestService = this.ctx.openehr[host];
     await ehrRestService.stopSession(sessionId);
+
+    return true;
   }
 }
 

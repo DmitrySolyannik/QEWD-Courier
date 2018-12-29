@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  17 December 2018
+  30 December 2018
 
 */
 
@@ -32,7 +32,7 @@
 
 const request = require('request');
 const config = require('../config');
-const { logger } = require('../core');
+const logger = require('../core/logger');
 const debug = require('debug')('ripple-cdr-openehr:services:ehr-rest');
 
 function requestAsync(options) {
