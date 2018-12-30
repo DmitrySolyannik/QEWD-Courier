@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  18 December 2018
+  30 December 2018
 
 */
 
@@ -33,7 +33,7 @@
 const P = require('bluebird');
 const { logger } = require('../core');
 const { handleResponse } = require('../shared/utils');
-const { ExtraHeading } = require('../shared/enum');
+const { ExtraHeading } = require('../shared/enums');
 const debug = require('debug')('ripple-cdr-openehr:dispatchers:discovery');
 
 class DiscoveryDispatcher {
@@ -51,7 +51,9 @@ class DiscoveryDispatcher {
    * @return {Promise.<Object>}
    */
   async getDiscoveryData(patientId, heading, jwt) {
-    logger.info('dispatchers/discoveryDispatcher|getDiscoveryData', { patientId, heading });
+    logger.info('dispatchers/discoveryDispatcher|getDiscoveryData', { patientId, heading, jwt: typeof jwt });
+
+    debug('jwt: %s', jwt);
 
     return new Promise((resolve, reject) => {
       if (heading === ExtraHeading.FINISHED) {
@@ -90,7 +92,9 @@ class DiscoveryDispatcher {
    * @return {Promise.<Object>}
    */
   async mergeDiscoveryData(heading, data, jwt) {
-    logger.info('dispatchers/discoveryDispatcher|mergeDiscoveryData', { heading, data });
+    logger.info('dispatchers/discoveryDispatcher|mergeDiscoveryData', { heading, data, jwt: typeof jwt  });
+
+    debug('jwt: %s', jwt);
 
     return new Promise((resolve, reject) => {
       const token = this.q.jwt.handlers.getProperty('uid', jwt);
@@ -129,7 +133,9 @@ class DiscoveryDispatcher {
    * @return {Promise}
    */
   async sync(patientId, heading, jwt) {
-    logger.info('dispatchers/discoveryDispatcher|sync', { patientId, heading });
+    logger.info('dispatchers/discoveryDispatcher|sync', { patientId, heading, jwt: typeof jwt  });
+
+    debug('jwt: %s', jwt);
 
     try {
       const discoveryData = await this.getDiscoveryData(patientId, heading, jwt);
@@ -150,7 +156,9 @@ class DiscoveryDispatcher {
    * @return {Promise}
    */
   async syncAll(patientId, headings, jwt) {
-    logger.info('dispatchers/discoveryDispatcher|syncAll', { patientId, headings });
+    logger.info('dispatchers/discoveryDispatcher|syncAll', { patientId, headings, jwt: typeof jwt  });
+
+    debug('jwt: %s', jwt);
 
     await P.each(headings, (heading) => this.sync(patientId, heading, jwt));
     logger.info('discovery data loaded into EtherCIS');

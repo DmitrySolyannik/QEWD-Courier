@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 December 2018
+  30 December 2018
 
 */
 
@@ -32,6 +32,7 @@
 
 module.exports = function () {
   this.handleMessage = jasmine.createSpy();
+  this.microServiceRouter = jasmine.createSpy();
   this.jwt = {
     handlers: {
       getProperty: jasmine.createSpy()
