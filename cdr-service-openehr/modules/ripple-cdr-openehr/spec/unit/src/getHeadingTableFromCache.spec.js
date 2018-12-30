@@ -78,7 +78,7 @@ describe('ripple-cdr-openehr/lib/src/getHeadingTableFromCache', () => {
     q.db.reset();
   });
 
-  xit('should return heading table', () => {
+  it('should return heading table', () => {
     const expected = [
       {
         desc: 'foo',

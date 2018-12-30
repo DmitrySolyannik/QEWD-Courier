@@ -167,7 +167,7 @@ describe('ripple-cdr-openehr/lib/src/putHeading', () => {
     q.db.reset();
   });
 
-  xit('should return heading not recognised or no POST definition available error', () => {
+  it('should return heading not recognised or no POST definition available error', () => {
     heading = 'counts';
 
     putHeading.call(q, patientId, heading, compositionId, data, qewdSession, callback);
@@ -177,7 +177,7 @@ describe('ripple-cdr-openehr/lib/src/putHeading', () => {
     });
   });
 
-  xit('should return unable to establish a session with host error', (done) => {
+  it('should return unable to establish a session with host error', (done) => {
     startSessionHttpMock();
 
     putHeading.call(q, patientId, heading, compositionId, data, qewdSession, callback);
@@ -197,7 +197,7 @@ describe('ripple-cdr-openehr/lib/src/putHeading', () => {
       heading = 'vaccinations';
     });
 
-    xit('should post heading by jumper', () => {
+    it('should post heading by jumper', () => {
       const expectedParams = {
         patientId: 9999999000,
         heading: 'vaccinations',
@@ -216,7 +216,7 @@ describe('ripple-cdr-openehr/lib/src/putHeading', () => {
     });
   });
 
-  xit('should put heading and delete session caches', (done) => {
+  it('should put heading and delete session caches', (done) => {
     const expected = {};
 
     const sessionId = fakeResponses.session.sessionId;
@@ -241,7 +241,7 @@ describe('ripple-cdr-openehr/lib/src/putHeading', () => {
     }, 100);
   });
 
-  xit('should put heading and return false when no data returned', (done) => {
+  it('should put heading and return false when no data returned', (done) => {
     const sessionId = fakeResponses.session.sessionId;
     const ehrId = fakeResponses.ehr.ehrId;
 
@@ -261,7 +261,7 @@ describe('ripple-cdr-openehr/lib/src/putHeading', () => {
     }, 100);
   });
 
-  xit('should put heading and return response with composition uid and action', (done) => {
+  it('should put heading and return response with composition uid and action', (done) => {
     const sessionId = fakeResponses.session.sessionId;
     const ehrId = fakeResponses.ehr.ehrId;
 

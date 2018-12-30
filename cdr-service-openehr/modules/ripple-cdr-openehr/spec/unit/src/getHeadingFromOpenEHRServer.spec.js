@@ -106,7 +106,7 @@ describe('ripple-cdr-openehr/lib/src/getHeadingFromOpenEHRServer', () => {
     q.db.reset();
   });
 
-  xit('should process response from openEHR server', (done) => {
+  it('should process response from openEHR server', (done) => {
     /*jshint camelcase: false */
     const expected = {
       heading: 'procedures',
@@ -154,7 +154,7 @@ describe('ripple-cdr-openehr/lib/src/getHeadingFromOpenEHRServer', () => {
     }, 100);
   });
 
-  xit('should process response from openEHR server when heading equals counts', (done) => {
+  it('should process response from openEHR server when heading equals counts', (done) => {
     const expected = {
       heading: 'counts',
       host: 'marand',
@@ -198,7 +198,7 @@ describe('ripple-cdr-openehr/lib/src/getHeadingFromOpenEHRServer', () => {
     }, 100);
   });
 
-  xit('should process response from openEHR server when result has no uid', (done) => {
+  it('should process response from openEHR server when result has no uid', (done) => {
     const data = {
       resultSet: [
         {}
@@ -222,7 +222,7 @@ describe('ripple-cdr-openehr/lib/src/getHeadingFromOpenEHRServer', () => {
     }, 100);
   });
 
-  xit('should process response from openEHR server when no body returned', (done) => {
+  it('should process response from openEHR server when no body returned', (done) => {
     httpMock();
 
     openEHR.init.call(q);
@@ -241,7 +241,7 @@ describe('ripple-cdr-openehr/lib/src/getHeadingFromOpenEHRServer', () => {
     }, 100);
   });
 
-  xit('should process response from openEHR server when no resultSet', (done) => {
+  it('should process response from openEHR server when no resultSet', (done) => {
     httpMock({});
 
     openEHR.init.call(q);
@@ -265,7 +265,7 @@ describe('ripple-cdr-openehr/lib/src/getHeadingFromOpenEHRServer', () => {
       heading = 'vaccinations';
     });
 
-    xit('should using Jumper to fetch heading', () => {
+    it('should using Jumper to fetch heading', () => {
       openEHR.init.call(q);
       getHeadingFromOpenEHRServer.call(q, nhsNo, heading, host, qewdSession, openEhrSession, callback);
 

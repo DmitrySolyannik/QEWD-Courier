@@ -131,7 +131,7 @@ describe('ripple-cdr-openehr/lib/handlers/mergeDiscoveryData', () => {
     q.db.reset();
   });
 
-  xit('should return need refresh when record is ready', () => {
+  it('should return need refresh when record is ready', () => {
     args.heading = 'finished';
 
     mergeDiscoveryData.call(q, args, finished);
@@ -145,7 +145,7 @@ describe('ripple-cdr-openehr/lib/handlers/mergeDiscoveryData', () => {
     });
   });
 
-  xit('should return refresh not needed when no discovery data items', () => {
+  it('should return refresh not needed when no discovery data items', () => {
     args.req.data = [];
 
     mergeDiscoveryData.call(q, args, finished);
@@ -155,7 +155,7 @@ describe('ripple-cdr-openehr/lib/handlers/mergeDiscoveryData', () => {
     });
   });
 
-  xit('should return refresh not needed when all records exists in discovery cache', (done) => {
+  it('should return refresh not needed when all records exists in discovery cache', (done) => {
     const sessionId = fakeResponses.session.sessionId;
 
     startSessionHttpMock(fakeResponses.session);
@@ -173,7 +173,7 @@ describe('ripple-cdr-openehr/lib/handlers/mergeDiscoveryData', () => {
     }, 100);
   });
 
-  xit('should return refresh not needed when record not found discovery cache and no response from OpenEHR', (done) => {
+  it('should return refresh not needed when record not found discovery cache and no response from OpenEHR', (done) => {
     const sessionId = fakeResponses.session.sessionId;
 
     startSessionHttpMock(fakeResponses.session);
@@ -206,7 +206,7 @@ describe('ripple-cdr-openehr/lib/handlers/mergeDiscoveryData', () => {
     }, 100);
   });
 
-  xit('should return need refresh, save OpenEHR response to discovery map and delete cache', (done) => {
+  it('should return need refresh, save OpenEHR response to discovery map and delete cache', (done) => {
     const sessionId = fakeResponses.session.sessionId;
 
     startSessionHttpMock(fakeResponses.session);
@@ -260,7 +260,7 @@ describe('ripple-cdr-openehr/lib/handlers/mergeDiscoveryData', () => {
     }, 100);
   });
 
-  xdescribe('both records not in cache but second has error response', () => {
+  describe('both records not in cache but second has error response', () => {
     beforeEach(() => {
       args.req.data = [
         {
@@ -335,7 +335,7 @@ describe('ripple-cdr-openehr/lib/handlers/mergeDiscoveryData', () => {
     });
   });
 
-  xdescribe('both records not in cache but first has error response', () => {
+  describe('both records not in cache but first has error response', () => {
     beforeEach(() => {
       args.req.data = [
         {
@@ -410,7 +410,7 @@ describe('ripple-cdr-openehr/lib/handlers/mergeDiscoveryData', () => {
     });
   });
 
-  xdescribe('first record not in cache but second is already cached', () => {
+  describe('first record not in cache but second is already cached', () => {
     beforeEach(() => {
       args.req.data[0].sourceId = 'eaf394a9-5e05-49c0-9c69-c710c77eda76';
     });

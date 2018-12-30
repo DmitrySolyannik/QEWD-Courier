@@ -66,7 +66,7 @@ describe('ripple-cdr-openehr/lib/feeds/post', () => {
     jasmine.clock().uninstall();
   });
 
-  xit('should return author missing or empty error', () => {
+  it('should return author missing or empty error', () => {
     delete args.req.body.author;
 
     post.call(q, args, finished);
@@ -76,7 +76,7 @@ describe('ripple-cdr-openehr/lib/feeds/post', () => {
     });
   });
 
-  xit('should return feed name missing or empty error', () => {
+  it('should return feed name missing or empty error', () => {
     delete args.req.body.name;
 
     post.call(q, args, finished);
@@ -86,7 +86,7 @@ describe('ripple-cdr-openehr/lib/feeds/post', () => {
     });
   });
 
-  xit('should return landing page URL missing or empty error', () => {
+  it('should return landing page URL missing or empty error', () => {
     delete args.req.body.landingPageUrl;
 
     post.call(q, args, finished);
@@ -96,7 +96,7 @@ describe('ripple-cdr-openehr/lib/feeds/post', () => {
     });
   });
 
-  xit('should return landing page URL is invalid error', () => {
+  it('should return landing page URL is invalid error', () => {
     args.req.body.landingPageUrl = 'foo';
 
     post.call(q, args, finished);
@@ -106,7 +106,7 @@ describe('ripple-cdr-openehr/lib/feeds/post', () => {
     });
   });
 
-  xit('should return RSS Feed URL missing or empty error', () => {
+  it('should return RSS Feed URL missing or empty error', () => {
     delete args.req.body.rssFeedUrl;
 
     post.call(q, args, finished);
@@ -116,7 +116,7 @@ describe('ripple-cdr-openehr/lib/feeds/post', () => {
     });
   });
 
-  xit('should return RSS Feed URL is invalid error', () => {
+  it('should return RSS Feed URL is invalid error', () => {
     args.req.body.rssFeedUrl = 'foo';
 
     post.call(q, args, finished);
@@ -126,7 +126,7 @@ describe('ripple-cdr-openehr/lib/feeds/post', () => {
     });
   });
 
-  xit('should create feed', () => {
+  it('should create feed', () => {
     const expected = {
       author: 'ivor.cox@phr.leeds.nhs',
       name: 'BBC News',

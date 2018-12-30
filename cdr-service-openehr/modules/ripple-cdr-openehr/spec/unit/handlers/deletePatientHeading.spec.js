@@ -112,7 +112,7 @@ describe('ripple-cdr-openehr/lib/handlers/deletePatientHeading', () => {
     q.db.reset();
   });
 
-  xit('should return invalid request error', () => {
+  it('should return invalid request error', () => {
     args.session.userMode = 'idcr';
 
     deletePatientHeading.call(q, args, finished);
@@ -122,7 +122,7 @@ describe('ripple-cdr-openehr/lib/handlers/deletePatientHeading', () => {
     });
   });
 
-  xit('should return invalid or missing patientId error', () => {
+  it('should return invalid or missing patientId error', () => {
     args.patientId = 'foo';
 
     deletePatientHeading.call(q, args, finished);
@@ -132,7 +132,7 @@ describe('ripple-cdr-openehr/lib/handlers/deletePatientHeading', () => {
     });
   });
 
-  xit('should return cannot delete feeds records error', () => {
+  it('should return cannot delete feeds records error', () => {
     args.heading = 'feeds';
 
     deletePatientHeading.call(q, args, finished);
@@ -142,7 +142,7 @@ describe('ripple-cdr-openehr/lib/handlers/deletePatientHeading', () => {
     });
   });
 
-  xit('should return cannot delete top3Things records error', () => {
+  it('should return cannot delete top3Things records error', () => {
     args.heading = 'top3Things';
 
     deletePatientHeading.call(q, args, finished);
@@ -152,7 +152,7 @@ describe('ripple-cdr-openehr/lib/handlers/deletePatientHeading', () => {
     });
   });
 
-  xit('should return invalid or missing heading error', () => {
+  it('should return invalid or missing heading error', () => {
     args.heading = 'bar';
 
     deletePatientHeading.call(q, args, finished);
@@ -174,7 +174,7 @@ describe('ripple-cdr-openehr/lib/handlers/deletePatientHeading', () => {
     });
   });
 
-  xit('should return no existing heading record found for sourceId error', () => {
+  it('should return no existing heading record found for sourceId error', () => {
     args.sourceId = 'ethercis-foobar';
 
     fetchAndCacheHeading.and.callFake((patientId, heading, session, callback) => {
@@ -191,7 +191,7 @@ describe('ripple-cdr-openehr/lib/handlers/deletePatientHeading', () => {
     });
   });
 
-  xit('should return сompositionId not found for sourceId error', () => {
+  it('should return сompositionId not found for sourceId error', () => {
     args.sourceId = 'ethercis-e5770469-7c26-47f7-afe0-57bce80eb2ee';
 
     fetchAndCacheHeading.and.callFake((patientId, heading, session, callback) => {
@@ -208,7 +208,7 @@ describe('ripple-cdr-openehr/lib/handlers/deletePatientHeading', () => {
     });
   });
 
-  xit('should delete patient heading', () => {
+  it('should delete patient heading', () => {
     fetchAndCacheHeading.and.callFake((patientId, heading, session, callback) => {
       callback({ok: true});
     });

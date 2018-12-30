@@ -75,7 +75,7 @@ describe('ripple-cdr-openehr/lib/handlers/getMyHeadingSummary', () => {
     q.db.reset();
   });
 
-  xit('should return get heading summary for correct patientId', () => {
+  it('should return get heading summary for correct patientId', () => {
     getMyHeadingSummary.call(q, args, finished);
 
     expect(args.patientId).toBe(9434765919);

@@ -141,7 +141,7 @@ describe('ripple-cdr-openehr/lib/src/getHeadingBySourceId', () => {
     q.db.reset();
   });
 
-  xit('should return empty when sourceId is empty', () => {
+  it('should return empty when sourceId is empty', () => {
     const expected = {};
 
     sourceId = '';
@@ -150,7 +150,7 @@ describe('ripple-cdr-openehr/lib/src/getHeadingBySourceId', () => {
     expect(actual).toEqual(expected);
   });
 
-  xit('should return empty when record by sourceId exist', () => {
+  it('should return empty when record by sourceId exist', () => {
     const expected = {};
 
     sourceId = 'some-non-exist-source-id';
@@ -159,7 +159,7 @@ describe('ripple-cdr-openehr/lib/src/getHeadingBySourceId', () => {
     expect(actual).toEqual(expected);
   });
 
-  xit('should return details', () => {
+  it('should return details', () => {
     const expected = {
       name: 'quux',
       desc: 'baz',
@@ -172,7 +172,7 @@ describe('ripple-cdr-openehr/lib/src/getHeadingBySourceId', () => {
     expect(actual).toEqual(expected);
   });
 
-  xit('should return details when no format passed', () => {
+  it('should return details when no format passed', () => {
     const expected = {
       name: 'quux',
       desc: 'baz',
@@ -190,7 +190,7 @@ describe('ripple-cdr-openehr/lib/src/getHeadingBySourceId', () => {
       format = 'synopsis';
     });
 
-    xit('should return synopsis', () => {
+    it('should return synopsis', () => {
       const expected = {
         sourceId: '2c9a7b22-4cdd-484e-a8b5-759a70443be3',
         source: 'marand',
@@ -221,7 +221,7 @@ describe('ripple-cdr-openehr/lib/src/getHeadingBySourceId', () => {
       format = 'summary';
     });
 
-    xit('should return summary', () => {
+    it('should return summary', () => {
       const expected = {
         desc: 'baz',
         source: 'marand',
@@ -253,7 +253,7 @@ describe('ripple-cdr-openehr/lib/src/getHeadingBySourceId', () => {
       sourceId = '1c905678-e2f0-41d6-ad88-e1360113c2b3';
     });
 
-    xit('should return formatted record from cache', () => {
+    it('should return formatted record from cache', () => {
       const expected = {
         desc: 'baz',
         name: 'quux',
@@ -272,7 +272,7 @@ describe('ripple-cdr-openehr/lib/src/getHeadingBySourceId', () => {
       sourceId = 'a289d435-8089-4692-8e7f-c87803a82a6d';
     });
 
-    xit('should return formatted record from cache', () => {
+    it('should return formatted record from cache', () => {
       const expected = {foo: 'barbaz'};
 
       const output = {foo: 'barbaz'};

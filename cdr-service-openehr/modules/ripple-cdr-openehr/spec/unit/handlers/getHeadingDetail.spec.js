@@ -84,7 +84,7 @@ describe('ripple-cdr-openehr/lib/handlers/getHeadingDetail', () => {
     q.db.reset();
   });
 
-  xit('should return invalid or missing patientId error', () => {
+  it('should return invalid or missing patientId error', () => {
     args.patientId = 'foo';
 
     getHeadingDetail.call(q, args, finished);
@@ -94,7 +94,7 @@ describe('ripple-cdr-openehr/lib/handlers/getHeadingDetail', () => {
     });
   });
 
-  xit('should return empty array when heading has not yet been added to middle-tier processing', () => {
+  it('should return empty array when heading has not yet been added to middle-tier processing', () => {
     args.heading = 'bar';
 
     getHeadingDetail.call(q, args, finished);
@@ -102,7 +102,7 @@ describe('ripple-cdr-openehr/lib/handlers/getHeadingDetail', () => {
     expect(finished).toHaveBeenCalledWith([]);
   });
 
-  xit('should return empty array when invalid sourceId', () => {
+  it('should return empty array when invalid sourceId', () => {
     args.sourceId = 'ethercis-foobar';
 
     getHeadingDetail.call(q, args, finished);
@@ -110,7 +110,7 @@ describe('ripple-cdr-openehr/lib/handlers/getHeadingDetail', () => {
     expect(finished).toHaveBeenCalledWith([]);
   });
 
-  xit('should return empty array when no results could be returned from the OpenEHR servers for heading', () => {
+  it('should return empty array when no results could be returned from the OpenEHR servers for heading', () => {
     fetchAndCacheHeading.and.callFake((patientId, heading, session, callback) => {
       callback({ok: false});
     });
@@ -123,7 +123,7 @@ describe('ripple-cdr-openehr/lib/handlers/getHeadingDetail', () => {
     expect(finished).toHaveBeenCalledWith([]);
   });
 
-  xit('should get detail when heading for patient cached', () => {
+  it('should get detail when heading for patient cached', () => {
     fetchAndCacheHeading.and.callFake((patientId, heading, session, callback) => {
       callback({ok: true});
     });
@@ -154,7 +154,7 @@ describe('ripple-cdr-openehr/lib/handlers/getHeadingDetail', () => {
     });
   });
 
-  xit('should override patientId for PHR users', () => {
+  it('should override patientId for PHR users', () => {
     args.session.role = 'phrUser';
 
     fetchAndCacheHeading.and.callFake((patientId, heading, session, callback) => {

@@ -102,7 +102,7 @@ describe('ripple-cdr-openehr/lib/handlers/revertAllDiscoveryData', () => {
     q.db.reset();
   });
 
-  xit('should revert all discovery data', (done) => {
+  it('should revert all discovery data', (done) => {
     deletePatientHeading.and.callFake((args, callback) =>
       callback({
         deleted: true,
@@ -154,7 +154,7 @@ describe('ripple-cdr-openehr/lib/handlers/revertAllDiscoveryData', () => {
     }, 100);
   });
 
-  xit('should do nothing', () => {
+  it('should do nothing', () => {
     revertAllDiscoveryData.call(q, args, finished);
 
     expect(deletePatientHeading).not.toHaveBeenCalled();

@@ -33,7 +33,7 @@
 const mockery = require('mockery');
 const Worker = require('../../mocks/worker');
 
-xdescribe('ripple-cdr-openehr/lib/handlers/populatePatient', () => {
+describe('ripple-cdr-openehr/lib/handlers/populatePatient', () => {
   let populatePatient;
 
   let q;

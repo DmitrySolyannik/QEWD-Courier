@@ -65,7 +65,7 @@ describe('ripple-cdr-openehr/lib/ripple-cdr-openehr', () => {
     q.db.reset();
   });
 
-  xdescribe('#init', () => {
+  describe('#init', () => {
     it('GET /api/openehr/check', () => {
       const checkNHSNumber = jasmine.createSpy();
       mockery.registerMock('./handlers/checkNHSNumber', checkNHSNumber);

@@ -166,7 +166,7 @@ describe('ripple-cdr-openehr/lib/src/postHeading', () => {
     q.db.reset();
   });
 
-  xit('should return heading not recognised or no POST definition available error', () => {
+  it('should return heading not recognised or no POST definition available error', () => {
     heading = 'counts';
 
     postHeading.call(q, patientId, heading, data, qewdSession, callback);
@@ -176,7 +176,7 @@ describe('ripple-cdr-openehr/lib/src/postHeading', () => {
     });
   });
 
-  xit('should return unable to establish a session with host error', (done) => {
+  it('should return unable to establish a session with host error', (done) => {
     startSessionHttpMock();
 
     postHeading.call(q, patientId, heading, data, qewdSession, callback);
@@ -196,7 +196,7 @@ describe('ripple-cdr-openehr/lib/src/postHeading', () => {
       heading = 'vaccinations';
     });
 
-    xit('should post heading by jumper', () => {
+    it('should post heading by jumper', () => {
       const expectedParams = {
         patientId: 9999999000,
         heading: 'vaccinations',
@@ -216,7 +216,7 @@ describe('ripple-cdr-openehr/lib/src/postHeading', () => {
     });
   });
 
-  xit('should post heading and delete session caches', (done) => {
+  it('should post heading and delete session caches', (done) => {
     const expected = {};
 
     const sessionId = fakeResponses.session.sessionId;
@@ -241,7 +241,7 @@ describe('ripple-cdr-openehr/lib/src/postHeading', () => {
     }, 100);
   });
 
-  xit('should post heading and return false when no data returned', (done) => {
+  it('should post heading and return false when no data returned', (done) => {
     const sessionId = fakeResponses.session.sessionId;
     const ehrId = fakeResponses.ehr.ehrId;
 
@@ -261,7 +261,7 @@ describe('ripple-cdr-openehr/lib/src/postHeading', () => {
     }, 100);
   });
 
-  xit('should post heading and return response with composition uid', (done) => {
+  it('should post heading and return response with composition uid', (done) => {
     const sessionId = fakeResponses.session.sessionId;
     const ehrId = fakeResponses.ehr.ehrId;
 

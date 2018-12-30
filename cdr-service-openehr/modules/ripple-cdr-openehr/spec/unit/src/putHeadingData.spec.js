@@ -64,7 +64,7 @@ describe('ripple-cdr-openehr/lib/src/putHeadingData', () => {
     q.db.reset();
   });
 
-  xit('should send request to put heading data to openEHR server', (done) => {
+  it('should send request to put heading data to openEHR server', (done) => {
     /*jshint camelcase: false */
     params = {
       compositionId: '0f7192e9-168e-4dea-812a-3e1d236ae46d',

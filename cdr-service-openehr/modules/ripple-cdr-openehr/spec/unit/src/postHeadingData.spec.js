@@ -65,7 +65,7 @@ describe('ripple-cdr-openehr/lib/src/postHeadingData', () => {
     q.db.reset();
   });
 
-  xit('should send request to post heading data to openEHR server', (done) => {
+  it('should send request to post heading data to openEHR server', (done) => {
     /*jshint camelcase: false */
     params = {
       headingPostMap: {
