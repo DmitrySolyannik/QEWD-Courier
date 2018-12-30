@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  18 December 2018
+  30 December 2018
 
 */
 
@@ -51,7 +51,8 @@ class SessionCache {
     logger.info('cache/sessionCache|get', { host  });
 
     const key = ['openEHR', 'sessions', host];
-    this.adapter.getObject(key);
+
+    return this.adapter.getObject(key);
   }
 
   /**
