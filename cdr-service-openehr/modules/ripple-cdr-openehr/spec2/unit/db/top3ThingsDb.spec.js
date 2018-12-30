@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  17 December 2018
+  30 December 2018
 
 */
 
@@ -63,6 +63,15 @@ describe('ripple-cdr-openehr/lib/db/top3ThingsDb', () => {
 
   afterEach(() => {
     ctx.worker.db.reset();
+  });
+
+  describe('#create (static)', () => {
+    it('should initialize a new instance', async () => {
+      const actual = Top3ThingsDb.create(ctx);
+
+      expect(actual).toEqual(jasmine.any(Top3ThingsDb));
+      expect(actual.ctx).toBe(ctx);
+    });
   });
 
   describe('#getLatestSourceId', () => {

@@ -65,7 +65,7 @@ module.exports = (adapter) => {
 
       byHost.forEachChild((host, node) => {
         node.forEachChild((sourceId) => {
-          sourceIds.push(sourceId)
+          sourceIds.push(sourceId);
         });
       });
 

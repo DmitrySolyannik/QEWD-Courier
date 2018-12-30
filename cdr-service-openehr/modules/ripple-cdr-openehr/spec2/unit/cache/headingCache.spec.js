@@ -483,7 +483,7 @@ describe('ripple-cdr-openehr/lib/cache/headingCache', () => {
           'ethercis-33a93da2-6677-42a0-8b39-9d1e012dde12',
           'ethercis-eaf394a9-5e05-49c0-9c69-c710c77eda76',
           'marand-260a7be5-e00f-4b1e-ad58-27d95604d010'
-        ]
+        ];
 
         seeds();
 
@@ -643,5 +643,5 @@ describe('ripple-cdr-openehr/lib/cache/headingCache', () => {
         expect(actual2).toBe(2);
       });
     });
-  })
+  });
 });
