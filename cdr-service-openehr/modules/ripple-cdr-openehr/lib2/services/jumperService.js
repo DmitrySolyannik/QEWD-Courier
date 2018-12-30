@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  29 December 2018
+  30 December 2018
 
 */
 
@@ -43,21 +43,27 @@ class JumperService {
     return new JumperService(ctx);
   }
 
+  /**
+   * Checks and returns jumper config
+   *
+   * @param  {string} heading
+   * @param  {string} method
+   * @return {Object}
+   */
   check(heading, method) {
     logger.info('services/jumperService|check', { heading, method });
 
     const headingConfig = this.ctx.getHeadingConfig(heading);
-    const result = jumper[method] && headingConfig && headingConfig.template && headingConfig.name;
-
+    const result = Boolean(jumper[method] && headingConfig && headingConfig.template && headingConfig.template.name);
     const jumperObj = {
       ok: result
     };
 
-    if (headingConfig.synopsisField) {
+    if (headingConfig && headingConfig.synopsisField) {
       jumperObj.synopsisField = headingConfig.synopsisField;
     }
 
-    if (headingConfig.summaryTableFields) {
+    if (headingConfig && headingConfig.summaryTableFields) {
       jumperObj.summaryTableFields = headingConfig.summaryTableFields.slice(0);
     }
 
@@ -69,7 +75,7 @@ class JumperService {
 
     const format = 'pulsetile';
 
-    return jumper.getBySourceId.call(this.worker, sourceId, format, this.ctx.qewdSession);
+    return jumper.getBySourceId.call(this.ctx.worker, sourceId, format, this.ctx.qewdSession);
   }
 
   async query(host, patientId, heading) {
@@ -93,7 +99,7 @@ class JumperService {
         qewdSession: this.ctx.qewdSession
       };
 
-      jumper.query.call(this.worker, params, (responseObj) => {
+      jumper.query.call(this.ctx.worker, params, (responseObj) => {
         if (responseObj.error) return reject(responseObj);
 
         return resolve(responseObj);
@@ -114,7 +120,7 @@ class JumperService {
         qewdSession: this.ctx.qewdSession
       };
 
-      jumper.post.call(this.worker, params, (responseObj) => {
+      jumper.post.call(this.ctx.worker, params, (responseObj) => {
         if (responseObj.error) return reject(responseObj);
 
         return resolve(responseObj);
@@ -136,7 +142,7 @@ class JumperService {
         qewdSession: this.ctx.qewdSession
       };
 
-      jumper.post.call(this.worker, params, (responseObj) => {
+      jumper.post.call(this.ctx.worker, params, (responseObj) => {
         if (responseObj.error) return reject(responseObj);
 
         return resolve(responseObj);
