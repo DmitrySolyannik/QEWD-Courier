@@ -91,7 +91,7 @@ describe('ripple-cdr-openehr/lib/src/checkNHSNumber', () => {
     q.db.reset();
   });
 
-  it('should return unable to establish a session with host error', (done) => {
+  xit('should return unable to establish a session with host error', (done) => {
     const data = {};
 
     startSessionHttpMock(data);
@@ -108,7 +108,7 @@ describe('ripple-cdr-openehr/lib/src/checkNHSNumber', () => {
     }, 100);
   });
 
-  it('should return existing patient', (done) => {
+  xit('should return existing patient', (done) => {
     const data = {
       sessionId: '03134cc0-3741-4d3f-916a-a279a24448e5'
     };
@@ -140,7 +140,7 @@ describe('ripple-cdr-openehr/lib/src/checkNHSNumber', () => {
     }, 100);
   });
 
-  it('should create a new record for patient in openEHR and return new patient', (done) => {
+  xit('should create a new record for patient in openEHR and return new patient', (done) => {
     const data = {
       sessionId: '03134cc0-3741-4d3f-916a-a279a24448e5'
     };

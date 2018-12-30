@@ -46,7 +46,7 @@ describe('ripple-cdr-openehr/lib/src/loadAQLFile', () => {
     });
   });
 
-  it('should return aql file', () => {
+  xit('should return aql file', () => {
     const headings = [
       'allergies',
       'contacts',

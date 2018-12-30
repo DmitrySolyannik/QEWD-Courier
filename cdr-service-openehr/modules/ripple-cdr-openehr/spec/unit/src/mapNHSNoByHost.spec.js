@@ -65,7 +65,7 @@ describe('ripple-cdr-openehr/lib/src/mapNHSNoByHost', () => {
   });
 
 
-  it('should do nothing when no ehrId returned', (done) => {
+  xit('should do nothing when no ehrId returned', (done) => {
     httpEhrMock();
 
     openEHR.init.call(q);
@@ -77,7 +77,7 @@ describe('ripple-cdr-openehr/lib/src/mapNHSNoByHost', () => {
     }, 100);
   });
 
-  it('should return nothing with callback when no ehrId returned', (done) => {
+  xit('should return nothing with callback when no ehrId returned', (done) => {
     httpEhrMock();
 
     openEHR.init.call(q);
@@ -90,7 +90,7 @@ describe('ripple-cdr-openehr/lib/src/mapNHSNoByHost', () => {
     }, 100);
   });
 
-  it('should not retrieve ehrId when ehrId cached', () => {
+  xit('should not retrieve ehrId when ehrId cached', () => {
     const nhsNoMap = q.db.use('RippleNHSNoMap', ['byNHSNo', nhsNo, host]);
     nhsNoMap.value = '74b6a24b-bd97-47f0-ac6f-a632d0cac60f';
 
@@ -98,7 +98,7 @@ describe('ripple-cdr-openehr/lib/src/mapNHSNoByHost', () => {
     mapNHSNoByHost.call(q, nhsNo, host, session);
   });
 
-  it('should return ehrId with callback when ehrId cached', () => {
+  xit('should return ehrId with callback when ehrId cached', () => {
     const nhsNoMap = q.db.use('RippleNHSNoMap', ['byNHSNo', nhsNo, host]);
     nhsNoMap.value = '74b6a24b-bd97-47f0-ac6f-a632d0cac60f';
 
@@ -108,7 +108,7 @@ describe('ripple-cdr-openehr/lib/src/mapNHSNoByHost', () => {
     expect(callback).toHaveBeenCalledWith('74b6a24b-bd97-47f0-ac6f-a632d0cac60f');
   });
 
-  it('should retrieve ehrId from openEHR server', (done) => {
+  xit('should retrieve ehrId from openEHR server', (done) => {
     const data = {
       ehrId: '74b6a24b-bd97-47f0-ac6f-a632d0cac60f'
     };
@@ -124,7 +124,7 @@ describe('ripple-cdr-openehr/lib/src/mapNHSNoByHost', () => {
     }, 100);
   });
 
-  it('should return ehrId with callback', (done) => {
+  xit('should return ehrId with callback', (done) => {
     const data = {
       ehrId: '74b6a24b-bd97-47f0-ac6f-a632d0cac60f'
     };
@@ -142,7 +142,7 @@ describe('ripple-cdr-openehr/lib/src/mapNHSNoByHost', () => {
     }, 100);
   });
 
-  it('should insert map values to db', (done) => {
+  xit('should insert map values to db', (done) => {
     const data = {
       ehrId: '74b6a24b-bd97-47f0-ac6f-a632d0cac60f'
     };

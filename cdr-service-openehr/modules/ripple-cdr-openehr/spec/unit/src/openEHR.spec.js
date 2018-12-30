@@ -46,9 +46,9 @@ describe('ripple-cdr-openehr/lib/src/openEHR', () => {
     nock.cleanAll();
   });
 
-  describe('#init', () => {});
+  xdescribe('#init', () => {});
 
-  describe('#requests', () => {
+  xdescribe('#requests', () => {
     let params;
     let userObj;
 
@@ -826,7 +826,7 @@ describe('ripple-cdr-openehr/lib/src/openEHR', () => {
     });
   });
 
-  describe('#request', () => {
+  xdescribe('#request', () => {
     let params;
     let userObj;
 
@@ -1346,7 +1346,7 @@ describe('ripple-cdr-openehr/lib/src/openEHR', () => {
     });
   });
 
-  describe('#startSessions', () => {
+  xdescribe('#startSessions', () => {
     let session;
     let callback;
     let data;
@@ -1461,7 +1461,7 @@ describe('ripple-cdr-openehr/lib/src/openEHR', () => {
     });
   });
 
-  describe('#stopSessions', () => {
+  xdescribe('#stopSessions', () => {
     let sessions;
     let session;
     let callback;
@@ -1526,7 +1526,7 @@ describe('ripple-cdr-openehr/lib/src/openEHR', () => {
     });
   });
 
-  describe('#startSession', () => {
+  xdescribe('#startSession', () => {
     let host;
     let qewdSession;
     let callback;
@@ -1598,7 +1598,7 @@ describe('ripple-cdr-openehr/lib/src/openEHR', () => {
     });
   });
 
-  describe('#stopSession', () => {
+  xdescribe('#stopSession', () => {
     let host;
     let qewdSession;
     let sessionId;
@@ -1629,7 +1629,7 @@ describe('ripple-cdr-openehr/lib/src/openEHR', () => {
     });
   });
 
-  describe('#mapNHSNo', () => {
+  xdescribe('#mapNHSNo', () => {
     let nhsNo;
     let sessions;
     let callback;
@@ -1708,7 +1708,7 @@ describe('ripple-cdr-openehr/lib/src/openEHR', () => {
     });
   });
 
-  describe('#mapNHSNoByHost', () => {
+  xdescribe('#mapNHSNoByHost', () => {
     let nhsNo;
     let host;
     let sessionId;
@@ -1769,7 +1769,7 @@ describe('ripple-cdr-openehr/lib/src/openEHR', () => {
     });
   });
 
-  describe('#idsAvailable', () => {
+  xdescribe('#idsAvailable', () => {
     beforeEach(() => {
       openEHR.init.call(q);
     });
@@ -1795,7 +1795,7 @@ describe('ripple-cdr-openehr/lib/src/openEHR', () => {
     });
   });
 
-  describe('#getEhrId', () => {
+  xdescribe('#getEhrId', () => {
     beforeEach(() => {
       openEHR.init.call(q);
     });
