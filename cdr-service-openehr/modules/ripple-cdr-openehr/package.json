@@ -18,7 +18,8 @@
       "lib2/**/*.js"
     ],
     "exclude": [
-      "lib2/headings/**/*.js"
+      "lib2/headings/**/*.js",
+      "lib2/jumper/**/*.js"
     ]
   },
   "dependencies": {

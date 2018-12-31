@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  29 December 2018
+  31 December 2018
 
 */
 
@@ -133,10 +133,6 @@ class DiscoveryService {
    */
   async delete(sourceId) {
     logger.info('services/discoveryService|delete', { sourceId });
-
-    //TODO:
-    //var discovery_map = this.db.use('DiscoveryMap');
-    // if (!discovery_map.exists) return;
 
     const { discoveryDb } = this.ctx.db;
     const dbData = await discoveryDb.getBySourceId(sourceId);

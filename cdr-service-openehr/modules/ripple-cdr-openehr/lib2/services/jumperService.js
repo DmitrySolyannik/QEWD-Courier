@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  30 December 2018
+  31 December 2018
 
 */
 
@@ -70,6 +70,12 @@ class JumperService {
     return jumperObj;
   }
 
+  /**
+   * Gets data by source id
+   *
+   * @param  {string} sourceId
+   * @return {Promise.<Object>}
+   */
   async getBySourceId(sourceId) {
     logger.info('services/jumperService|getBySourceId', { sourceId });
 
@@ -78,6 +84,14 @@ class JumperService {
     return jumper.getBySourceId.call(this.ctx.worker, sourceId, format, this.ctx.qewdSession);
   }
 
+  /**
+   * Gets heading records
+   *
+   * @param  {string} host
+   * @param  {string|int} patientId
+   * @param  {string} heading
+   * @return {Promise.<Object>}
+   */
   async query(host, patientId, heading) {
     logger.info('services/jumperService|query', { host, patientId, heading });
 
@@ -107,6 +121,15 @@ class JumperService {
     });
   }
 
+  /**
+   * Creates a new heading record
+   *
+   * @param  {string} host
+   * @param  {string|int} patientId
+   * @param  {string} heading
+   * @param  {Object} data
+   * @return {Promise.<Object>}
+   */
   async post(host, patientId, heading, data) {
     logger.info('services/jumperService|post', { host, patientId, heading, data: typeof data});
 
@@ -128,6 +151,16 @@ class JumperService {
     });
   }
 
+  /**
+   * Updates an existing heading record
+   *
+   * @param  {string} host
+   * @param  {string|int} patientId
+   * @param  {string} heading
+   * @param  {string} compositionId
+   * @param  {Object} data
+   * @return {Promise.<Object>}
+   */
   async put(host, patientId, heading, compositionId, data) {
     logger.info('services/jumperService|put', { host, patientId, heading, compositionId, data: typeof data});
 

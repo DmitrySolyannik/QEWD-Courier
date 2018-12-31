@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  30 December 2018
+  31 December 2018
 
 */
 
@@ -32,7 +32,6 @@
 
 const P = require('bluebird');
 const { logger } = require('../core');
-const { handleResponse } = require('../shared/utils');
 const { ExtraHeading } = require('../shared/enums');
 const debug = require('debug')('ripple-cdr-openehr:dispatchers:discovery');
 
@@ -77,7 +76,9 @@ class DiscoveryDispatcher {
 
       this.q.microServiceRouter.call(this.q, message, (responseObj) => {
         debug('handle response from micro service: patientId = %s, heading = %s, responseObj = %j', patientId, heading, responseObj);
-        handleResponse(responseObj, resolve, reject);
+        if (responseObj.error) return reject(responseObj);
+
+        return resolve(responseObj.message);
       });
     });
   }
@@ -118,7 +119,9 @@ class DiscoveryDispatcher {
 
       this.q.handleMessage(messageObj, (responseObj) => {
         debug('heading %s has been merged into EtherCIS', heading);
-        handleResponse(responseObj, resolve, reject);
+        if (responseObj.error) return reject(responseObj);
+
+        return resolve(responseObj.message);
       });
     });
   }

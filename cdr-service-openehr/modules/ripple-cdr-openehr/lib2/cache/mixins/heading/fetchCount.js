@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  20 December 2018
+  31 December 2018
 
 */
 
@@ -34,6 +34,14 @@ const { logger } = require('../../../core');
 
 module.exports = (adapter) => {
   return {
+
+    /**
+     * Increments and returns fetch count value
+     *
+     * @param  {string|int} patientId
+     * @param  {string} heading
+     * @return {Promise.<int>}
+     */
     increment: async (patientId, heading) => {
       logger.info('cache/headingCache|fetchCount|increment', { patientId, heading });
 

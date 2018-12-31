@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  29 December 2018
+  31 December 2018
 
 */
 
@@ -487,7 +487,7 @@ describe('ripple-cdr-openehr/lib/services/headingService', () => {
       expect(actual).toEqual(expected);
     });
 
-    xit('should send a query to OpenEHR server and return data', async () => {
+    it('should send a query to OpenEHR server and return data', async () => {
       const expected = [
         {
           foo: 'bar'
@@ -517,7 +517,24 @@ describe('ripple-cdr-openehr/lib/services/headingService', () => {
       );
       expect(ethercisEhrRestService.query).toHaveBeenCalledWith(
         '03134cc0-3741-4d3f-916a-a279a24448e5',
-        jasmine.any(String)
+        [ 'select     a/uid/value as uid',
+          '     a/composer/name as author',
+          '     a/context/start_time/value as date_submitted',
+          '     b_a/description[at0001]/items[at0002]/value/value as procedure_name',
+          '     b_a/description[at0001]/items[at0002]/value/defining_code/code_string as procedure_code',
+          '     b_a/description[at0001]/items[at0002]/value/defining_code/terminology_id/value as procedure_terminology',
+          '     b_a/description[at0001]/items[at0049]/value/value as procedure_notes',
+          '     b_a/other_participations/performer/name as performer',
+          '     b_a/time/value as procedure_datetime',
+          '     b_a/ism_transition/current_state/value as procedure_state',
+          '     b_a/ism_transition/current_state/defining_code/code_string as procedure_state_code',
+          '     b_a/ism_transition/current_state/defining_code/terminology_id/value as procedure_state_terminology',
+          '     b_a/ism_transition/careflow_step/value as procedure_step',
+          '     b_a/ism_transition/careflow_step/defining_code/code_string as procedure_step_code',
+          '     b_a/ism_transition/careflow_step/defining_code/terminology_id/value as procedure_step_terminology',
+          '     b_a/provider/external_ref/id/value as originalComposition',
+          '     b_a/provider/name as originalSource     from EHR e [ehr_id/value = \'74b6a24b-bd97-47f0-ac6f-a632d0cac60f\'] contains COMPOSITION a[openEHR-EHR-COMPOSITION.health_summary.v1] contains ACTION b_a[openEHR-EHR-ACTION.procedure.v1] where a/name/value=\'Procedures list\' '
+        ].join(',')
       );
       expect(ehrSessionService.stop).toHaveBeenCalledWith('ethercis', '03134cc0-3741-4d3f-916a-a279a24448e5');
 

@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  23 December 2018
+  31 December 2018
 
 */
 
@@ -34,6 +34,16 @@ const { logger } = require('../../../core');
 
 module.exports = (adapter) => {
   return {
+
+    /**
+     * Sets a relation heading by date
+     *
+     * @param  {string|int} patientId
+     * @param  {string} heading
+     * @param  {string} sourceId
+     * @param  {int} date
+     * @return {Promise}
+     */
     set: async (patientId, heading, sourceId, date) => {
       logger.info('cache/headingCache|byDate|set', { patientId, heading, sourceId, date });
 
@@ -41,6 +51,15 @@ module.exports = (adapter) => {
       adapter.put(key, 'true');
     },
 
+    /**
+     * Deletes a relation heading by date
+     *
+     * @param  {string|int} patientId
+     * @param  {string} heading
+     * @param  {string} sourceId
+     * @param  {int} date
+     * @return {Promise}
+     */
     delete: async (patientId, heading, sourceId, date) => {
       logger.info('cache/headingCache|byDate|delete', { patientId, heading, sourceId, date });
 
@@ -48,6 +67,16 @@ module.exports = (adapter) => {
       adapter.delete(key);
     },
 
+    /**
+     * Gets all source ids
+     *
+     * @param  {string|int} patientId
+     * @param  {string} heading
+     * @param  {Object} options
+     * @param  {string} options.direction
+     * @param  {int} options.limit
+     * @return {Promise.<string[]>}
+     */
     getAllSourceIds: async (patientId, heading, { direction = 'reverse', limit = 1 } = {}) => {
       logger.info('cache/headingCache|byDate|getAllSourceIds', { patientId, heading, direction, limit });
 

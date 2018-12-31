@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  23 December 2018
+  31 December 2018
 
 */
 
@@ -49,10 +49,9 @@ describe('ripple-cdr-openehr/lib/cache/statusCache', () => {
   beforeEach(() => {
     ctx = new ExecutionContextMock();
     statusCache = new StatusCache(ctx.adapter);
+    qewdSession = ctx.adapter.qewdSession;
 
     ctx.cache.freeze();
-
-    qewdSession = ctx.adapter.qewdSession;
   });
 
   afterEach(() => {

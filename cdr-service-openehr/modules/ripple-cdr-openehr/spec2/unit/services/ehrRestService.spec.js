@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  30 December 2018
+  31 December 2018
 
 */
 
@@ -71,10 +71,32 @@ describe('ripple-cdr-openehr/lib/services/ehrRestService', () => {
       expect(nock).toHaveBeenDone();
       expect(actual).toEqual(expected);
     });
+
+    it('should send request to start session and handle error', async () => {
+      const expected = {
+        'message': 'something awful',
+        'code': 'AWFUL_ERROR'
+      };
+
+      nock('http://178.62.71.220:8080')
+        .post('/rest/v1/session?username=bar&password=quux')
+        .matchHeader('x-max-session', 75)
+        .matchHeader('x-session-timeout', 120000)
+        .replyWithError({
+          'message': 'something awful',
+          'code': 'AWFUL_ERROR'
+        });
+
+       try {
+         await ehrRestService.startSession();
+       } catch (err) {
+         expect(err).toEqual(expected);
+       }
+    });
   });
 
   describe('#stopSession', () => {
-    it('should send request to start session', async () => {
+    it('should send request to stop session', async () => {
       const expected = {
         foo: 'bar'
       };
@@ -89,6 +111,28 @@ describe('ripple-cdr-openehr/lib/services/ehrRestService', () => {
 
       expect(nock).toHaveBeenDone();
       expect(actual).toEqual(expected);
+    });
+
+    it('should send request to stop session and handle error', async () => {
+      const expected = {
+        'message': 'something awful',
+        'code': 'AWFUL_ERROR'
+      };
+
+      nock('http://178.62.71.220:8080')
+        .delete('/rest/v1/session')
+        .matchHeader('ehr-session', '03391e86-5085-4b99-89ff-79209f8d1f20')
+        .replyWithError({
+          'message': 'something awful',
+          'code': 'AWFUL_ERROR'
+        });
+
+       try {
+         const sessionId = '03391e86-5085-4b99-89ff-79209f8d1f20';
+         await ehrRestService.stopSession(sessionId);
+       } catch (err) {
+         expect(err).toEqual(expected);
+       }
     });
   });
 
@@ -109,6 +153,29 @@ describe('ripple-cdr-openehr/lib/services/ehrRestService', () => {
 
       expect(nock).toHaveBeenDone();
       expect(actual).toEqual(expected);
+    });
+
+    it('should send request  to get ehr id and handle error', async () => {
+      const expected = {
+        'message': 'something awful',
+        'code': 'AWFUL_ERROR'
+      };
+
+      nock('http://178.62.71.220:8080')
+        .get('/rest/v1/ehr?subjectId=9999999000&subjectNamespace=uk.nhs.nhs_number')
+        .matchHeader('ehr-session', '03391e86-5085-4b99-89ff-79209f8d1f20')
+        .replyWithError({
+          'message': 'something awful',
+          'code': 'AWFUL_ERROR'
+        });
+
+       try {
+         const sessionId = '03391e86-5085-4b99-89ff-79209f8d1f20';
+         const patientId = 9999999000;
+         await ehrRestService.getEhr(sessionId, patientId);
+       } catch (err) {
+         expect(err).toEqual(expected);
+       }
     });
   });
 
@@ -134,6 +201,34 @@ describe('ripple-cdr-openehr/lib/services/ehrRestService', () => {
 
       expect(nock).toHaveBeenDone();
       expect(actual).toEqual(expected);
+    });
+
+    it('should send request to post ehr idand handle error', async () => {
+      const expected = {
+        'message': 'something awful',
+        'code': 'AWFUL_ERROR'
+      };
+
+      nock('http://178.62.71.220:8080')
+        .post('/rest/v1/ehr?subjectId=9999999000&subjectNamespace=uk.nhs.nhs_number', {
+          subjectId: 9999999000,
+          subjectNamespace: 'uk.nhs.nhs_number',
+          queryable: 'true',
+          modifiable: 'true'
+        })
+        .matchHeader('ehr-session', '03391e86-5085-4b99-89ff-79209f8d1f20')
+        .replyWithError({
+          'message': 'something awful',
+          'code': 'AWFUL_ERROR'
+        });
+
+       try {
+         const sessionId = '03391e86-5085-4b99-89ff-79209f8d1f20';
+         const patientId = 9999999000;
+         await ehrRestService.postEhr(sessionId, patientId);
+       } catch (err) {
+         expect(err).toEqual(expected);
+       }
     });
   });
 
@@ -181,6 +276,34 @@ describe('ripple-cdr-openehr/lib/services/ehrRestService', () => {
       expect(nock).toHaveBeenDone();
       expect(actual).toEqual(expected);
     });
+
+    it('should send request to post heading record and handle error', async () => {
+      const expected = {
+        'message': 'something awful',
+        'code': 'AWFUL_ERROR'
+      };
+
+      nock('http://178.62.71.220:8080')
+        .post('/rest/v1/ehr?subjectId=9999999000&subjectNamespace=uk.nhs.nhs_number', {
+          subjectId: 9999999000,
+          subjectNamespace: 'uk.nhs.nhs_number',
+          queryable: 'true',
+          modifiable: 'true'
+        })
+        .matchHeader('ehr-session', '03391e86-5085-4b99-89ff-79209f8d1f20')
+        .replyWithError({
+          'message': 'something awful',
+          'code': 'AWFUL_ERROR'
+        });
+
+       try {
+         const sessionId = '03391e86-5085-4b99-89ff-79209f8d1f20';
+         const patientId = 9999999000;
+         await ehrRestService.postEhr(sessionId, patientId);
+       } catch (err) {
+         expect(err).toEqual(expected);
+       }
+    });
   });
 
   describe('#putHeading', () => {
@@ -227,6 +350,53 @@ describe('ripple-cdr-openehr/lib/services/ehrRestService', () => {
       expect(nock).toHaveBeenDone();
       expect(actual).toEqual(expected);
     });
+
+    it('should send request to put heading record and handle error', async () => {
+      const expected = {
+        'message': 'something awful',
+        'code': 'AWFUL_ERROR'
+      };
+
+      nock('http://178.62.71.220:8080')
+        .put('/rest/v1/composition/0f7192e9-168e-4dea-812a-3e1d236ae46d?templateId=RIPPLE%20-%20Personal%20Notes.v1&format=FLAT', {
+          'ctx/composer_name': 'Dr Tony Shannon',
+          'ctx/health_care_facility|id': '999999-345',
+          'ctx/health_care_facility|name': 'Rippleburgh GP Practice',
+          'ctx/id_namespace': 'NHS-UK',
+          'ctx/id_scheme': '2.16.840.1.113883.2.1.4.3',
+          'ctx/language': 'en',
+          'ctx/territory': 'GB',
+          'ctx/time': '2019-01-01T00:00:00Z',
+          'personal_notes/clinical_synopsis:0/_name|value': 'foo',
+          'personal_notes/clinical_synopsis:0/notes': 'bar'
+        })
+        .matchHeader('ehr-session', '03391e86-5085-4b99-89ff-79209f8d1f20')
+        .replyWithError({
+          'message': 'something awful',
+          'code': 'AWFUL_ERROR'
+        });
+
+       try {
+         const sessionId = '03391e86-5085-4b99-89ff-79209f8d1f20';
+         const compositionId = '0f7192e9-168e-4dea-812a-3e1d236ae46d';
+         const templateId = 'RIPPLE - Personal Notes.v1';
+         const data = {
+           'ctx/composer_name': 'Dr Tony Shannon',
+           'ctx/health_care_facility|id': '999999-345',
+           'ctx/health_care_facility|name': 'Rippleburgh GP Practice',
+           'ctx/id_namespace': 'NHS-UK',
+           'ctx/id_scheme': '2.16.840.1.113883.2.1.4.3',
+           'ctx/language': 'en',
+           'ctx/territory': 'GB',
+           'ctx/time': '2019-01-01T00:00:00Z',
+           'personal_notes/clinical_synopsis:0/_name|value': 'foo',
+           'personal_notes/clinical_synopsis:0/notes': 'bar'
+         };
+         await ehrRestService.putHeading(sessionId, compositionId, templateId, data);
+       } catch (err) {
+         expect(err).toEqual(expected);
+       }
+    });
   });
 
   describe('#query', () => {
@@ -257,6 +427,29 @@ describe('ripple-cdr-openehr/lib/services/ehrRestService', () => {
       expect(nock).toHaveBeenDone();
       expect(actual).toEqual(expected);
     });
+
+    it('should send request to query heading records and handle error', async () => {
+      const expected = {
+        'message': 'something awful',
+        'code': 'AWFUL_ERROR'
+      };
+
+      nock('http://178.62.71.220:8080')
+        .get('/rest/v1/query?aql=quux')
+        .matchHeader('ehr-session', '03391e86-5085-4b99-89ff-79209f8d1f20')
+        .replyWithError({
+          'message': 'something awful',
+          'code': 'AWFUL_ERROR'
+        });
+
+       try {
+         const sessionId = '03391e86-5085-4b99-89ff-79209f8d1f20';
+         const query = 'quux';
+         await ehrRestService.query(sessionId, query);
+       } catch (err) {
+         expect(err).toEqual(expected);
+       }
+    });
   });
 
   describe('#deleteHeading', () => {
@@ -278,6 +471,29 @@ describe('ripple-cdr-openehr/lib/services/ehrRestService', () => {
 
       expect(nock).toHaveBeenDone();
       expect(actual).toEqual(expected);
+    });
+
+    it('should send request to delete heading record and handle error', async () => {
+      const expected = {
+        'message': 'something awful',
+        'code': 'AWFUL_ERROR'
+      };
+
+      nock('http://178.62.71.220:8080')
+        .delete('/rest/v1/composition/0f7192e9-168e-4dea-812a-3e1d236ae46d')
+        .matchHeader('ehr-session', '03391e86-5085-4b99-89ff-79209f8d1f20')
+        .replyWithError({
+          'message': 'something awful',
+          'code': 'AWFUL_ERROR'
+        });
+
+       try {
+         const sessionId = '03391e86-5085-4b99-89ff-79209f8d1f20';
+         const compositionId = '0f7192e9-168e-4dea-812a-3e1d236ae46d';
+         await ehrRestService.deleteHeading(sessionId, compositionId);
+       } catch (err) {
+         expect(err).toEqual(expected);
+       }
     });
   });
 });
