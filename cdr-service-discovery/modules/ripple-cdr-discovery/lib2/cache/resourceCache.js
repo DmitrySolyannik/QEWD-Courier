@@ -1,9 +1,9 @@
 /*
 
  ----------------------------------------------------------------------------
- | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
+ | ripple-cdr-discovery: Ripple Discovery Interface                         |
  |                                                                          |
- | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
+ | Copyright (c) 2017-19 Ripple Foundation Community Interest Company       |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,21 +24,24 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  20 December 2018
+  2 January 2019
 
 */
 
 'use strict';
 
+const { logger } = require('../core');
+const { byUuid } = require('./mixins/resource');
 
-const byPatientId = require('./byPatientId');
-const byResource = require('./byResource');
-const byPatientBundle = require('./byPatientBundle');
-const byNHSNumber = require('./byNHSNumber');
+class ResourceCache {
+  constructor(adapter) {
+    this.adapter = adapter;
+    this.byUuid = byUuid(adapter);
+  }
 
-module.exports = {
-  byPatientId,
-  byResource,
-  byPatientBundle,
-  byNHSNumber
-};
+  static create(adapter) {
+    return new ResourceCache(adapter);
+  }
+}
+
+module.exports = ResourceCache;

@@ -1,9 +1,9 @@
 /*
 
  ----------------------------------------------------------------------------
- | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
+ | ripple-cdr-discovery: Ripple Discovery Interface                         |
  |                                                                          |
- | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
+ | Copyright (c) 2017-19 Ripple Foundation Community Interest Company       |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  20 December 2018
+  2 January 2019
 
 */
 
@@ -34,13 +34,39 @@ const { logger } = require('../../core');
 
 module.exports = (adapter) => {
   return {
+    exists: async (resourceName, uuid) => {
+      logger.info('cache/resourceCache|byUuid|exists', { resourceName, uuid });
 
-    exists: async (patientId) => {
-      logger.info('cache/patientCache|byPatientId|exists', { patientId });
-
-      const key = ['Discovery', 'Patient', 'by_nhsNumber', nhsNumber];
+      const key = ['Discovery', resourceName, 'by_uuid', uuid];
 
       return adapter.exists(key);
-    }
+    },
+
+    set: async (resourceName, uuid, resource) => {
+      logger.info('cache/resourceCache|byUuid|set', { resourceName, uuid, resource });
+
+      const key = ['Discovery', resourceName, 'by_uuid', uuid];
+      const exists = adapter.exists(key);
+
+      if (!exists) {
+        const dataKey = ['Discovery', resourceName, 'by_uuid', uuid, 'data'];
+        adapter.putObject(dataKey, data);
+      }
+    },
+
+    deleteAll: async (resourceName) => {
+      logger.info('cache/resourceCache|byUuid|deleteAll', { resourceName });
+
+      const key = ['Discovery', resourceName, 'by_uuid'];
+      adapter.delete(key);
+    },
+
+    setPractitionerUuid: async (resourceName, uuid, practitionerUuid) => {
+      logger.info('cache/resourceCache|byUuid|setPractitionerUuid', { resourceName, uuid, practitionerUuid });
+
+      const key = ['Discovery', resourceName, 'by_uuid', uuid, 'practitioner', practitionerUuid];
+
+      return adapter.put(key, practitionerUuid);
+    },
   };
 };

@@ -1,9 +1,9 @@
 /*
 
  ----------------------------------------------------------------------------
- | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
+ | ripple-cdr-discovery: Ripple Discovery Interface                         |
  |                                                                          |
- | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
+ | Copyright (c) 2017-19 Ripple Foundation Community Interest Company       |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,59 +24,21 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  15 December 2018
+  2 January 2019
 
 */
 
 'use strict';
 
-const {logger} = require('../core');
-// const debug = require('debug')('ripple-cdr-discove:services:patient');
-const credentials = require('../config/credentials');
-const config = require('../config');
-const request = require('request');
+const { logger } = require('../../core');
 
-class AuthenticateService {
-  constructor(ctx) {
-    this.ctx = ctx;
-  }
+module.exports = (adapter) => {
+  return {
+    set: async (patientUuid, resourceName, resourceUuid) => {
+      const key = ['Discovery', 'Patient', 'by_uuid', patientUuid, 'resources', resourceName, resourceUuid];
 
-  static create(ctx) {
-    return new AuthenticateService(ctx);
-  }
+      return adapter.put(key, resourceUuid);
+    },
 
-  /**
-   *
-   * @returns {Promise<string>}
-   */
-  async getToken() {
-    const { authCache } = this.ctx.cache;
-    const now = Date.now();
-
-    const auth = await authCache.get();
-    if (auth) {
-      if ((now - auth.createdAt) < config.auth.tokenTimeout) {
-        return auth.jwt;
-      }
-    }
-
-    const { authRestService } = this.ctx.services;
-    try {
-      const data = await authRestService.authenticate();
-      await authCache.set({
-        jwt: data.access_token,
-        createdAt: now
-      });
-
-      return data.access_token;
-    } catch (err) {
-      logger.error('authenticate/login|err: ' + err.message);
-      logger.error('authenticate/login|stack: ' + err.stack);
-      await authCache.delete();
-      throw err;
-    }
-  }
-
-}
-
-module.exports = AuthenticateService;
+  };
+};

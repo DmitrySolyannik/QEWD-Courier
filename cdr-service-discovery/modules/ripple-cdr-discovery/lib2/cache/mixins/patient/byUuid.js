@@ -1,9 +1,9 @@
 /*
 
  ----------------------------------------------------------------------------
- | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
+ | ripple-cdr-discovery: Ripple Discovery Interface                         |
  |                                                                          |
- | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
+ | Copyright (c) 2017-19 Ripple Foundation Community Interest Company       |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  20 December 2018
+  2 January 2019
 
 */
 
@@ -32,13 +32,25 @@
 
 const { logger } = require('../../core');
 
-module.exports = (adapter) => {
+module.exports = (adapter, prefix, name) => {
   return {
-    getByUuid: async (key, nhsNumber, uuid) => {
-      logger.info('cache/patientCache|byNHSNumber|getByUuid');
+    getByIds: async (uuids) => {
+      logger.info(`cache/${name}|byUuid|getByIds`, { uuids });
 
-      const key = [...key, 'by_nhsNumber', nhsNumber, 'Patient', 'by_uuid', uuid, 'data'];
-      return adapter.getObjectWithArrays(key);
+      return uuids.map((uuid) => {
+        const key = ['Discovery', prefix, 'by_uuid', uuid, 'data'];
+
+        return adapter.getObjectWithArrays(key);
+      });
+    },
+    set: async (uuid, patient) => {
+      const key = ['Discovery', 'Patient', 'by_uuid', uuid];
+      const uuidKey = [...key, 'data'];
+
+      adapter.putObject(uuidKey, patient);
+
+      const nhsKey = [...key, 'nhsNumber'];
+      adapter.put(nhsKey, uuid);
     }
   };
 };

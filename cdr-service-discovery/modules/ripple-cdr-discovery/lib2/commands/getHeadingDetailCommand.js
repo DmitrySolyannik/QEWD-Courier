@@ -30,7 +30,6 @@
 
 'use strict';
 
-const P = require('bluebird');
 const { BadRequestError } = require('../errors');
 const { isHeadingValid, isPatientIdValid, isSourceIdValid } = require('../shared/validation');
 const { Role } = require('../shared/enums');
@@ -71,10 +70,9 @@ class GetHeadingDetailCommand {
     // const sourceIdValid = isSourceIdValid(sourceId);
 
 
-    const { resourceService, headingService, authenticateService } = this.ctx.services;
-    let token = await authenticateService.getToken();
-    await resourceService.fetchPatients(patientId, token);
-    await resourceService.fetchPatientResources(patientId, heading, token);
+    const { resourceService, headingService } = this.ctx.services;
+    await resourceService.fetchPatients(patientId);
+    await resourceService.fetchPatientResources(patientId, heading);
     const responseObj = await headingService.getDetail(patientId, heading, 'pulsetile');
 
     return {

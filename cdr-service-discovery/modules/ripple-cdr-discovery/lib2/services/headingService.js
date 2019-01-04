@@ -32,9 +32,6 @@
 
 const {logger} = require('../core');
 // const debug = require('debug')('ripple-cdr-discove:services:patient');
-const credentials = require('../config/credentials');
-const config = require('../config');
-const request = require('request');
 
 //@TODO think about file name
 class HeadingService {

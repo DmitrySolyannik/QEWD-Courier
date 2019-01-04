@@ -1,9 +1,9 @@
 /*
 
  ----------------------------------------------------------------------------
- | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
+ | ripple-cdr-discovery: Ripple Discovery Interface                         |
  |                                                                          |
- | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
+ | Copyright (c) 2017-19 Ripple Foundation Community Interest Company       |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,49 +24,16 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  15 December 2018
+  2 January 2019
 
 */
 
 'use strict';
 
-const { logger } = require('../core');
+const byUuid = require('./byUuid');
+const byPatientUuid = require('./byPatientUuid');
 
-class PatientService {
-  constructor(ctx) {
-    this.ctx = ctx;
-  }
-
-  static create(ctx) {
-    return new PatientService(ctx);
-  }
-
-  async getPatientBundle(nhsNumber) {
-    logger.info('services/patientService|getPatientBundle', { nhsNumber });
-
-    const { patientCache, patientBundleCache } = this.ctx.cache;
-
-    const exists = await patientBundleCache.exists();
-    const bundleCache = exists
-      ? patientBundleCache
-      : patientCache;
-
-    const patientIds = await bundleCache.byNhsNumber.getAllPatientIds(nhsNumber);
-    const patients = await bundleCache.byUuid.getByIds(patientIds);
-
-    return {
-      resourceType: 'Bundle',
-      entry: patients
-    };
-  }
-
-  async updateBundle() {
-    logger.info('services/patientService|updateBundle');
-
-    const { patientCache, patientBundleCache } = this.ctx.cache;
-    const data = await patientCache.export();
-    await patientBundleCache.import(data);
-  }
-}
-
-module.exports = PatientService;
+module.exports = {
+  byUuid,
+  byPatientUuid
+};

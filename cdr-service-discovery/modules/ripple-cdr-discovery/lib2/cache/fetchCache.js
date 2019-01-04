@@ -1,9 +1,9 @@
 /*
 
  ----------------------------------------------------------------------------
- | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
+ | ripple-cdr-discovery: Ripple Discovery Interface                         |
  |                                                                          |
- | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
+ | Copyright (c) 2017-19 Ripple Foundation Community Interest Company       |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  15 December 2018
+  2 January 2019
 
 */
 
@@ -32,41 +32,38 @@
 
 const { logger } = require('../core');
 
-class PatientService {
-  constructor(ctx) {
-    this.ctx = ctx;
+class FetchCache {
+  constructor(adapter) {
+    this.adapter = adapter;
   }
 
-  static create(ctx) {
-    return new PatientService(ctx);
+  static create(adapter) {
+    return new FetchCache(adapter);
   }
 
-  async getPatientBundle(nhsNumber) {
-    logger.info('services/patientService|getPatientBundle', { nhsNumber });
+  async exists(reference) {
+    logger.info('cache/fetchCache|exists', { reference });
 
-    const { patientCache, patientBundleCache } = this.ctx.cache;
+    const key = ['fetchingResource', reference];
 
-    const exists = await patientBundleCache.exists();
-    const bundleCache = exists
-      ? patientBundleCache
-      : patientCache;
-
-    const patientIds = await bundleCache.byNhsNumber.getAllPatientIds(nhsNumber);
-    const patients = await bundleCache.byUuid.getByIds(patientIds);
-
-    return {
-      resourceType: 'Bundle',
-      entry: patients
-    };
+    return this.adapter.exists(key);
   }
 
-  async updateBundle() {
-    logger.info('services/patientService|updateBundle');
+  async set(reference) {
+    logger.info('cache/fetchCache|set', { reference });
 
-    const { patientCache, patientBundleCache } = this.ctx.cache;
-    const data = await patientCache.export();
-    await patientBundleCache.import(data);
+    const key = ['fetchingResource', reference];
+
+    return this.adapter.set(key, true);
+  }
+
+  async deleteAll() {
+    logger.info('cache/fetchCache|deleteAll');
+
+    const key = ['fetchingResource'];
+
+    return this.adapter.delete(key);
   }
 }
 
-module.exports = PatientService;
+module.exports = FetchCache;

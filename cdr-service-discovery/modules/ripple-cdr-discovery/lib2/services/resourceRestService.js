@@ -1,9 +1,9 @@
 /*
 
  ----------------------------------------------------------------------------
- | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
+ | ripple-cdr-discovery: Ripple Discovery Interface                         |
  |                                                                          |
- | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
+ | Copyright (c) 2017-19 Ripple Foundation Community Interest Company       |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,17 +24,16 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  15 December 2018
+  2 January 2019
 
 */
 
 'use strict';
 
-const {logger} = require('../core');
-// const debug = require('debug')('ripple-cdr-discove:services:patient');
-const credentials = require('../config/credentials');
+const { logger } = require('../core');
 const config = require('../config');
 const request = require('request');
+const debug = require('debug')('ripple-cdr-discovery:services:resource-rest');
 
 function requestAsync(options) {
   return new Promise((resolve, reject) => {
@@ -47,47 +46,74 @@ function requestAsync(options) {
 }
 
 class ResourceRestService {
-  constructor(ctx) {
+  constructor(ctx, hostConfig) {
     this.ctx = ctx;
+    this.hostConfig = hostConfig;
   }
 
   static create(ctx) {
-    return new ResourceRestService(ctx);
+    return new ResourceRestService(ctx, config.hosts.api);
   }
 
   async getPatients(patientId, token) {
-    //@TODO change credentials config
-    const params = {
-      url: credentials.patientByNHSNumber.url,
+    logger.info('services/resourceRestService|getPatients', { patientId, token: typeof token });
+
+    debug('token: %s', token);
+
+    const options = {
+      url: `${this.hostConfig.host}/api/fhir/patients`,
       method: 'GET',
       headers: {
-        Authorization: 'Bearer ' + token
+        Authorization: `Bearer ${token}`
       },
       qs: {
         nhsNumber: patientId
       },
       json: true
     };
-    return requestAsync(params)
+
+    return requestAsync(options);
   }
 
-  async getPatientResources(patientId, data , token) {
-    //@TODO change credentials config
-    //@TODO think about change request structure
-    const params = {
-      url: credentials.getPatientResources.url,
+  async getPatientResources(patientId, data, token) {
+    logger.info('services/resourceRestService|getPatientResources', { patientId, data: typeof data, token: typeof token });
+
+    debug('data: %j', data);
+    debug('token: %s', token);
+
+    const options = {
+      url: `${this.hostConfig.host}/api/fhir/resources`,
       method: 'POST',
       headers: {
-        Authorization: 'Bearer ' + token
+        Authorization: `Bearer ${token}`
       },
       body: data,
       json: true
     };
-    return requestAsync(params)
+
+    return requestAsync(options);
   }
 
-  async getResources() {
+  async getResource(reference, token) {
+    logger.info('services/resourceRestService|getResource', { reference, token: typeof token });
 
+    debug('token: %s', token);
+
+    const options = {
+      url: `${this.hostConfig.host}/api/fhir/reference`,
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+      qs: {
+        reference: reference
+      },
+      json: true
+    };
+
+    //TODO:make sure that body === '' handled in getResource
+
+    return requestAsync(options);
   }
 }
 

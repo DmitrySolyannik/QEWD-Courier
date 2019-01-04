@@ -1,9 +1,9 @@
 /*
 
  ----------------------------------------------------------------------------
- | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
+ | ripple-cdr-discovery: Ripple Discovery Interface                         |
  |                                                                          |
- | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
+ | Copyright (c) 2017-19 Ripple Foundation Community Interest Company       |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,62 +24,59 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  20 December 2018
+  2 January 2019
 
 */
 
 'use strict';
 
-const traverse = require('traverse');
-const { isNumeric } = require('./validation');
+const { ResourceName } = require('./enums');
 
-function buildSourceId(host, compositionId) {
-  return `${host}-${compositionId.split('::')[0]}`;
+function getLocationRefs(resource) {
+  if (!resource.extension) return [];
+
+  return resource.extension
+  .filter(x => x.valueReference)
+  .map(x => x.valueReference.reference);
 }
 
-function flatten(obj) {
-  const flatObj = {};
-
-  traverse(obj).map(function (node) {
-    if (this.isLeaf) {
-      let flatPath = '';
-      let slash = '';
-      let colon = '';
-
-      const lastPathIndex = this.path.length - 1;
-      const pathArr = this.path;
-
-      pathArr.forEach(function (path, index) {
-        if (isNumeric(path)) {
-          flatPath = flatPath + colon + path;
-        } else {
-          if (index === lastPathIndex && path[0] === '|' && isNumeric(pathArr[index -1])) {
-            slash = '';
-          }
-          flatPath = flatPath + slash + path;
-        }
-
-        slash = '/';
-        colon = ':';
-      });
-
-      flatObj[flatPath] = node;
-    }
-  });
-
-  return flatObj;
-}
-
-function handleResponse(responseObj, successHandler, errorHandler) {
-  if (responseObj.error) {
-    errorHandler(responseObj);
-  } else {
-    successHandler(responseObj.message);
+function getPractitionerRef(resource) {
+  if (resource.informationSource) {
+    return resource.informationSource.reference;
   }
+
+  if (resource.recorder) {
+    return resource.recorder.reference;
+  }
+
+  if (resource.asserter) {
+    return resource.asserter.reference;
+  }
+
+  if (resource.careProvider) {
+    let practitionerRef = false;
+    let found = false;
+    resource.careProvider.forEach(function(record) {
+      if (!found && record.reference.indexOf('Practitioner') !== -1) {
+        practitionerRef = record.reference;
+        found = true;
+      }
+    });
+    return practitionerRef;
+  }
+
+  if (resource.performer) {
+    return resource.performer.reference;
+  }
+
+  // debug('bad resource: %j', resource)
+
 }
 
-function equals(l, r) {
-  return l.toString() === r.toString();
+function getPatientUuid(resource) {
+  return resource.resourceType === ResourceName.PATIENT
+    ? resource.id
+    : parseRef(resource.patient.reference).uuid;
 }
 
 function lazyLoadAdapter(target) {
@@ -100,10 +97,21 @@ function lazyLoadAdapter(target) {
   });
 }
 
+function parseRef(reference) {
+  const pieces = reference.split('/');
+  const resourceName = pieces[0];
+  const uuid = pieces[1];
+
+  return {
+    resourceName,
+    uuid
+  };
+}
+
 module.exports = {
-  buildSourceId,
-  flatten,
-  equals,
-  handleResponse,
-  lazyLoadAdapter
+  getLocationRefs,
+  getPractitionerRef,
+  getPatientUuid,
+  lazyLoadAdapter,
+  parseRef
 };

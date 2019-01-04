@@ -1,9 +1,9 @@
 /*
 
  ----------------------------------------------------------------------------
- | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
+ | ripple-cdr-discovery: Ripple Discovery Interface                         |
  |                                                                          |
- | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
+ | Copyright (c) 2017-19 Ripple Foundation Community Interest Company       |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,49 +24,40 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  15 December 2018
+  2 January 2019
 
 */
 
 'use strict';
 
 const { logger } = require('../core');
+const { byNhsNumber, byUuid } = require('./mixins/patient');
 
-class PatientService {
-  constructor(ctx) {
-    this.ctx = ctx;
+class PatientBundleCache {
+  constructor(adapter) {
+    this.adapter = adapter;
+    this.byNhsNumber = byNhsNumber(adapter, 'PatientBundle', 'patientBundleCache');
+    this.byUuid = byUuid(adapter, 'PatientBundle', 'patientBundleCache');
   }
 
-  static create(ctx) {
-    return new PatientService(ctx);
+  static create(adapter) {
+    return new PatientBundleCache(adapter);
   }
 
-  async getPatientBundle(nhsNumber) {
-    logger.info('services/patientService|getPatientBundle', { nhsNumber });
+  async exists() {
+    logger.info('cache/patientBundleCache|exists');
 
-    const { patientCache, patientBundleCache } = this.ctx.cache;
+    const key = ['Discovery', 'PatientBundle'];
 
-    const exists = await patientBundleCache.exists();
-    const bundleCache = exists
-      ? patientBundleCache
-      : patientCache;
-
-    const patientIds = await bundleCache.byNhsNumber.getAllPatientIds(nhsNumber);
-    const patients = await bundleCache.byUuid.getByIds(patientIds);
-
-    return {
-      resourceType: 'Bundle',
-      entry: patients
-    };
+    return this.adapter.exists(key);
   }
 
-  async updateBundle() {
-    logger.info('services/patientService|updateBundle');
+  async import(data) {
+    logger.info('cache/patientBundleCache|import', data);
 
-    const { patientCache, patientBundleCache } = this.ctx.cache;
-    const data = await patientCache.export();
-    await patientBundleCache.import(data);
+    const key = ['Discovery', 'PatientBundle'];
+    this.adapter.putObject(key, data);
   }
 }
 
-module.exports = PatientService;
+module.exports = PatientBundleCache;

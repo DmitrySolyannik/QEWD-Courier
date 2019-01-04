@@ -31,15 +31,14 @@
 'use strict';
 
 const { logger } = require('../core');
-const { byPatientId, byResource, byPatientBundle, byNHSNumber } = require('./mixins');
+const { byNhsNumber, byUuid, byResource } = require('./mixins/patient');
 
 class PatientCache {
   constructor(adapter) {
     this.adapter = adapter;
-    this.byPatientId = byPatientId(adapter);
+    this.byNhsNumber = byNhsNumber(adapter);
+    this.byUuid = byUuid(adapter);
     this.byResource = byResource(adapter);
-    this.byPatientBundle = byPatientBundle(adapter);
-    this.byNHSNumber = byNHSNumber(adapter);
   }
 
   static create(adapter) {
@@ -47,16 +46,21 @@ class PatientCache {
   }
 
   /**
-   * Gets status
-   *
+   * Get cache
+   * @param {string[]} key
    * @return {Promise.<Object|null>}
    */
-  async get(key = 'Discovery') {
+  async get(key = ['Discovery']) {
     logger.info('cache/patientCache|get');
 
     return this.adapter.getObject(key);
   }
 
+  /**
+   *
+   * @param {string[]} key
+   * @returns {Promise<Promise<*>|*>}
+   */
   async getObjectWithArrays(key) {
     logger.info('cache/patientCache|getObjectWithArrays');
 
@@ -64,13 +68,13 @@ class PatientCache {
   }
 
   /**
-   * Sets status
+   * Sets cache
    *
    * @param  {Object} data
-   * @param  {string} key
+   * @param  {string[]} key
    * @return {Promise}
    */
-  async set(data, key = 'Discovery') {
+  async set(data, key = ['Discovery']) {
     logger.info('cache/patientCache|set', { data });
 
     this.adapter.putObject(key, data);
@@ -79,24 +83,52 @@ class PatientCache {
   /**
    * Deletes a session for a host
    *
+   * @param {string[]} key
    * @return {Promise}
    */
-  async delete() {
+  async delete(key = ['Discovery']) {
     logger.info('cache/patientCache|delete');
 
-    const key = ['Discovery'];
     this.adapter.delete(key);
   }
 
-  insertBulk(arrValues, key) {
-    //@TODO in progress
-    logger.info('cache/patientCache|insertBulk');
-    arrValues.forEach(v => {
-      this.adapter.set(v, key);
-    })
+  /**
+   * Overwrite person data in cache
+   * @param {string} resource
+   * @returns {Promise<void>}
+   */
+  async overwriteCache(resource) {
+    logger.info('cache/patientCache|overwriteCache');
+
+    if (resource === 'Patient') {
+      const key = ['Discovery', 'PatientBundle'];
+
+      await this.set(this.getPatientBundleCache(false), key);
+      const deleteKey = ['Discovery', resource, 'by_uuid'];
+      await this.delete(deleteKey);
+    }
   }
 
-  getPatientBundleCache(exists, nhsNumber) {
+  /**
+   *
+   * @param {boolean} exists
+   * @returns {Promise<Promise<*>|*>}
+   */
+  async getPatientBundleCache(exists) {
+    logger.info('cache/patientCache|getPatientBundleCache');
+
+    const key = exists ? ['Discovery', 'PatientBundle'] : ['Discovery', 'Patient'];
+
+    return this.adapter.getObjectWithArrays(key);
+  }
+
+  /**
+   *
+   * @param {boolean} exists
+   * @param {string} nhsNumber
+   * @returns {Promise<{patients: Promise<*>|*, key: string[]}>}
+   */
+  async getPatientBundleWithNHSNumber(exists, nhsNumber) {
     logger.info('cache/patientCache|getPatientBundleCache');
 
     const initKey = exists ? ['Discovery', 'PatientBundle'] : ['Discovery', 'Patient'];
@@ -106,6 +138,27 @@ class PatientCache {
       patients: this.adapter.getObjectWithArrays(key),
       key: initKey
     }
+  }
+
+  /**
+   *
+   * @param uuid
+   * @returns {Promise<void>}
+   */
+  async getPatientByUuid(uuid) {
+    logger.info('cache/patientCache|getPatientByUuid');
+
+    const key = ['Discovery', 'Patient', 'by_uuid', uuid];
+
+    return this.adapter.get(key);
+  }
+
+  async export() {
+    logger.info('cache/patientCache|export');
+
+    const key = ['Discovery', 'Patient'];
+
+    return this.adapter.getObjectWithArrays(key);
   }
 }
 

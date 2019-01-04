@@ -1,9 +1,9 @@
 /*
 
  ----------------------------------------------------------------------------
- | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
+ | ripple-cdr-discovery: Ripple Discovery Interface                         |
  |                                                                          |
- | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
+ | Copyright (c) 2017-19 Ripple Foundation Community Interest Company       |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  20 December 2018
+  2 January 2019
 
 */
 
@@ -44,10 +44,29 @@ module.exports = {
   auth: {
 
     /**
-     * Token session ... @TODO
+     * Token session timeout
      *
      * @type {int}
      */
     tokenTimeout: 55 * 1000,
+  },
+
+  hosts: {
+    auth: {
+      host: 'https://devauth.endeavourhealth.net',
+      path:  '/auth/realms/endeavour/protocol/openid-connect/token',
+      username: 'xxxxxxx',
+      password: 'yyyyyyyyyyyyyyy',
+      client_id: 'eds-data-checker',
+      grant_type: 'password'
+    },
+    api: {
+      host: 'https://deveds.endeavourhealth.net/data-assurance',
+      paths: {
+        getPatientsByNhsNumber: '/api/fhir/patients',
+        getPatientResources: '/api/fhir/resources',
+        getResource: '/api/fhir/reference'
+      }
+    }
   }
 };

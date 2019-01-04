@@ -1,9 +1,9 @@
 /*
 
  ----------------------------------------------------------------------------
- | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
+ | ripple-cdr-discovery: Ripple Discovery Interface                         |
  |                                                                          |
- | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
+ | Copyright (c) 2017-19 Ripple Foundation Community Interest Company       |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,49 +24,49 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  15 December 2018
+  2 January 2019
 
 */
 
 'use strict';
 
-const { logger } = require('../core');
+const { logger } = require('../../core');
 
-class PatientService {
-  constructor(ctx) {
-    this.ctx = ctx;
-  }
+module.exports = (adapter, prefix, name) => {
+  return {
+    exists: async (nhsNumber) => {
+      logger.info(`cache/${name}|byNhsNumber|exists`, { nhsNumber });
 
-  static create(ctx) {
-    return new PatientService(ctx);
-  }
+      const key = ['Discovery', prefix, 'by_nhsNumber', nhsNumber];
 
-  async getPatientBundle(nhsNumber) {
-    logger.info('services/patientService|getPatientBundle', { nhsNumber });
+      return adapter.exists(key);
+    },
 
-    const { patientCache, patientBundleCache } = this.ctx.cache;
+    getAllPatientIds: async (nhsNumber) => {
+      logger.info(`cache/${name}|byNhsNumber|getAllPatientIds`, { nhsNumber });
 
-    const exists = await patientBundleCache.exists();
-    const bundleCache = exists
-      ? patientBundleCache
-      : patientCache;
+      const patientIds = [];
+      const key = ['Discovery', prefix, 'by_nhsNumber', nhsNumber, 'Patient'];
 
-    const patientIds = await bundleCache.byNhsNumber.getAllPatientIds(nhsNumber);
-    const patients = await bundleCache.byUuid.getByIds(patientIds);
+      adapter.qewdSession.data.$(key).forEachChild((uuid) => {
+        patientIds.push(uuid);
+      });
 
-    return {
-      resourceType: 'Bundle',
-      entry: patients
-    };
-  }
+      return patientIds;
+    },
+    set: async (nhsNumber, uuid) => {
+      logger.info(`cache/${name}|byNhsNumber|set`, { nhsNumber, uuid });
 
-  async updateBundle() {
-    logger.info('services/patientService|updateBundle');
+      const nhsKey = ['Discovery', 'Patient', 'by_nhsNumber', nhsNumber, 'Patient', uuid];
 
-    const { patientCache, patientBundleCache } = this.ctx.cache;
-    const data = await patientCache.export();
-    await patientBundleCache.import(data);
-  }
-}
-
-module.exports = PatientService;
+      adapter.put(nhsKey, uuid);
+    },
+    // //@TODO talk about cache keys
+    // getByUuid: async (key, nhsNumber, uuid) => {
+    //   logger.info('cache/patientCache|byNHSNumber|getByUuid');
+	  //
+    //   const key = [...key, 'by_nhsNumber', nhsNumber, 'Patient', 'by_uuid', uuid, 'data'];
+    //   return adapter.getObjectWithArrays(key);
+    // }
+  };
+};

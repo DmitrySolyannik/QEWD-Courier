@@ -24,69 +24,49 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  18 December 2018
+  20 December 2018
 
 */
 
 'use strict';
 
-const { logger } = require('../core');
+const { logger } = require('../../core');
 
-class headingCache {
-  constructor(adapter) {
-    this.adapter = adapter;
-  }
+module.exports = (adapter) => {
+  return {
 
-  static create(adapter) {
-    return new headingCache(adapter);
-  }
+    exists: async (patientId, resource) => {
+      logger.info('cache/patientCache|byResource|exists', { patientId, resource });
 
-  /**
-   * Gets status
-   *
-   * @return {Promise.<Object|null>}
-   */
-  async get() {
-    logger.info('cache/headingCache|get');
+      const key = ['Discovery', 'Patient', 'by_nhsNumber', patientId, 'resources', resource];
 
-    const key = ['Discovery', 'Patient'];
+      return adapter.exists(key);
+    },
+    getByName: async (resourceName) => {
+      logger.info('cache/patientCache|byResource|getByName', { resourceName });
 
-    return this.adapter.getObject(key);
-  }
+      const key = ['Discovery', resourceName, 'by_uuid'];
 
-  async getResource() {
-    logger.info('cache/headingCache|getResource');
+      return adapter.get(key);
+    },
+    setResource: async (resourceName, resource) => {
+      logger.info('cache/patientCache|byResource|setResource', { resourceName, resource });
 
-    const key = ['Discovery', 'Patient'];
+      const key = ['Discovery', resourceName, 'by_uuid', uuid];
 
-    return;
-  }
+      if (adapter.exists(key)) {
+        adapter.put([...key, 'data'], resource);
+      }
+    },
+    setByResourceAndPatientUuid: async (resourceUuid, resourceName, patientUuid) => {
+      const key = ['Discovery', 'Patient', 'by_uuid', patientUuid, 'resources', resourceName, resourceUuid];
 
-  /**
-   * Sets status
-   *
-   * @param  {Object} data
-   * @return {Promise}
-   */
-  async set(data) {
-    logger.info('cache/headingCache|set', { data });
+      return adapter.put(key, resourceUuid);
+    },
+    setByNHSNumber : async (nhsNumber, resourceName, resourceUuid ) => {
+      const key = ['Discovery', 'Patient', 'by_nhsNumber', nhsNumber, 'resources', resourceName, resourceUuid];
 
-    const key = ['Discovery', 'Patient'];
-    this.adapter.putObject(key, data);
-  }
-
-  /**
-   * Deletes a session for a host
-   *
-   * @param  {string} host
-   * @return {Promise}
-   */
-  async delete() {
-    logger.info('cache/headingCache|delete');
-
-    const key = ['Discovery', 'Patient'];
-    this.adapter.delete(key);
-  }
-}
-
-module.exports = headingCache;
+      return adapter.put(key, resourceUuid);
+    }
+  };
+};

@@ -46,22 +46,28 @@ function requestAsync(options) {
 }
 
 class AuthRestService {
-    constructor(ctx) {
+    constructor(ctx, hostConfig) {
       this.ctx = ctx;
+      this.hostConfig = hostConfig;
     }
 
   static create(ctx) {
-    return new AuthRestService(ctx);
+    return new AuthRestService(ctx, config.hosts.auth);
   }
 
   async authenticate() {
-    const params = {
-      url: config.auth.url,
+    const options = {
+      url: `${this.hostConfig.host + this.hostConfig.path}`,
       method: 'POST',
-      form: config.auth.credentials,
+      form: {
+        username: this.hostConfig.username,
+        password: this.hostConfig.password,
+        client_id: this.hostConfig.client_id,
+        grant_type: this.hostConfig.grant_type
+      },
       json: true
     };
-    return requestAsync(params)
+    return requestAsync(options)
   }
 
 }

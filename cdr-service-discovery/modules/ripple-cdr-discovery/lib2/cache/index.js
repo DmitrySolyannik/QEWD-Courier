@@ -31,7 +31,13 @@
 'use strict';
 
 const TokenCache = require('./authCache');
+const FetchCache = require('./fetchCache');
+const PatientBundleCache = require('./patientBundleCache');
+const PatientCache = require('./patientCache');
 
 module.exports = {
-  TokenCache
+  TokenCache,
+  FetchCache,
+  PatientBundleCache,
+  PatientCache,
 };
