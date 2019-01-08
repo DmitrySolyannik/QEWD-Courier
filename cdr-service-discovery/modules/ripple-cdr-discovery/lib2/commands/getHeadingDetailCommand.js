@@ -33,6 +33,8 @@
 const { BadRequestError } = require('../errors');
 const { isHeadingValid, isPatientIdValid, isSourceIdValid } = require('../shared/validation');
 const { Role, ResourceFormat } = require('../shared/enums');
+const { response } = require('../shared/utils');
+const { headings } = require('../config');
 const debug = require('debug')('ripple-cdr-discovery:commands:get-heading-detail-command');
 
 class GetHeadingDetailCommand {
@@ -61,25 +63,26 @@ class GetHeadingDetailCommand {
     }
 
 
-    // const headingValid = isHeadingValid(this.ctx.headingsConfig, heading);
-    // if (!headingValid.ok) {
-    //   return [];
-    // }
+    const headingValid = isHeadingValid(heading);
+    if (!headingValid.ok) {
+      return response(false);
+    }
 
     //@TODO create new validation for sourceID
-    // const sourceIdValid = isSourceIdValid(sourceId);
+    const sourceIdValid = isSourceIdValid(sourceId);
+    if (!sourceIdValid.valid) {
+      return response(false);
+    }
 
     const headingRef = sourceId.split('Discovery-')[1];
+    const resourceName = headings[heading];
 
     const { resourceService, headingService } = this.ctx.services;
     await resourceService.fetchPatients(patientId);
-    await resourceService.fetchPatientResources(patientId, heading);
+    await resourceService.fetchPatientResources(patientId, resourceName);
     const responseObj = await headingService.getDetail(patientId, heading, headingRef, ResourceFormat.PULSE);
 
-    return {
-      responseFrom: 'discovery_service',
-      results: responseObj
-    }
+    return response(responseObj);
   }
 }
 

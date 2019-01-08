@@ -68,5 +68,11 @@ module.exports = {
         getResource: '/api/fhir/reference'
       }
     }
+  },
+  headings : {
+    medications: 'MedicationStatement',
+    allergies: 'AllergyIntolerance',
+    problems: 'Condition',
+    vaccinations: 'Immunization'
   }
 };

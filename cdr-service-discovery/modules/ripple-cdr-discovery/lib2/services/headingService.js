@@ -44,16 +44,39 @@ class HeadingService {
     return new HeadingService(ctx);
   }
 
+  /**
+   * @param { string | number} patientId
+   * @param { string } heading
+   * @param { string } headingRef
+   * @param { string } format
+   * @returns {Promise<*>}
+   */
   async getDetail(patientId, heading, headingRef, format) {
     const { resourceName, uuid } = parseRef(headingRef, '_');
     const { template, helper } = getTemplate(heading, format);
 
     const { resourceCache } = this.ctx.cache;
-    const resource = await resourceCache.getResource(resourceName, uuid);
+    const resource = await resourceCache.get(resourceName, uuid);
     const practitioner = await resourceCache.getPractitioner();
     resource.practitionerName = practitioner.name.text;
     resource.nhsNumber = nhsNumber;
     return transform(template, resource, helper);
   }
+
+  /**
+   * @param { string | number} patientId
+   * @param { string }  heading
+   * @param { string }  resourceName
+   * @param { string }  format
+   * @returns {Promise<void>}
+   */
+  async getSummaryDetail(patientId, heading, resourceName, format) {
+    const { template, helper } = getTemplate(heading, format);
+
+    const { resourceCache } = this.ctx.cache;
+    const resource = await resourceCache.get(resourceName, uuid);
+    const practitioner = await resourceCache.getPractitioner();
+  }
+
 }
 module.exports = HeadingService;

@@ -8,7 +8,7 @@ const { getResponseError } = require('../errors');
 module.exports = async function (args, finished) {
   try {
     const command = new GetHeadingSummaryCommand(args.req.ctx, args.session);
-    const responseObj = await command.execute(args.patientId, args.heading, args.sourceId);
+    const responseObj = await command.execute(args.patientId, args.heading);
 
     finished(responseObj);
   } catch (err) {

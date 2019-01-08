@@ -108,8 +108,11 @@ function parseRef(reference, separator = '/') {
   };
 }
 
-function getTemplate(heading) {
-  const template = require('../../templates/' + headingName + '/openEHR_to_Pulsetile.json');
+function response(data) {
+  return {
+    responseFrom: 'discovery_service',
+    results: data
+  }
 }
 
 module.exports = {
@@ -117,5 +120,6 @@ module.exports = {
   getPractitionerRef,
   getPatientUuid,
   lazyLoadAdapter,
-  parseRef
+  parseRef,
+  response
 };

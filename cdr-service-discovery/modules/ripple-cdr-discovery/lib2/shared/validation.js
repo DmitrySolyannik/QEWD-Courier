@@ -31,6 +31,7 @@
 'use strict';
 
 const validUrl = require('valid-url');
+const { headings } = require('../config');
 
 function respondErr(err) {
   return {
@@ -136,12 +137,11 @@ function isTop3ThingsPayloadValid(payload) {
 /**
  * Returns true if heading valid. Otherwise throw an error
  *
- * @param  {Object}  headingsConfig
  * @param  {string}  heading
- * @return {Boolean}
+ * @return {Boolean | Object}
  */
-function isHeadingValid(headingsConfig, heading) {
-  if (!heading || !headingsConfig[heading]) {
+function isHeadingValid(heading) {
+  if (!heading || !headings[heading]) {
     return respondErr(`Invalid or missing heading: ${heading}`);
   }
 
@@ -157,19 +157,10 @@ function isGuid(s) {
 }
 
 function isSourceIdValid(sourceId) {
-  if (!sourceId) return false;
-
-  const pieces = sourceId.split('-');
-  if (pieces.length !== 6) return false;
-
-  // remove host name element
-  pieces.shift();
-
-  const guid = pieces.join('-');
-  if (!isGuid(guid)) return false;
+  const isValid = sourceId.indexOf('Discovery-') === -1;
 
   return {
-    ok: true
+    valid: sourceId ? isValid : false
   };
 }
 

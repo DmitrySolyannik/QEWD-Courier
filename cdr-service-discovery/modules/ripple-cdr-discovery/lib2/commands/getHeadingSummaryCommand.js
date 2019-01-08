@@ -30,10 +30,11 @@
 
 'use strict';
 
-const P = require('bluebird');
 const { BadRequestError } = require('../errors');
-const { isHeadingValid, isPatientIdValid, isSourceIdValid } = require('../shared/validation');
-const { Role } = require('../shared/enums');
+const { isHeadingValid, isPatientIdValid } = require('../shared/validation');
+const { Role, ResourceFormat } = require('../shared/enums');
+const { response } = require('../shared/utils');
+const { headings } = require('../config');
 const debug = require('debug')('ripple-cdr-discovery:commands:get-heading-detail-command');
 
 class getHeadingSummaryCommand {
@@ -45,10 +46,34 @@ class getHeadingSummaryCommand {
   /**
    * @param  {string} patientId
    * @param  {string} heading
-   * @param  {Object} session
    * @return {Object}
    */
-  async execute(patientId, heading, session) {
+  async execute(patientId, heading) {
+    debug('patientId: %s, heading: %s', patientId, heading);
+    debug('role: %s', this.session.role);
+    // override patientId for PHR Users - only allowed to see their own data
+    if (this.session.role === Role.PHR_USER) {
+      patientId = this.session.nhsNumber;
+    }
+
+    const patientValid = isPatientIdValid(patientId);
+    if (!patientValid.ok) {
+      throw new BadRequestError(patientValid.error);
+    }
+
+    // patientId = mapToDiscoveryNHSNo.call(this, patientId); // @TODO think about this method
+
+    const headingValid = isHeadingValid(heading);
+    if (!headingValid.ok) {
+      return response([]);
+    }
+
+    const resourceName = headings[heading];
+
+    const { resourceService, headingService } = this.ctx.services;
+    await resourceService.fetchPatients(patientId);
+    await resourceService.fetchPatientResources(patientId, resourceName);
+    const result = headingService.getSummaryDetail(patientId, heading, resourceName, ResourceFormat.PULSE);
 
   }
 }
