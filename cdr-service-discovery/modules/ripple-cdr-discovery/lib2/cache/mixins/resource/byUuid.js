@@ -68,5 +68,21 @@ module.exports = (adapter) => {
 
       return adapter.put(key, practitionerUuid);
     },
+
+    getPractitioner: async (uuid) => {
+      logger.info('cache/resourceCache|byUuid|getPractitioner');
+
+      const key = ['Discovery', 'Practitioner', 'by_uuid', uuid, 'data'];
+
+      adapter.get(key);
+    },
+
+    getResource: async (resourceName, uuid) => {
+      logger.info('cache/resourceCache|byUuid|getResource');
+
+      const key = ['Discovery', resourceName, 'by_uuid', uuid, 'data'];
+
+      adapter.getObjectWithArrays(key);
+    }
   };
 };

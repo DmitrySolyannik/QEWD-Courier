@@ -30,18 +30,16 @@
 
 'use strict';
 
-const ResourceName = Object.freeze({
-  PATIENT: 'Patient'
-});
-const ResourceFormat = Object.freeze({
-  PULSE: 'pulsetile'
-});
-const Role = Object.freeze({
-  PHR_USER: 'phrUser'
-});
+
+function getTemplate(headingName, format) {
+  const template = require('../templates/' + headingName + '/openEHR_to_Pulsetile.json');
+  const helper = null; //@TODO Add helper for template and think about formats
+  return {
+    template,
+    helper
+  }
+}
 
 module.exports = {
-  ResourceName,
-  ResourceFormat,
-  Role
+  getTemplate
 };

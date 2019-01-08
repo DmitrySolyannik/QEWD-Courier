@@ -97,8 +97,8 @@ function lazyLoadAdapter(target) {
   });
 }
 
-function parseRef(reference) {
-  const pieces = reference.split('/');
+function parseRef(reference, separator = '/') {
+  const pieces = reference.split(separator);
   const resourceName = pieces[0];
   const uuid = pieces[1];
 
@@ -106,6 +106,10 @@ function parseRef(reference) {
     resourceName,
     uuid
   };
+}
+
+function getTemplate(heading) {
+  const template = require('../../templates/' + headingName + '/openEHR_to_Pulsetile.json');
 }
 
 module.exports = {

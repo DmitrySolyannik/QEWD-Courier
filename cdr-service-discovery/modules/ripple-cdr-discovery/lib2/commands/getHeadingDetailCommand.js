@@ -32,7 +32,7 @@
 
 const { BadRequestError } = require('../errors');
 const { isHeadingValid, isPatientIdValid, isSourceIdValid } = require('../shared/validation');
-const { Role } = require('../shared/enums');
+const { Role, ResourceFormat } = require('../shared/enums');
 const debug = require('debug')('ripple-cdr-discovery:commands:get-heading-detail-command');
 
 class GetHeadingDetailCommand {
@@ -69,11 +69,12 @@ class GetHeadingDetailCommand {
     //@TODO create new validation for sourceID
     // const sourceIdValid = isSourceIdValid(sourceId);
 
+    const headingRef = sourceId.split('Discovery-')[1];
 
     const { resourceService, headingService } = this.ctx.services;
     await resourceService.fetchPatients(patientId);
     await resourceService.fetchPatientResources(patientId, heading);
-    const responseObj = await headingService.getDetail(patientId, heading, 'pulsetile');
+    const responseObj = await headingService.getDetail(patientId, heading, headingRef, ResourceFormat.PULSE);
 
     return {
       responseFrom: 'discovery_service',

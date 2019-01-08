@@ -30,10 +30,11 @@
 
 'use strict';
 
-const {logger} = require('../core');
+const { transform } = require('qewd-transform-json').transform;
+const { parseRef } = require('../shared/utils');
+const { getTemplate } = require('../shared/headings');
 // const debug = require('debug')('ripple-cdr-discove:services:patient');
 
-//@TODO think about file name
 class HeadingService {
   constructor(ctx) {
     this.ctx = ctx;
@@ -43,8 +44,16 @@ class HeadingService {
     return new HeadingService(ctx);
   }
 
-  async getDetail(patientId, heading, format) {
+  async getDetail(patientId, heading, headingRef, format) {
+    const { resourceName, uuid } = parseRef(headingRef, '_');
+    const { template, helper } = getTemplate(heading, format);
 
+    const { resourceCache } = this.ctx.cache;
+    const resource = await resourceCache.getResource(resourceName, uuid);
+    const practitioner = await resourceCache.getPractitioner();
+    resource.practitionerName = practitioner.name.text;
+    resource.nhsNumber = nhsNumber;
+    return transform(template, resource, helper);
   }
 }
 module.exports = HeadingService;
