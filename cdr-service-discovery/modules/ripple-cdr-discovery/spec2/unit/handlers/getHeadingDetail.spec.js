@@ -37,7 +37,6 @@ const { ExecutionContextMock } = require('../../mocks');
 describe('ripple-cdr-discovery/lib2/handlers/getHeadingDetail', () => {
   let args;
   let finished;
-  let ctx;
 
 
   let handler;
@@ -53,7 +52,6 @@ describe('ripple-cdr-discovery/lib2/handlers/getHeadingDetail', () => {
   });
 
   beforeEach(() => {
-    ctx = new ExecutionContextMock();
     args = {
       heading: 'procedures',
       patientId: 9999999000,

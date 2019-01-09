@@ -53,29 +53,13 @@ class ExecutionContext {
     return new ExecutionContext(q, { qewdSession });
   }
 
-  // get defaultHost() {
-  //   return this.userDefined.defaultPostHost || 'ethercis';
-  // }
-  //
-  // get headingsConfig() {
-  //   return this.userDefined.headings;
-  // }
-  //
-  // get synopsisConfig() {
-  //   return this.userDefined.synopsis;
-  // }
-  //
-  // get serversConfig() {
-  //   return this.userDefined.openehr;
-  // }
-  //
-  // get activeSessions() {
-  //   return this.worker.sessions.active();
-  // }
-  //
-  // getHeadingConfig(heading) {
-  //   return this.userDefined.headings[heading];
-  // }
+  get getHeadings() {
+    return this.userDefined.headings;
+  }
+
+  get serversConfig() {
+    return this.userDefined.host;
+  }
 }
 
 module.exports = ExecutionContext;

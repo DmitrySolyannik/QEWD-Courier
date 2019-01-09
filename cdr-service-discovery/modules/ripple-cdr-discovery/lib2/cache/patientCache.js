@@ -137,7 +137,7 @@ class PatientCache {
     return {
       patients: this.adapter.getObjectWithArrays(key),
       key: initKey
-    }
+    };
   }
 
   /**

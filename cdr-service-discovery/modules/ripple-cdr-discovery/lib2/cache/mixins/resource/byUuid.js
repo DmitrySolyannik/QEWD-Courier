@@ -50,7 +50,7 @@ module.exports = (adapter) => {
 
       if (!exists) {
         const dataKey = ['Discovery', resourceName, 'by_uuid', uuid, 'data'];
-        adapter.putObject(dataKey, data);
+        adapter.putObject(dataKey, resource);
       }
     },
 

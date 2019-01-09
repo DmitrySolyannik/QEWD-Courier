@@ -6,6 +6,7 @@
   "license": "Apache-2.0",
   "scripts": {
     "lint": "jshint lib spec2 index.js",
+    "lint2": "eslint lib2 spec2",
     "test": "jasmine --config=spec2/support/jasmine.json",
     "coverage": "nyc --reporter=html --reporter=text jasmine --config=spec2/support/jasmine.json",
     "coveralls": "nyc report --reporter=text-lcov | coveralls"

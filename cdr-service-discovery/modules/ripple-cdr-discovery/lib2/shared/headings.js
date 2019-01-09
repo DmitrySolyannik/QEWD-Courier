@@ -31,15 +31,32 @@
 'use strict';
 
 
-function getTemplate(headingName, format) {
-  const template = require('../templates/' + headingName + '/openEHR_to_Pulsetile.json');
-  const helper = null; //@TODO Add helper for template and think about formats
+function getTemplate(headingName, destination, source = 'discovery') {
+  return require('../templates/' + headingName + `/${source}_to_${destination}.json`);
+}
+
+function headingHelper() {
   return {
-    template,
-    helper
-  }
+    fhirDateTime: (d) => new Date(d).toISOString(),
+    convertToString: (input) => input.toString(),
+    useSnomed: function(arr, property) {
+      var obj;
+      var value = '';
+      for (var i = 0; i < arr.length; i++) {
+        obj = arr[i];
+        if (obj.system && obj.system.indexOf('snomed') !== -1) {
+          if (obj[property]) {
+            value = obj[property];
+            break;
+          }
+        }
+      }
+      return value.toString();
+    },
+  };
 }
 
 module.exports = {
-  getTemplate
+  getTemplate,
+  headingHelper
 };

@@ -35,6 +35,8 @@ const { logger } = require('../../core');
 module.exports = (adapter) => {
   return {
     set: async (patientUuid, resourceName, resourceUuid) => {
+      logger.info('cache/resourceCache|byNHSNumber|set', { patientUuid, resourceName, resourceUuid });
+
       const key = ['Discovery', 'Patient', 'by_uuid', patientUuid, 'resources', resourceName, resourceUuid];
 
       return adapter.put(key, resourceUuid);

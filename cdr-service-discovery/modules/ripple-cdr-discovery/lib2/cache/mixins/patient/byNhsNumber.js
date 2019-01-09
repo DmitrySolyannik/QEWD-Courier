@@ -60,13 +60,6 @@ module.exports = (adapter, prefix, name) => {
       const nhsKey = ['Discovery', 'Patient', 'by_nhsNumber', nhsNumber, 'Patient', uuid];
 
       adapter.put(nhsKey, uuid);
-    },
-    // //@TODO talk about cache keys
-    // getByUuid: async (key, nhsNumber, uuid) => {
-    //   logger.info('cache/patientCache|byNHSNumber|getByUuid');
-	  //
-    //   const key = [...key, 'by_nhsNumber', nhsNumber, 'Patient', 'by_uuid', uuid, 'data'];
-    //   return adapter.getObjectWithArrays(key);
-    // }
+    }
   };
 };

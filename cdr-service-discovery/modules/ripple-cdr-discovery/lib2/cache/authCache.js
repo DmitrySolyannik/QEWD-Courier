@@ -32,13 +32,13 @@
 
 const { logger } = require('../core');
 
-class authCache {
+class AuthCache {
   constructor(adapter) {
     this.adapter = adapter;
   }
 
   static create(adapter) {
-    return new authCache(adapter);
+    return new AuthCache(adapter);
   }
 
   /**
@@ -81,4 +81,4 @@ class authCache {
   }
 }
 
-module.exports = authCache;
+module.exports = AuthCache;

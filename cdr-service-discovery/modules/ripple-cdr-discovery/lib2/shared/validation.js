@@ -30,7 +30,6 @@
 
 'use strict';
 
-const validUrl = require('valid-url');
 const { headings } = require('../config');
 
 function respondErr(err) {
@@ -57,83 +56,6 @@ function isPatientIdValid(patientId) {
   };
 }
 
-function isFeedPayloadValid(payload) {
-  if (!payload.author || payload.author === '') {
-    return respondErr('Author missing or empty');
-  }
-
-  if (!payload.name || payload.name === '') {
-    return respondErr('Feed name missing or empty');
-  }
-
-  if (!payload.landingPageUrl || payload.landingPageUrl === '') {
-    return respondErr('Landing page URL missing or empty');
-  }
-
-  if (!validUrl.isWebUri(payload.landingPageUrl)) {
-    return respondErr('Landing page URL is invalid');
-  }
-
-  if (!payload.rssFeedUrl || payload.rssFeedUrl === '') {
-    return respondErr('RSS Feed URL missing or empty');
-  }
-
-  if (!validUrl.isWebUri(payload.rssFeedUrl)) {
-    return respondErr('RSS Feed URL is invalid');
-  }
-
-  return {
-    ok: true
-  };
-}
-
-function isEmpty(obj) {
-  if (!obj) return true;
-  if (typeof obj !== 'object') return true;
-
-  for (let name in obj) {
-    if (obj.hasOwnProperty(name)) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-function isTop3ThingsPayloadValid(payload) {
-  if (!payload.name1 || payload.name1 === '') {
-    return respondErr('You must specify at least 1 Top Thing');
-  }
-
-  if (!payload.description1 || payload.description1 === '') {
-    return respondErr('You must specify at least 1 Top Thing');
-  }
-
-  if (!payload.name2 || payload.name2 === '') {
-    if (payload.description2 && payload.description2 !== '') {
-      return respondErr('A Description for the 2nd Top Thing was defined, but its summary name was not defined');
-    }
-    payload.name2 = '';
-    payload.description2 = '';
-  } else {
-    payload.description2 = payload.description2 || '';
-  }
-
-  if (!payload.name3 || payload.name3 === '') {
-    if (payload.description3 && payload.description3 !== '') {
-      return respondErr('A Description for the 3rd Top Thing was defined, but its summary name was not defined');
-    }
-    payload.name3 = '';
-    payload.description3 = '';
-  } else {
-    payload.description3 = payload.description3 || '';
-  }
-
-  return {
-    ok: true
-  };
-}
-
 /**
  * Returns true if heading valid. Otherwise throw an error
  *
@@ -150,12 +72,6 @@ function isHeadingValid(heading) {
   };
 }
 
-function isGuid(s) {
-  const regexGuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
-  return regexGuid.test(s);
-}
-
 function isSourceIdValid(sourceId) {
   const isValid = sourceId.indexOf('Discovery-') === -1;
 
@@ -167,10 +83,6 @@ function isSourceIdValid(sourceId) {
 module.exports = {
   isNumeric,
   isPatientIdValid,
-  isFeedPayloadValid,
-  isEmpty,
-  isTop3ThingsPayloadValid,
   isHeadingValid,
-  isGuid,
   isSourceIdValid
 };

@@ -34,7 +34,7 @@ const ResourceName = Object.freeze({
   PATIENT: 'Patient'
 });
 const ResourceFormat = Object.freeze({
-  PULSE: 'pulsetile'
+  PULSETILE: 'pulsetile',
 });
 const Role = Object.freeze({
   PHR_USER: 'phrUser'

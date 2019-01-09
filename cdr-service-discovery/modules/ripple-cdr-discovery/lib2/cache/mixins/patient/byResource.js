@@ -49,24 +49,26 @@ module.exports = (adapter) => {
 
       return adapter.get(key);
     },
-    setResource: async (resourceName, resource) => {
-      logger.info('cache/patientCache|byResource|setResource', { resourceName, resource });
+    get: async (nhsNumber, resourceName) => {
+      logger.info('cache/patientCache|byResource|get', { nhsNumber, resourceName });
 
-      const key = ['Discovery', resourceName, 'by_uuid', uuid];
-
-      if (adapter.exists(key)) {
-        adapter.put([...key, 'data'], resource);
-      }
-    },
-    setByResourceAndPatientUuid: async (resourceUuid, resourceName, patientUuid) => {
-      const key = ['Discovery', 'Patient', 'by_uuid', patientUuid, 'resources', resourceName, resourceUuid];
-
-      return adapter.put(key, resourceUuid);
-    },
-    setByNHSNumber : async (nhsNumber, resourceName, resourceUuid ) => {
-      const key = ['Discovery', 'Patient', 'by_nhsNumber', nhsNumber, 'resources', resourceName, resourceUuid];
-
-      return adapter.put(key, resourceUuid);
+      const initKey = ['Discovery', 'Patient', 'by_nhsNumber', nhsNumber, 'resources', resourceName];
+      const practitioners = [];
+      adapter.qewdSession.data.$(initKey).forEachChild((uuid) => {
+        let key = ['Discovery', resourceName, 'by_uuid', uuid, 'data'];
+        let resource = adapter.getObjectWithArrays(key);
+        resource.nhsNumber = nhsNumber;
+        if (adapter.exists([...key, 'practitioner'])) {
+          const practitionerUuid = adapter.get([...key, 'practitioner']).value;
+          const keyPractitioner = ['Discovery', 'Practitioner', 'by_uuid', practitionerUuid, 'data'];
+          const practitioner = adapter.getObjectWithArrays(keyPractitioner);
+          resource.practitionerName = practitioner.name.text;
+        } else {
+          resource.practitionerName = 'Not known';
+        }
+        practitioners.push(resource);
+      });
+      return practitioners;
     }
   };
 };

@@ -108,18 +108,11 @@ function parseRef(reference, separator = '/') {
   };
 }
 
-function response(data) {
-  return {
-    responseFrom: 'discovery_service',
-    results: data
-  }
-}
 
 module.exports = {
   getLocationRefs,
   getPractitionerRef,
   getPatientUuid,
   lazyLoadAdapter,
-  parseRef,
-  response
+  parseRef
 };

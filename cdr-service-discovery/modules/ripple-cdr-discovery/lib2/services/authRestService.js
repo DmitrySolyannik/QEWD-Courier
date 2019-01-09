@@ -32,8 +32,6 @@
 
 const request = require('request');
 const config = require('../config');
-const { logger } = require('../core');
-const debug = require('debug')('ripple-cdr-discovery:services:request');
 
 function requestAsync(options) {
   return new Promise((resolve, reject) => {
@@ -67,7 +65,7 @@ class AuthRestService {
       },
       json: true
     };
-    return requestAsync(options)
+    return requestAsync(options);
   }
 
 }

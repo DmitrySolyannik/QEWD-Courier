@@ -30,10 +30,10 @@
 
 'use strict';
 
+const P = require('bluebird');
 const { transform } = require('qewd-transform-json').transform;
 const { parseRef } = require('../shared/utils');
-const { getTemplate } = require('../shared/headings');
-// const debug = require('debug')('ripple-cdr-discove:services:patient');
+const { getTemplate, headingHelper } = require('../shared/headings');
 
 class HeadingService {
   constructor(ctx) {
@@ -45,37 +45,41 @@ class HeadingService {
   }
 
   /**
-   * @param { string | number} patientId
-   * @param { string } heading
-   * @param { string } headingRef
-   * @param { string } format
+   * @param {string|number} nhsNumber
+   * @param {string} heading
+   * @param {string} headingRef
+   * @param {string} destination
    * @returns {Promise<*>}
    */
-  async getDetail(patientId, heading, headingRef, format) {
+  async getByReference(nhsNumber, heading, headingRef, destination) {
     const { resourceName, uuid } = parseRef(headingRef, '_');
-    const { template, helper } = getTemplate(heading, format);
+    const template = getTemplate(destination, format);
+    const helper = headingHelper();
 
     const { resourceCache } = this.ctx.cache;
     const resource = await resourceCache.get(resourceName, uuid);
-    const practitioner = await resourceCache.getPractitioner();
+    const practitioner = await resourceCache.getPractitioner(uuid);
     resource.practitionerName = practitioner.name.text;
     resource.nhsNumber = nhsNumber;
     return transform(template, resource, helper);
   }
 
   /**
-   * @param { string | number} patientId
-   * @param { string }  heading
-   * @param { string }  resourceName
-   * @param { string }  format
-   * @returns {Promise<void>}
+   * @param {string|number} nhsNumber
+   * @param {string} heading
+   * @param {string} resourceName
+   * @param {string} destination
+   * @returns {Promise<[]>}
    */
-  async getSummaryDetail(patientId, heading, resourceName, format) {
-    const { template, helper } = getTemplate(heading, format);
+  async getSummary(nhsNumber, heading, resourceName, destination) {
+    const template = getTemplate(heading, destination);
+    const helper = headingHelper();
 
-    const { resourceCache } = this.ctx.cache;
-    const resource = await resourceCache.get(resourceName, uuid);
-    const practitioner = await resourceCache.getPractitioner();
+    const { patientCache } = this.ctx.cache;
+    const resources = await patientCache.byResource.get(nhsNumber, resourceName); //@TODO talk about logic in cache
+    const results = [];
+    await P.each(resources, async (x) => results.push(transform(template, x, helper)));
+    return results;
   }
 
 }

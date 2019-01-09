@@ -39,7 +39,6 @@ class ServiceRegistry {
   }
 
   initialise(id) {
-    console.log('init', id);
     logger.info('core/services|initialise', { id });
 
     const Service = require(`../services/${id}`);

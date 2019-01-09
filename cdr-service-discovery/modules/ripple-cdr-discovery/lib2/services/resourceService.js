@@ -1,5 +1,6 @@
 'use strict';
 
+const P = require('bluebird');
 const {logger} = require('../core');
 const { ResourceName } = require('../shared/enums');
 const { getLocationRefs, getPractitionerRef, parseRef, getPatientUuid } = require('../shared/utils');
@@ -91,7 +92,7 @@ class ResourceService {
       if (practitionerRef) {
         const practitionerUuid = parseRef(practitionerRef).uuid;
         await resourceCache.byUuid.setPractitionerUuid(resourceName, uuid, practitionerUuid);
-        await this.fetchPractitioner(practitionerRef, resourceName)
+        await this.fetchPractitioner(practitionerRef, resourceName);
       }
     });
   }
