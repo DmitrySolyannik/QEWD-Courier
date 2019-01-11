@@ -33,7 +33,6 @@
 const { BadRequestError } = require('../errors');
 const { isHeadingValid, isPatientIdValid } = require('../shared/validation');
 const { Role, ResourceFormat } = require('../shared/enums');
-const { headings } = require('../config');
 const debug = require('debug')('ripple-cdr-discovery:commands:get-heading-detail-command');
 
 class getHeadingSummaryCommand {
@@ -67,6 +66,7 @@ class getHeadingSummaryCommand {
       return this.response([]);
     }
 
+    const {headings} = this.ctx;
     const resourceName = headings[heading];
 
     const { resourceService, headingService } = this.ctx.services;

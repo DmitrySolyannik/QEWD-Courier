@@ -30,32 +30,52 @@
 
 'use strict';
 
-function getTemplate(headingName, destination, source = 'discovery') {
-  return require('../../templates/' + headingName + `/${source}_to_${destination}.json`);
+const { logger } = require('../core');
+const { byUuid, byOrganization, byLocation } = require('./mixins/practitioner');
+
+class DemographicsCache {
+  constructor(adapter) {
+    this.adapter = adapter;
+    this.byUuid = byUuid(adapter, 'Practitioner', 'demographicsCache');
+    this.byOrganization = byOrganization(adapter, 'Organization', 'demographicsCache');
+    this.byLocation = byLocation(adapter, 'Location', 'demographicsCache');
+  }
+
+  static create(adapter) {
+    return new DemographicsCache(adapter);
+  }
+
+  async exists(nhsNumber) {
+    logger.info('cache/demographicsCache|exists', { nhsNumber });
+
+    const key = ['Demographics', 'by_nhsNumber', nhsNumber];
+
+    return this.adapter.exists(key);
+  }
+
+  async getObject(nhsNumber) {
+    logger.info('cache/demographicsCache|getObject', { nhsNumber });
+
+    const key = ['Demographics', 'by_nhsNumber', nhsNumber];
+
+    return this.adapter.getObjectWithArrays(key);
+  }
+
+  async set(nhsNumber, data) {
+    logger.info('cache/demographicsCache|set', { nhsNumber });
+
+    const key = ['Demographics', 'by_nhsNumber', nhsNumber];
+
+    return this.adapter.putObject(key, data);
+  }
+
+  async delete() {
+    logger.info('cache/demographicsCache|delete');
+
+    const key = ['Discovery'];
+
+    return this.adapter.delete(key);
+  }
 }
 
-function headingHelper() {
-  return {
-    fhirDateTime: (d) => new Date(d).toISOString(),
-    convertToString: (input) => input.toString(),
-    useSnomed: function(arr, property) {
-      var obj;
-      var value = '';
-      for (var i = 0; i < arr.length; i++) {
-        obj = arr[i];
-        if (obj.system && obj.system.indexOf('snomed') !== -1) {
-          if (obj[property]) {
-            value = obj[property];
-            break;
-          }
-        }
-      }
-      return value.toString();
-    },
-  };
-}
-
-module.exports = {
-  getTemplate,
-  headingHelper
-};
+module.exports = DemographicsCache;

@@ -34,10 +34,12 @@ const TokenCache = require('./authCache');
 const FetchCache = require('./fetchCache');
 const PatientBundleCache = require('./patientBundleCache');
 const PatientCache = require('./patientCache');
+const DemographicsCache = require('./demographicsCache');
 
 module.exports = {
   TokenCache,
   FetchCache,
   PatientBundleCache,
   PatientCache,
+  DemographicsCache
 };

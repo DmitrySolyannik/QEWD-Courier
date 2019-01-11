@@ -30,11 +30,9 @@
 
 'use strict';
 
-const P = require('bluebird');
 const { BadRequestError } = require('../errors');
-const { isHeadingValid, isPatientIdValid, isSourceIdValid } = require('../shared/validation');
+const { isPatientIdValid } = require('../shared/validation');
 const { Role } = require('../shared/enums');
-const debug = require('debug')('ripple-cdr-discovery:commands:get-heading-detail-command');
 
 class getDemographicsCommand {
   constructor(ctx, session) {
@@ -43,12 +41,35 @@ class getDemographicsCommand {
   }
 
   /**
-   * @param  {string} patientId
-   * @param  {Object} session
+   * @param  {string} nhsNumber
    * @return {Object}
    */
-  async execute(patientId, session) {
+  async execute(nhsNumber) {
+    if (this.session.role === Role.PHR_USER) {
+      nhsNumber = this.session.nhsNumber;
+    }
 
+    const patientValid = isPatientIdValid(nhsNumber);
+    if (!patientValid.ok) {
+      throw new BadRequestError(patientValid.error);
+    }
+
+    const {demographicsCache} = this.ctx.cache;
+
+    if (typeof demographicsCache === 'undefined') return false; //@TODO think about error
+
+    if (await demographicsCache.exists(nhsNumber)) {
+      return await demographicsCache.getObject(nhsNumber);
+    }
+    const { resourceService, demographicService } = this.ctx.services;
+    await resourceService.fetchPatients(nhsNumber);
+    await resourceService.fetchPatientResources(nhsNumber, 'Patient'); //@TODO should resourceName be hardcoded ?
+    let result = await demographicService.getDemographics(nhsNumber);
+    result.demographics.id = nhsNumber;
+    result.demographics.nhsNumber = nhsNumber;
+    demographicsCache.set(nhsNumber, result);
+
+    return result;
   }
 }
 

@@ -37,13 +37,11 @@ module.exports = (adapter, prefix, name) => {
     getByIds: async (uuids) => {
       logger.info(`cache/${name}|byUuid|getByIds`, { uuids });
 
-      return uuids.map((uuid) => {
-        const key = ['Discovery', prefix, 'by_uuid', uuid, 'data'];
-
-        return adapter.getObjectWithArrays(key);
-      });
+      return uuids.map((uuid) => this.get(uuid));
     },
     set: async (uuid, patient) => {
+      logger.info(`cache/${name}|byUuid|set`, { uuid, patient });
+
       const key = ['Discovery', 'Patient', 'by_uuid', uuid];
       const uuidKey = [...key, 'data'];
 
@@ -51,6 +49,13 @@ module.exports = (adapter, prefix, name) => {
 
       const nhsKey = [...key, 'nhsNumber'];
       adapter.put(nhsKey, uuid);
-    }
+    },
+    get: async (uuid) => {
+      logger.info(`cache/${name}|byUuid|get`, { uuid });
+
+      const key = ['Discovery', prefix, 'by_uuid', uuid];
+
+      return adapter.getObjectWithArrays(key);
+    },
   };
 };

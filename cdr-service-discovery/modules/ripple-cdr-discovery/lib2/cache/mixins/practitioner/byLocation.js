@@ -24,38 +24,22 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  2 January 2019
+  11 January 2019
 
 */
 
 'use strict';
 
-function getTemplate(headingName, destination, source = 'discovery') {
-  return require('../../templates/' + headingName + `/${source}_to_${destination}.json`);
-}
+const { logger } = require('../../core');
 
-function headingHelper() {
+module.exports = (adapter, prefix, name) => {
   return {
-    fhirDateTime: (d) => new Date(d).toISOString(),
-    convertToString: (input) => input.toString(),
-    useSnomed: function(arr, property) {
-      var obj;
-      var value = '';
-      for (var i = 0; i < arr.length; i++) {
-        obj = arr[i];
-        if (obj.system && obj.system.indexOf('snomed') !== -1) {
-          if (obj[property]) {
-            value = obj[property];
-            break;
-          }
-        }
-      }
-      return value.toString();
-    },
-  };
-}
+    get: async (locationUuid) => {
+      logger.info(`cache/${name}|byUuid|getLocation`, { locationUuid });
 
-module.exports = {
-  getTemplate,
-  headingHelper
+      const key = ['Discovery', 'Location', 'by_uuid', locationUuid, 'data'];
+
+      return adapter.getObjectWithArrays(key);
+    }
+  };
 };

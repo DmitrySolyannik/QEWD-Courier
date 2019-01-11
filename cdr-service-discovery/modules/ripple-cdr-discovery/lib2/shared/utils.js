@@ -32,12 +32,13 @@
 
 const { ResourceName } = require('./enums');
 
-function getLocationRefs(resource) {
+//@TODO rename without s, return 1 element
+function getLocationRef(resource) {
   if (!resource.extension) return [];
 
   return resource.extension
   .filter(x => x.valueReference)
-  .map(x => x.valueReference.reference);
+  .find(x => x.valueReference.reference);
 }
 
 function getPractitionerRef(resource) {
@@ -107,12 +108,73 @@ function parseRef(reference, separator = '/') {
     uuid
   };
 }
+//@TODO Re check functionality for correct spaces
+function parseName(name) {
+  let initName = name && name.text ? name.text : null;
+  if (!initName) {
+    if(name.given) {
+      initName = getName(name.given);
+    }
+    if (name.family) {
+      initName = Array.isArray(name.family) ? getName(name.family) : `${initName} ${name.family}`;
+    }
+  }
+  return initName;
+}
+
+function getName(nameObj) {
+  let name;
+  Array.isArray(nameObj) ? nameObj.forEach(n => name = `${name} ${n}`) : name = nameObj;
+  return name;
+}
+
+
+function getOrganizationRef(practitioner) {
+  return practitioner.practitionerRole && practitioner.practitionerRole[0] && practitioner.practitionerRole[0].managingOrganization
+  && practitioner.practitionerRole[0].managingOrganization.reference ? practitioner.practitionerRole[0].managingOrganization.reference : null;
+}
+
+//@TODO Refactor this peace of code
+function parseAddress(pAddress) {
+  let address = 'Not known';
+  if (pAddress && Array.isArray(pAddress)) {
+    var addrObj = pAddress[0];
+    if (addrObj.text) {
+      address = addrObj.text;
+    }
+    else {
+      if (addrObj.postalCode) {
+        address = '';
+        var dlim = '';
+        if (addrObj.line) {
+          if (Array.isArray(addrObj.line)) {
+            addrObj.line.forEach(function(line) {
+              address = address + dlim + line;
+              dlim = ', ';
+            });
+          }
+          else {
+            address = address + dlim + addrObj.line;
+          }
+        }
+        if (addrObj.city) address = address + dlim + addrObj.city;
+        if (address === '') dlim = '';
+        address = address + dlim + addrObj.postalCode;
+      }
+    }
+  }
+  return address;
+}
 
 
 module.exports = {
-  getLocationRefs,
   getPractitionerRef,
   getPatientUuid,
   lazyLoadAdapter,
-  parseRef
+  parseRef,
+  getOrganizationRef,
+  getLocationRef,
+  getName,
+  parseName,
+  parseAddress
 };

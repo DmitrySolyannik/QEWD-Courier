@@ -53,7 +53,7 @@ class HeadingService {
    */
   async getByReference(nhsNumber, heading, headingRef, destination) {
     const { resourceName, uuid } = parseRef(headingRef, '_');
-    const template = getTemplate(destination, format);
+    const template = getTemplate(heading, destination);
     const helper = headingHelper();
 
     const { resourceCache } = this.ctx.cache;

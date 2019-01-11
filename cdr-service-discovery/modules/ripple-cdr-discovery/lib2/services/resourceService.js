@@ -3,7 +3,7 @@
 const P = require('bluebird');
 const {logger} = require('../core');
 const { ResourceName } = require('../shared/enums');
-const { getLocationRefs, getPractitionerRef, parseRef, getPatientUuid } = require('../shared/utils');
+const { getLocationRef, getPractitionerRef, parseRef, getPatientUuid } = require('../shared/utils');
 
 class ResourceService {
   constructor(ctx) {
@@ -113,8 +113,8 @@ class ResourceService {
       if (!resource) return;
 
       if (resourceName === ResourceName.PATIENT) {
-        const locationRefs = getLocationRefs(resource);
-        await P.each(locationRefs, async (locationRef) => this.fetchResource(locationRef));
+        const locationRef = getLocationRef(resource);
+        return await this.fetchResource(locationRef);
       }
     });
   }

@@ -42,6 +42,14 @@ module.exports = (adapter, prefix, name) => {
       return adapter.exists(key);
     },
 
+    get: async (nhsNumber) => {
+      logger.info(`cache/${name}|byNhsNumber|exists`, { nhsNumber });
+
+      const key = ['Discovery', prefix, 'by_nhsNumber', nhsNumber, 'Patient'];
+
+      return adapter.get(key);
+    },
+
     getAllPatientIds: async (nhsNumber) => {
       logger.info(`cache/${name}|byNhsNumber|getAllPatientIds`, { nhsNumber });
 

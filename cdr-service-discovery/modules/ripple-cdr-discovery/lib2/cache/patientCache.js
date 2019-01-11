@@ -36,9 +36,9 @@ const { byNhsNumber, byUuid, byResource } = require('./mixins/patient');
 class PatientCache {
   constructor(adapter) {
     this.adapter = adapter;
-    this.byNhsNumber = byNhsNumber(adapter);
-    this.byUuid = byUuid(adapter);
-    this.byResource = byResource(adapter);
+    this.byNhsNumber = byNhsNumber(adapter, 'Patient', 'patientCache');
+    this.byUuid = byUuid(adapter, 'Patient', 'patientCache');
+    this.byResource = byResource(adapter, 'Patient', 'patientCache');
   }
 
   static create(adapter) {
@@ -90,67 +90,6 @@ class PatientCache {
     logger.info('cache/patientCache|delete');
 
     this.adapter.delete(key);
-  }
-
-  /**
-   * Overwrite person data in cache
-   * @param {string} resource
-   * @returns {Promise<void>}
-   */
-  async overwriteCache(resource) {
-    logger.info('cache/patientCache|overwriteCache');
-
-    if (resource === 'Patient') {
-      const key = ['Discovery', 'PatientBundle'];
-
-      await this.set(this.getPatientBundleCache(false), key);
-      const deleteKey = ['Discovery', resource, 'by_uuid'];
-      await this.delete(deleteKey);
-    }
-  }
-
-  /**
-   *
-   * @param {boolean} exists
-   * @returns {Promise<Promise<*>|*>}
-   */
-  async getPatientBundleCache(exists) {
-    logger.info('cache/patientCache|getPatientBundleCache');
-
-    const key = exists ? ['Discovery', 'PatientBundle'] : ['Discovery', 'Patient'];
-
-    return this.adapter.getObjectWithArrays(key);
-  }
-
-  /**
-   *
-   * @param {boolean} exists
-   * @param {string} nhsNumber
-   * @returns {Promise<{patients: Promise<*>|*, key: string[]}>}
-   */
-  async getPatientBundleWithNHSNumber(exists, nhsNumber) {
-    logger.info('cache/patientCache|getPatientBundleCache');
-
-    const initKey = exists ? ['Discovery', 'PatientBundle'] : ['Discovery', 'Patient'];
-    const key = [...initKey, 'by_nhsNumber', nhsNumber, 'Patient'];
-
-    return {
-      patients: this.adapter.getObjectWithArrays(key),
-      key: initKey
-    };
-  }
-
-  /**
-   *
-   * @param uuid
-   * @returns {Promise<void>}
-   */
-  async getPatientByUuid(uuid) {
-    logger.info('cache/patientCache|getPatientByUuid');
-
-    const key = ['Discovery', 'Patient', 'by_uuid', uuid];
-
-    return this.adapter.get(key);
   }
 
   async export() {

@@ -53,7 +53,7 @@ class ExecutionContext {
     return new ExecutionContext(q, { qewdSession });
   }
 
-  get getHeadings() {
+  get headings() {
     return this.userDefined.headings;
   }
 

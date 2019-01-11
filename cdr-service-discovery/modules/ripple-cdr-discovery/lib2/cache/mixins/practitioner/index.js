@@ -30,32 +30,12 @@
 
 'use strict';
 
-function getTemplate(headingName, destination, source = 'discovery') {
-  return require('../../templates/' + headingName + `/${source}_to_${destination}.json`);
-}
-
-function headingHelper() {
-  return {
-    fhirDateTime: (d) => new Date(d).toISOString(),
-    convertToString: (input) => input.toString(),
-    useSnomed: function(arr, property) {
-      var obj;
-      var value = '';
-      for (var i = 0; i < arr.length; i++) {
-        obj = arr[i];
-        if (obj.system && obj.system.indexOf('snomed') !== -1) {
-          if (obj[property]) {
-            value = obj[property];
-            break;
-          }
-        }
-      }
-      return value.toString();
-    },
-  };
-}
+const byUuid = require('./byUuid');
+const byOrganization = require('./byOrganization');
+const byLocation = require('./byLocation');
 
 module.exports = {
-  getTemplate,
-  headingHelper
+  byUuid,
+  byOrganization,
+  byLocation
 };

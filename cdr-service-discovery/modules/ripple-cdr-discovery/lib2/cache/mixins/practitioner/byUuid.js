@@ -30,32 +30,23 @@
 
 'use strict';
 
-function getTemplate(headingName, destination, source = 'discovery') {
-  return require('../../templates/' + headingName + `/${source}_to_${destination}.json`);
-}
+const { logger } = require('../../core');
 
-function headingHelper() {
+module.exports = (adapter, prefix, name) => {
   return {
-    fhirDateTime: (d) => new Date(d).toISOString(),
-    convertToString: (input) => input.toString(),
-    useSnomed: function(arr, property) {
-      var obj;
-      var value = '';
-      for (var i = 0; i < arr.length; i++) {
-        obj = arr[i];
-        if (obj.system && obj.system.indexOf('snomed') !== -1) {
-          if (obj[property]) {
-            value = obj[property];
-            break;
-          }
-        }
-      }
-      return value.toString();
-    },
-  };
-}
+    get: async (uuid) => {
+      logger.info(`cache/${name}|byUuid|get`, { uuid });
 
-module.exports = {
-  getTemplate,
-  headingHelper
+      const key = ['Discovery', prefix, 'by_uuid', uuid, 'data'];
+
+      return adapter.getObjectWithArrays(key);
+    },
+    getPractitionerUuid: async (nhsNumber) => {
+      logger.info(`cache/${name}|byUuid|get`, { nhsNumber });
+
+      const key = ['Discovery', prefix, 'by_uuid', nhsNumber, 'practitioner'];
+
+      return adapter.get(key);
+    }
+  };
 };

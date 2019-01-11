@@ -48,31 +48,6 @@ module.exports = {
      *
      * @type {int}
      */
-    tokenTimeout: 55 * 1000,
-  },
-
-  hosts: {
-    auth: {
-      host: 'https://devauth.endeavourhealth.net',
-      path:  '/auth/realms/endeavour/protocol/openid-connect/token',
-      username: 'xxxxxxx',
-      password: 'yyyyyyyyyyyyyyy',
-      client_id: 'eds-data-checker',
-      grant_type: 'password'
-    },
-    api: {
-      host: 'https://deveds.endeavourhealth.net/data-assurance',
-      paths: {
-        getPatientsByNhsNumber: '/api/fhir/patients',
-        getPatientResources: '/api/fhir/resources',
-        getResource: '/api/fhir/reference'
-      }
-    }
-  },
-  headings : {
-    medications: 'MedicationStatement',
-    allergies: 'AllergyIntolerance',
-    problems: 'Condition',
-    vaccinations: 'Immunization'
+    tokenTimeout: 55 * 1000
   }
 };
