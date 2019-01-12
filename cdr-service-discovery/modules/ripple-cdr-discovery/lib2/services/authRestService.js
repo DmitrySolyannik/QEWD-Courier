@@ -1,9 +1,9 @@
 /*
 
  ----------------------------------------------------------------------------
- | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
+ | ripple-cdr-discovery: Ripple Discovery Interface                         |
  |                                                                          |
- | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
+ | Copyright (c) 2017-19 Ripple Foundation Community Interest Company       |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,14 +24,14 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  17 December 2018
+  12 January 2019
 
 */
 
 'use strict';
 
 const request = require('request');
-const config = require('../config');
+const debug = require('debug')('ripple-cdr-discovery:services:resource-rest');
 
 function requestAsync(options) {
   return new Promise((resolve, reject) => {
@@ -44,16 +44,18 @@ function requestAsync(options) {
 }
 
 class AuthRestService {
-    constructor(ctx, hostConfig) {
-      this.ctx = ctx;
-      this.hostConfig = hostConfig;
-    }
+  constructor(ctx, hostConfig) {
+    this.ctx = ctx;
+    this.hostConfig = hostConfig;
+  }
 
   static create(ctx) {
-    return new AuthRestService(ctx, config.hosts.auth);
+    return new AuthRestService(ctx, ctx.serversConfig.auth);
   }
 
   async authenticate() {
+    debug('authenticate');
+
     const options = {
       url: `${this.hostConfig.host + this.hostConfig.path}`,
       method: 'POST',
@@ -65,9 +67,9 @@ class AuthRestService {
       },
       json: true
     };
+
     return requestAsync(options);
   }
-
 }
 
 module.exports = AuthRestService;

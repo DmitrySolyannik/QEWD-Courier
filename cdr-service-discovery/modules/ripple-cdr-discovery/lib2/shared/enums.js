@@ -24,18 +24,24 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  2 January 2019
+  12 January 2018
 
 */
 
 'use strict';
 
 const ResourceName = Object.freeze({
-  PATIENT: 'Patient'
+  LOCATION: 'Location',
+  ORGANIZATION: 'Organization',
+  PATIENT: 'Patient',
+  PRACTITIONER: 'Practitioner'
 });
+
+
 const ResourceFormat = Object.freeze({
   PULSETILE: 'pulsetile',
 });
+
 const Role = Object.freeze({
   PHR_USER: 'phrUser'
 });

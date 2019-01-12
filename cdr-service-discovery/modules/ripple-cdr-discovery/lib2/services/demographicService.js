@@ -1,9 +1,9 @@
 /*
 
  ----------------------------------------------------------------------------
- | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
+ | ripple-cdr-discovery: Ripple Discovery Interface                         |
  |                                                                          |
- | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
+ | Copyright (c) 2017-19 Ripple Foundation Community Interest Company       |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,25 +24,31 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  17 December 2018
+  12 January 2018
 
 */
 
 'use strict';
 
-const { parseRef, getOrganizationRef, getLocationRef, parseName, parseAddress } = require('../shared/utils');
+const { logger } = require('../core');
+const { ResourceName } = require('../shared/enums');
+const { getOrganisationRef, parseName, parseAddress } = require('../shared/utils');
+const debug = require('debug')('ripple-cdr-discovery:services:demographic');
 
-class DemographicsService {
+class DemographicService {
   constructor(ctx) {
     this.ctx = ctx;
   }
 
   static create(ctx) {
-    return new DemographicsService(ctx);
+    return new DemographicService(ctx);
   }
 
-  async getDemographics(nhsNumber) {
-    const {patientCache, demographicsCache} = this.ctx.cache;
+  async getByPatientId(nhsNumber) {
+    logger.info('services/demographicService|getByPatientId', { nhsNumber });
+
+    const { patientCache, resourceCache, demographicCache } = this.ctx.cache;
+    const { resourceService } = this.ctx.services;
 
     //@TODO talk regarding this functionality
     // var saved = this.db.use('SavedDiscovery');
@@ -51,41 +57,44 @@ class DemographicsService {
     //   saved.setDocument(await patientCache.get());
     // }
 
-    const patientUuid = await patientCache.byNhsNumber.get(nhsNumber);
-    const patient = await patientCache.byUuid.get(patientUuid);
-    const practitionerUuid = await demographicsCache.byUuid.getPractitionerUuid();
-    let practitioner = await demographicsCache.byUuid.get(practitionerUuid);
+    const patientUuid = await patientCache.byNhsNumber.getPatientUuid(nhsNumber);
+    const patient = await patientCache.byPatientUuid.get(patientUuid);
+    const practitionerUuid = await patientCache.byPatientUuid.getPractitionerUuid(patientUuid);
+    const practitioner = await resourceCache.byUuid.get(ResourceName.PRACTITIONER, practitionerUuid);
 
-    const organizationRef = getOrganizationRef(practitioner);
-    if (organizationRef) {
-      const organizationUuid = parseRef(organizationRef).uuid;
-      if (organizationUuid) {
-        const organisation = await demographicsCache.byOrganization.get(organizationUuid);
-        if (organisation.extension) {
-          const locationRef = getLocationRef(organisation);
-          const locationUuid = parseRef(locationRef).uuid;
-          const location = await demographicsCache.byLocation.get(locationUuid);
-          if (location.address && location.address.text) {
-            practitioner.address = location.address.text;
-          }
-        }
-      }
+    const organisationRef = getOrganisationRef(practitioner);
+    const location = await resourceService.getOrganisationLocation(organisationRef);
+    if (location.address && location.address.text) {
+      practitioner.address = location.address.text;
     }
-    let demographics = {};
+
+    const demographics = {};
+
     demographics.id = nhsNumber;
     demographics.nhsNumber = nhsNumber;
-    demographics.gender = Array.isArray(patient.gender) ? patient.gender[0].toUpperCase() + patient.gender.slice(1) : patient.gender;
-    demographics.phone =  patient.telecom && Array.isArray(patient.telecom) ? patient.telecom[0].value : patient.telecom;
+    demographics.gender = Array.isArray(patient.gender)
+      ? patient.gender[0].toUpperCase() + patient.gender.slice(1)
+      : patient.gender;
+    demographics.phone = patient.telecom && Array.isArray(patient.telecom)
+      ? patient.telecom[0].value
+      : patient.telecom;
     demographics.name = parseName(patient.name[0]);
     demographics.dateOfBirth = new Date(patient.birthDate).getTime();
     demographics.gpName = parseName(practitioner.name);
     demographics.gpAddress = practitioner.address || 'Not known';
     demographics.address = parseAddress(patient.address);
 
-    await demographicsCache.delete();
+    debug('demographics: %j', demographics);
 
-    return demographics;
+    const resultObj = {
+      demographics
+    };
+
+    await demographicCache.byNhsNumber.delete(nhsNumber);
+    await demographicCache.byNhsNumber.set(nhsNumber, resultObj);
+
+    return resultObj;
   }
 }
 
-module.exports = DemographicsService;
+module.exports = DemographicService;

@@ -22,5 +22,15 @@
     "allergies": "AllergyIntolerance",
     "problems": "Condition",
     "vaccinations": "Immunization"
+  },
+  "transformations": {
+    "pulsetile": {
+      "source": "openehr",
+      "destinaton": "pulsetile"
+    },
+    "defaults": {
+      "source": "discovery",
+      "destinaton": "openehr"
+    }
   }
 }

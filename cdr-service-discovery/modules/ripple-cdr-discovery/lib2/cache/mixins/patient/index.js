@@ -24,18 +24,18 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  2 January 2019
+  12 January 2019
 
 */
 
 'use strict';
 
 const byNhsNumber = require('./byNhsNumber');
-const byUuid = require('./byUuid');
+const byPatientUuid = require('./byPatientUuid');
 const byResource = require('./byResource');
 
 module.exports = {
   byNhsNumber,
-  byResource,
-  byUuid
+  byPatientUuid,
+  byResource
 };

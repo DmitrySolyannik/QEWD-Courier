@@ -1,9 +1,9 @@
 /*
 
  ----------------------------------------------------------------------------
- | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
+ | ripple-cdr-discovery: Ripple Discovery Interface                         |
  |                                                                          |
- | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
+ | Copyright (c) 2017-19 Ripple Foundation Community Interest Company       |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  15 December 2018
+  12 January 2018
 
 */
 
@@ -44,15 +44,15 @@ class PatientService {
   async getPatientBundle(nhsNumber) {
     logger.info('services/patientService|getPatientBundle', { nhsNumber });
 
-    const { patientCache, patientBundleCache } = this.ctx.cache;
+    const { patientCache, bundleCache } = this.ctx.cache;
 
-    const exists = await patientBundleCache.exists();
-    const bundleCache = exists
-      ? patientBundleCache
+    const exists = await bundleCache.exists();
+    const targetCache = exists
+      ? bundleCache
       : patientCache;
 
-    const patientIds = await bundleCache.byNhsNumber.getAllPatientIds(nhsNumber);
-    const patients = await bundleCache.byUuid.getByIds(patientIds);
+    const patientUuids = await targetCache.byNhsNumber.getAllPatientUuids(nhsNumber);
+    const patients = await targetCache.byPatientUuid.getByUuids(patientUuids);
 
     return {
       resourceType: 'Bundle',
@@ -63,9 +63,9 @@ class PatientService {
   async updateBundle() {
     logger.info('services/patientService|updateBundle');
 
-    const { patientCache, patientBundleCache } = this.ctx.cache;
+    const { patientCache, bundleCache } = this.ctx.cache;
     const data = await patientCache.export();
-    await patientBundleCache.import(data);
+    await bundleCache.import(data);
   }
 }
 

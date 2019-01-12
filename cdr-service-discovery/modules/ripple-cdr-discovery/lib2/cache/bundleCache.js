@@ -24,18 +24,40 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  2 January 2019
+  12 January 2019
 
 */
 
 'use strict';
 
-const byUuid = require('./byUuid');
-const byOrganization = require('./byOrganization');
-const byLocation = require('./byLocation');
+const { logger } = require('../core');
+const { byNhsNumber, byPatientUuid } = require('./mixins/bundle');
 
-module.exports = {
-  byUuid,
-  byOrganization,
-  byLocation
-};
+class BundleCache {
+  constructor(adapter) {
+    this.adapter = adapter;
+    this.byNhsNumber = byNhsNumber(adapter, 'PatientBundle');
+    this.byPatientUuid = byPatientUuid(adapter, 'PatientBundle');
+  }
+
+  static create(adapter) {
+    return new BundleCache(adapter);
+  }
+
+  async exists() {
+    logger.info('cache/bundleCache|exists');
+
+    const key = ['Discovery', 'PatientBundle'];
+
+    return this.adapter.exists(key);
+  }
+
+  async import(data) {
+    logger.info('cache/bundleCache|import', data);
+
+    const key = ['Discovery', 'PatientBundle'];
+    this.adapter.putObject(key, data);
+  }
+}
+
+module.exports = BundleCache;

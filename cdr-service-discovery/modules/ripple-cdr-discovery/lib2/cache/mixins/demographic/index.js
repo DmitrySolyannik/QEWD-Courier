@@ -24,29 +24,14 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  2 January 2019
+  12 January 2019
 
 */
 
 'use strict';
 
-const { logger } = require('../../core');
+const byNhsNumber = require('./byNhsNumber');
 
-module.exports = (adapter, prefix, name) => {
-  return {
-    get: async (uuid) => {
-      logger.info(`cache/${name}|byUuid|get`, { uuid });
-
-      const key = ['Discovery', prefix, 'by_uuid', uuid, 'data'];
-
-      return adapter.getObjectWithArrays(key);
-    },
-    getPractitionerUuid: async (nhsNumber) => {
-      logger.info(`cache/${name}|byUuid|get`, { nhsNumber });
-
-      const key = ['Discovery', prefix, 'by_uuid', nhsNumber, 'practitioner'];
-
-      return adapter.get(key);
-    }
-  };
+module.exports = {
+  byNhsNumber
 };

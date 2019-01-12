@@ -1,9 +1,9 @@
 /*
 
  ----------------------------------------------------------------------------
- | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
+ | ripple-cdr-discovery: Ripple Discovery Interface                         |
  |                                                                          |
- | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
+ | Copyright (c) 2017-19 Ripple Foundation Community Interest Company       |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,22 +24,25 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  23 December 2018
+  12 January 2019
 
 */
 
 'use strict';
 
-const TokenCache = require('./authCache');
+const BundleCache = require('./bundleCache');
+const DemographicCache = require('./demographicCache');
 const FetchCache = require('./fetchCache');
-const PatientBundleCache = require('./patientBundleCache');
 const PatientCache = require('./patientCache');
-const DemographicsCache = require('./demographicsCache');
+const ResourceCache = require('./resourceCache');
+const TokenCache = require('./tokenCache');
+
 
 module.exports = {
-  TokenCache,
+  BundleCache,
+  DemographicCache,
   FetchCache,
-  PatientBundleCache,
   PatientCache,
-  DemographicsCache
+  ResourceCache,
+  TokenCache,
 };

@@ -1,9 +1,9 @@
 /*
 
  ----------------------------------------------------------------------------
- | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
+ | ripple-cdr-discovery: Ripple Discovery Interface                         |
  |                                                                          |
- | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
+ | Copyright (c) 2017-19 Ripple Foundation Community Interest Company       |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,61 +24,26 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  18 December 2018
+  12 January 2018
 
 */
 
 'use strict';
 
-const { logger } = require('../core');
-
-class AuthCache {
-  constructor(adapter) {
-    this.adapter = adapter;
-  }
-
-  static create(adapter) {
-    return new AuthCache(adapter);
-  }
+class BaseCommand {
 
   /**
-   * Gets status
+   * Prepares data for response
    *
-   * @return {Promise.<Object|null>}
+   * @param  {*} data
+   * @return {Object}
    */
-  async get() {
-    logger.info('cache/authCache|get');
-
-    const key = ['discoveryToken'];
-
-    return this.adapter.getObject(key);
-  }
-
-  /**
-   * Sets status
-   *
-   * @param  {Object} data
-   * @return {Promise}
-   */
-  async set(data) {
-    logger.info('cache/authCache|set', { data });
-
-    const key = ['discoveryToken'];
-    this.adapter.putObject(key, data);
-  }
-
-  /**
-   * Deletes a session for a host
-   *
-   * @param  {string} host
-   * @return {Promise}
-   */
-  async delete() {
-    logger.info('cache/authCache|delete');
-
-    const key = ['discoveryToken'];
-    this.adapter.delete(key);
+  respond(data) {
+    return {
+      responseFrom: 'discovery_service',
+      results: data
+    };
   }
 }
 
-module.exports = AuthCache;
+module.exports = BaseCommand;

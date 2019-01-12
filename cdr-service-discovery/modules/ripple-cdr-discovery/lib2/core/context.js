@@ -1,9 +1,9 @@
 /*
 
  ----------------------------------------------------------------------------
- | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
+ | ripple-cdr-discovery: Ripple Discovery Interface                         |
  |                                                                          |
- | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
+ | Copyright (c) 2017-19 Ripple Foundation Community Interest Company       |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  20 December 2018
+  12 January 2018
 
 */
 
@@ -53,12 +53,20 @@ class ExecutionContext {
     return new ExecutionContext(q, { qewdSession });
   }
 
-  get headings() {
+  get headingsConfig() {
     return this.userDefined.headings;
   }
 
   get serversConfig() {
-    return this.userDefined.host;
+    return this.userDefined.hosts;
+  }
+
+  get transformationConfig() {
+    return this.userDefined.transformations;
+  }
+
+  getTransformationConfig(format) {
+    return this.transformationConfig[format] || this.transformationConfig.defaults;
   }
 }
 
