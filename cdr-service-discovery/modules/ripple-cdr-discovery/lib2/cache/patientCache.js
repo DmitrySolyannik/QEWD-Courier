@@ -1,9 +1,9 @@
 /*
 
  ----------------------------------------------------------------------------
- | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
+ | ripple-cdr-discovery: Ripple Discovery Interface                         |
  |                                                                          |
- | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
+ | Copyright (c) 2017-19 Ripple Foundation Community Interest Company       |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,21 +24,22 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  18 December 2018
+  12 January 2019
 
 */
 
 'use strict';
 
 const { logger } = require('../core');
-const { byNhsNumber, byUuid, byResource } = require('./mixins/patient');
+const { ResourceName } = require('../shared/enums');
+const { byNhsNumber, byPatientUuid, byResource } = require('./mixins/patient');
 
 class PatientCache {
   constructor(adapter) {
     this.adapter = adapter;
-    this.byNhsNumber = byNhsNumber(adapter, 'Patient', 'patientCache');
-    this.byUuid = byUuid(adapter, 'Patient', 'patientCache');
-    this.byResource = byResource(adapter, 'Patient', 'patientCache');
+    this.byNhsNumber = byNhsNumber(adapter);
+    this.byPatientUuid = byPatientUuid(adapter);
+    this.byPatientUuid = byResource(adapter);
   }
 
   static create(adapter) {
@@ -46,56 +47,14 @@ class PatientCache {
   }
 
   /**
-   * Get cache
-   * @param {string[]} key
-   * @return {Promise.<Object|null>}
-   */
-  async get(key = ['Discovery']) {
-    logger.info('cache/patientCache|get');
-
-    return this.adapter.getObject(key);
-  }
-
-  /**
+   * Exports data
    *
-   * @param {string[]} key
-   * @returns {Promise<Promise<*>|*>}
+   * @return {Promise.<Object>}
    */
-  async getObjectWithArrays(key) {
-    logger.info('cache/patientCache|getObjectWithArrays');
-
-    return this.adapter.getObjectWithArrays(key);
-  }
-
-  /**
-   * Sets cache
-   *
-   * @param  {Object} data
-   * @param  {string[]} key
-   * @return {Promise}
-   */
-  async set(data, key = ['Discovery']) {
-    logger.info('cache/patientCache|set', { data });
-
-    this.adapter.putObject(key, data);
-  }
-
-  /**
-   * Deletes a session for a host
-   *
-   * @param {string[]} key
-   * @return {Promise}
-   */
-  async delete(key = ['Discovery']) {
-    logger.info('cache/patientCache|delete');
-
-    this.adapter.delete(key);
-  }
-
   async export() {
     logger.info('cache/patientCache|export');
 
-    const key = ['Discovery', 'Patient'];
+    const key = ['Discovery', ResourceName.PATIENT];
 
     return this.adapter.getObjectWithArrays(key);
   }

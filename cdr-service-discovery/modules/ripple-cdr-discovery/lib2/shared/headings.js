@@ -24,20 +24,24 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  2 January 2019
+  12 January 2018
 
 */
 
 'use strict';
 
-function getTemplate(headingName, destination, source = 'discovery') {
-  return require('../../templates/' + headingName + `/${source}_to_${destination}.json`);
+function getHeadingTemplate(headingName, source, destination) {
+  return require(`../../templates/${headingName}/${source}_to_${destination}.json`);
 }
 
-function headingHelper() {
-  return {
-    fhirDateTime: (d) => new Date(d).toISOString(),
-    convertToString: (input) => input.toString(),
+function headingHelpers() {
+  const helpers = {
+    fhirDateTime: (d) => {
+      return new Date(d).toISOString();
+    },
+    convertToString: (input) => {
+      return input.toString();
+    },
     useSnomed: function(arr, property) {
       var obj;
       var value = '';
@@ -50,12 +54,15 @@ function headingHelper() {
           }
         }
       }
+
       return value.toString();
-    },
+    }
   };
+
+  return helpers;
 }
 
 module.exports = {
-  getTemplate,
-  headingHelper
+  getHeadingTemplate,
+  headingHelpers
 };

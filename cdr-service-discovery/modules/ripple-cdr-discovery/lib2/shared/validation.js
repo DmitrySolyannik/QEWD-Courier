@@ -1,9 +1,9 @@
 /*
 
  ----------------------------------------------------------------------------
- | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
+ | ripple-cdr-discovery: Ripple Discovery Interface                         |
  |                                                                          |
- | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
+ | Copyright (c) 2017-19 Ripple Foundation Community Interest Company       |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,13 +24,11 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  20 December 2018
+  12 January 2019
 
 */
 
 'use strict';
-
-const { headings } = require('../config');
 
 function respondErr(err) {
   return {
@@ -59,11 +57,12 @@ function isPatientIdValid(patientId) {
 /**
  * Returns true if heading valid. Otherwise throw an error
  *
+ * @param  {Object}  headingsConfig
  * @param  {string}  heading
  * @return {Boolean | Object}
  */
-function isHeadingValid(heading) {
-  if (!heading || !headings[heading]) {
+function isHeadingValid(headingsConfig, heading) {
+  if (!heading || !headingsConfig[heading]) {
     return respondErr(`Invalid or missing heading: ${heading}`);
   }
 
@@ -76,7 +75,7 @@ function isSourceIdValid(sourceId) {
   const isValid = sourceId.indexOf('Discovery-') === -1;
 
   return {
-    valid: sourceId ? isValid : false
+    ok: sourceId ? isValid : false
   };
 }
 

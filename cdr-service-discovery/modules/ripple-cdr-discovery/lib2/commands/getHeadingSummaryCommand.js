@@ -1,9 +1,9 @@
 /*
 
  ----------------------------------------------------------------------------
- | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
+ | ripple-cdr-discovery: Ripple Discovery Interface                         |
  |                                                                          |
- | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
+ | Copyright (c) 2017-19 Ripple Foundation Community Interest Company       |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  20 December 2018
+  12 January 2018
 
 */
 
@@ -32,11 +32,14 @@
 
 const { BadRequestError } = require('../errors');
 const { isHeadingValid, isPatientIdValid } = require('../shared/validation');
-const { Role, ResourceFormat } = require('../shared/enums');
-const debug = require('debug')('ripple-cdr-discovery:commands:get-heading-detail-command');
+const { Role } = require('../shared/enums');
+const { BaseCommand } = require('./baseCommand');
+const debug = require('debug')('ripple-cdr-discovery:commands:get-heading-detail');
 
-class getHeadingSummaryCommand {
+class GetHeadingSummaryCommand extends BaseCommand {
   constructor(ctx, session) {
+    super();
+
     this.ctx = ctx;
     this.session = session;
   }
@@ -49,6 +52,7 @@ class getHeadingSummaryCommand {
   async execute(patientId, heading) {
     debug('patientId: %s, heading: %s', patientId, heading);
     debug('role: %s', this.session.role);
+
     // override patientId for PHR Users - only allowed to see their own data
     if (this.session.role === Role.PHR_USER) {
       patientId = this.session.nhsNumber;
@@ -61,27 +65,22 @@ class getHeadingSummaryCommand {
 
     // patientId = mapToDiscoveryNHSNo.call(this, patientId); // @TODO think about this method
 
-    const headingValid = isHeadingValid(heading);
+    const headingValid = isHeadingValid(this.ctx.headingsConfig, heading);
     if (!headingValid.ok) {
-      return this.response([]);
+      return this.respond([]);
     }
 
-    const {headings} = this.ctx;
-    const resourceName = headings[heading];
-
     const { resourceService, headingService } = this.ctx.services;
+    const resourceName = this.ctx.headingsConfig[heading];
+
     await resourceService.fetchPatients(patientId);
     await resourceService.fetchPatientResources(patientId, resourceName);
-    const result = headingService.getSummary(patientId, heading, resourceName, ResourceFormat.PULSETILE);
-    return this.response(result);
+    const result = await headingService.getSummary(patientId, heading);
 
-  }
-  response(data) {
-    return {
-      responseFrom: 'discovery_service',
-      results: data
-    };
+    debug('result: %j', result);
+
+    return this.respond(result);
   }
 }
 
-module.exports = getHeadingSummaryCommand;
+module.exports = GetHeadingSummaryCommand;

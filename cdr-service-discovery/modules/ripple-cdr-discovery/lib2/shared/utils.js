@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  2 January 2019
+  12 January 2019
 
 */
 
@@ -32,9 +32,8 @@
 
 const { ResourceName } = require('./enums');
 
-//@TODO rename without s, return 1 element
 function getLocationRef(resource) {
-  if (!resource.extension) return [];
+  if (!resource.extension) return null;
 
   return resource.extension
   .filter(x => x.valueReference)
@@ -63,6 +62,7 @@ function getPractitionerRef(resource) {
         found = true;
       }
     });
+
     return practitionerRef;
   }
 
@@ -71,7 +71,6 @@ function getPractitionerRef(resource) {
   }
 
   // debug('bad resource: %j', resource)
-
 }
 
 function getPatientUuid(resource) {
@@ -98,7 +97,7 @@ function lazyLoadAdapter(target) {
   });
 }
 
-function parseRef(reference, separator = '/') {
+function parseRef(reference, { separator = '/' } = {}) {
   const pieces = reference.split(separator);
   const resourceName = pieces[0];
   const uuid = pieces[1];
@@ -108,33 +107,46 @@ function parseRef(reference, separator = '/') {
     uuid
   };
 }
+
 //@TODO Re check functionality for correct spaces
 function parseName(name) {
-  let initName = name && name.text ? name.text : null;
+  let initName = name && name.text
+    ? name.text
+    : null;
+
   if (!initName) {
     if(name.given) {
       initName = getName(name.given);
     }
+
     if (name.family) {
-      initName = Array.isArray(name.family) ? getName(name.family) : `${initName} ${name.family}`;
+      initName = Array.isArray(name.family)
+        ? getName(name.family)
+        : `${initName} ${name.family}`;
     }
   }
+
   return initName;
 }
 
 function getName(nameObj) {
   let name;
-  Array.isArray(nameObj) ? nameObj.forEach(n => name = `${name} ${n}`) : name = nameObj;
+
+  Array.isArray(nameObj)
+    ? nameObj.forEach(n => name = `${name} ${n}`)
+    : name = nameObj;
+
   return name;
 }
 
-
-function getOrganizationRef(practitioner) {
-  return practitioner.practitionerRole && practitioner.practitionerRole[0] && practitioner.practitionerRole[0].managingOrganization
-  && practitioner.practitionerRole[0].managingOrganization.reference ? practitioner.practitionerRole[0].managingOrganization.reference : null;
+function getOrganisationRef(resource) {
+  return resource.practitionerRole && resource.practitionerRole[0]
+    && resource.practitionerRole[0].managingOrganisation && resource.practitionerRole[0].managingOrganisation.reference
+    ? resource.practitionerRole[0].managingOrganisation.reference
+    : null;
 }
 
-//@TODO Refactor this peace of code
+//@TODO Refactor this piece of code
 function parseAddress(pAddress) {
   let address = 'Not known';
   if (pAddress && Array.isArray(pAddress)) {
@@ -163,18 +175,17 @@ function parseAddress(pAddress) {
       }
     }
   }
+
   return address;
 }
-
 
 module.exports = {
   getPractitionerRef,
   getPatientUuid,
   lazyLoadAdapter,
   parseRef,
-  getOrganizationRef,
+  getOrganisationRef,
   getLocationRef,
-  getName,
   parseName,
   parseAddress
 };

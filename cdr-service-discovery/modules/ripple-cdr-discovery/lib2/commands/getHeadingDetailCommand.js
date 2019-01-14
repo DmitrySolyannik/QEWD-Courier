@@ -1,9 +1,9 @@
 /*
 
  ----------------------------------------------------------------------------
- | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
+ | ripple-cdr-discovery: Ripple Discovery Interface                         |
  |                                                                          |
- | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
+ | Copyright (c) 2017-19 Ripple Foundation Community Interest Company       |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  20 December 2018
+  12 January 2018
 
 */
 
@@ -32,12 +32,14 @@
 
 const { BadRequestError } = require('../errors');
 const { isHeadingValid, isPatientIdValid, isSourceIdValid } = require('../shared/validation');
-const { Role, ResourceFormat } = require('../shared/enums');
-const { headings } = require('../config');
-const debug = require('debug')('ripple-cdr-discovery:commands:get-heading-detail-command');
+const { Role } = require('../shared/enums');
+const { BaseCommand } = require('./baseCommand');
+const debug = require('debug')('ripple-cdr-discovery:commands:get-heading-detail');
 
-class GetHeadingDetailCommand {
+class GetHeadingDetailCommand extends BaseCommand {
   constructor(ctx, session) {
+    super();
+
     this.ctx = ctx;
     this.session = session;
   }
@@ -51,6 +53,7 @@ class GetHeadingDetailCommand {
   async execute(patientId, heading, sourceId) {
     debug('patientId: %s, heading: %s, sourceId: %s', patientId, heading, sourceId);
     debug('role: %s', this.session.role);
+
     // override patientId for PHR Users - only allowed to see their own data
     if (this.session.role === Role.PHR_USER) {
       patientId = this.session.nhsNumber;
@@ -61,34 +64,27 @@ class GetHeadingDetailCommand {
       throw new BadRequestError(patientValid.error);
     }
 
-
-    const headingValid = isHeadingValid(heading);
+    const headingValid = isHeadingValid(this.ctx.headingsConfig, heading);
     if (!headingValid.ok) {
-      return this.response(false);
+      return this.respond(false);
     }
 
     //@TODO create new validation for sourceID
     const sourceIdValid = isSourceIdValid(sourceId);
-    if (!sourceIdValid.valid) {
-      return this.response(false);
+    if (!sourceIdValid.ok) {
+      return this.respond(false);
     }
 
-    const headingRef = sourceId.split('Discovery-')[1];
-    const resourceName = headings[heading];
-
     const { resourceService, headingService } = this.ctx.services;
+    const resourceName = this.ctx.headingsConfig[heading];
+
     await resourceService.fetchPatients(patientId);
     await resourceService.fetchPatientResources(patientId, resourceName);
-    const responseObj = await headingService.getByReference(patientId, heading, headingRef, ResourceFormat.PULSETILE);
+    const result = await headingService.getBySourceId(patientId, heading, sourceId);
 
-    return this.response(responseObj);
-  }
+    debug('result: %j', result);
 
-  response(data) {
-    return {
-      responseFrom: 'discovery_service',
-      results: data
-    };
+    return this.respond(result);
   }
 }
 

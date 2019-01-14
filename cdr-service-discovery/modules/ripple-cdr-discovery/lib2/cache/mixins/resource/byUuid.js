@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  2 January 2019
+  12 January 2019
 
 */
 
@@ -35,7 +35,7 @@ const { logger } = require('../../core');
 module.exports = (adapter) => {
   return {
     exists: async (resourceName, uuid) => {
-      logger.info('cache/resourceCache|byUuid|exists', { resourceName, uuid });
+      logger.info('mixins/resource|byUuid|exists', { resourceName, uuid });
 
       const key = ['Discovery', resourceName, 'by_uuid', uuid];
 
@@ -43,30 +43,38 @@ module.exports = (adapter) => {
     },
 
     set: async (resourceName, uuid, resource) => {
-      logger.info('cache/resourceCache|byUuid|set', { resourceName, uuid, resource });
+      logger.info('mixins/resource|byUuid|setIfNotExists', { resourceName, uuid, resource });
 
       const key = ['Discovery', resourceName, 'by_uuid', uuid];
-      const exists = adapter.exists(key);
+      const dataKey = ['Discovery', resourceName, 'by_uuid', uuid, 'data'];
 
-      if (!exists) {
-        const dataKey = ['Discovery', resourceName, 'by_uuid', uuid, 'data'];
+      if (!adapter.exists(key)) {
         adapter.putObject(dataKey, resource);
       }
     },
 
-    deleteAll: async (resourceName) => {
-      logger.info('cache/resourceCache|byUuid|deleteAll', { resourceName });
+    get: async (resourceName, uuid) => {
+      logger.info('mixins/resource|byUuid|get', { uuid });
 
-      const key = ['Discovery', resourceName, 'by_uuid'];
-      adapter.delete(key);
+      const key = ['Discovery', resourceName, 'by_uuid', uuid, 'data'];
+
+      return adapter.getObjectWithArrays(key);
     },
 
     setPractitionerUuid: async (resourceName, uuid, practitionerUuid) => {
-      logger.info('cache/resourceCache|byUuid|setPractitionerUuid', { resourceName, uuid, practitionerUuid });
+      logger.info('mixins/resource|byUuid|setPractitionerUuid', { resourceName, uuid, practitionerUuid });
 
       const key = ['Discovery', resourceName, 'by_uuid', uuid, 'practitioner', practitionerUuid];
 
-      return adapter.put(key, practitionerUuid);
+      adapter.put(key, practitionerUuid);
+    },
+
+    getPractitionerUuid: async (resourceName, uuid) => {
+      logger.info('mixins/resource|byUuid|getPractitionerUuid', { resourceName, uuid });
+
+      const key = ['Discovery', resourceName, 'by_uuid', uuid, 'practitioner'];
+
+      return adapter.get(key);
     }
   };
 };

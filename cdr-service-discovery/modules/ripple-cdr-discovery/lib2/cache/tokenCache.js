@@ -24,38 +24,61 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  2 January 2019
+  12 January 2019
 
 */
 
 'use strict';
 
-const { logger } = require('../../core');
+const { logger } = require('../core');
 
-module.exports = (adapter, prefix, name) => {
-  return {
-    getByIds: async (uuids) => {
-      logger.info(`cache/${name}|byUuid|getByIds`, { uuids });
+class TokenCache {
+  constructor(adapter) {
+    this.adapter = adapter;
+  }
 
-      return uuids.map((uuid) => this.get(uuid));
-    },
-    set: async (uuid, patient) => {
-      logger.info(`cache/${name}|byUuid|set`, { uuid, patient });
+  static create(adapter) {
+    return new TokenCache(adapter);
+  }
 
-      const key = ['Discovery', 'Patient', 'by_uuid', uuid];
-      const uuidKey = [...key, 'data'];
+  /**
+   * Gets token
+   *
+   * @return {Promise.<Object|null>}
+   */
+  async get() {
+    logger.info('cache/tokenCache|get');
 
-      adapter.putObject(uuidKey, patient);
+    const key = ['discoveryToken'];
 
-      const nhsKey = [...key, 'nhsNumber'];
-      adapter.put(nhsKey, uuid);
-    },
-    get: async (uuid) => {
-      logger.info(`cache/${name}|byUuid|get`, { uuid });
+    return this.adapter.getObject(key);
+  }
 
-      const key = ['Discovery', prefix, 'by_uuid', uuid];
+  /**
+   * Sets a token
+   *
+   * @param  {Object} data
+   * @return {Promise}
+   */
+  async set(data) {
+    logger.info('cache/tokenCache|set', { data });
 
-      return adapter.getObjectWithArrays(key);
-    },
-  };
-};
+    const key = ['discoveryToken'];
+    this.adapter.putObject(key, data);
+  }
+
+  /**
+   * Deletes a token
+   *
+   * @param  {string} host
+   * @return {Promise}
+   */
+  async delete() {
+    logger.info('cache/tokenCache|delete');
+
+    const key = ['discoveryToken'];
+    this.adapter.delete(key);
+  }
+}
+
+module.exports = TokenCache;

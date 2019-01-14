@@ -24,16 +24,14 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  2 January 2019
+  12 January 2019
 
 */
 
 'use strict';
 
 const byUuid = require('./byUuid');
-const byPatientUuid = require('./byPatientUuid');
 
 module.exports = {
-  byUuid,
-  byPatientUuid
+  byUuid
 };

@@ -24,14 +24,13 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  2 January 2019
+  12 January 2019
 
 */
 
 'use strict';
 
 const { logger } = require('../core');
-const config = require('../config');
 const request = require('request');
 const debug = require('debug')('ripple-cdr-discovery:services:resource-rest');
 
@@ -52,7 +51,7 @@ class ResourceRestService {
   }
 
   static create(ctx) {
-    return new ResourceRestService(ctx, config.hosts.api);
+    return new ResourceRestService(ctx, ctx.serversConfig.api);
   }
 
   async getPatients(patientId, token) {
@@ -111,7 +110,8 @@ class ResourceRestService {
       json: true
     };
 
-    //TODO:make sure that body === '' handled in getResource
+    // @TODO: AK make sure that body === '' handled in getResource
+    // see original code for reference
 
     return requestAsync(options);
   }

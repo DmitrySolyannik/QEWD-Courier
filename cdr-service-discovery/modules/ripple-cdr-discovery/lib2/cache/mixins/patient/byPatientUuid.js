@@ -24,58 +24,60 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  2 January 2019
+  12 January 2019
 
 */
 
 'use strict';
 
-const { logger } = require('../core');
-const { byUuid, byOrganization, byLocation } = require('./mixins/practitioner');
+const { logger } = require('../../core');
+const { ResourceName } = require('../../shared/enums');
 
-class DemographicsCache {
-  constructor(adapter) {
-    this.adapter = adapter;
-    this.byUuid = byUuid(adapter, 'Practitioner', 'demographicsCache');
-    this.byOrganization = byOrganization(adapter, 'Organization', 'demographicsCache');
-    this.byLocation = byLocation(adapter, 'Location', 'demographicsCache');
-  }
+module.exports = (adapter) => {
+  return {
+    exists: async (patientUuid) => {
+      logger.info('mixins/patient|byPatientUuid|exists', { patientUuid });
 
-  static create(adapter) {
-    return new DemographicsCache(adapter);
-  }
+      const key = ['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid];
 
-  async exists(nhsNumber) {
-    logger.info('cache/demographicsCache|exists', { nhsNumber });
+      return adapter.exists(key);
+    },
 
-    const key = ['Demographics', 'by_nhsNumber', nhsNumber];
+    set: async (patientUuid, patient) => {
+      logger.info('mixins/patient|byPatientUuid|exists', { patientUuid, patient });
 
-    return this.adapter.exists(key);
-  }
+      const key = ['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid];
+      adapter.setObject(key, patient);
+    },
 
-  async getObject(nhsNumber) {
-    logger.info('cache/demographicsCache|getObject', { nhsNumber });
+    setNhsNumber: async (patientUuid, nhsNumber) => {
+      logger.info('mixins/patient|byPatientUuid|setNhsNumber', { patientUuid, nhsNumber });
 
-    const key = ['Demographics', 'by_nhsNumber', nhsNumber];
+      const key = ['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid, 'nhsNumber', nhsNumber];
+      adapter.put(key, nhsNumber);
+    },
 
-    return this.adapter.getObjectWithArrays(key);
-  }
+    deleteAll: async () => {
+      logger.info('mixins/patient|byPatientUuid|deleteAll');
 
-  async set(nhsNumber, data) {
-    logger.info('cache/demographicsCache|set', { nhsNumber });
+      const key = ['Discovery', ResourceName.PATIENT, 'by_uuid'];
+      adapter.delete(key);
+    },
 
-    const key = ['Demographics', 'by_nhsNumber', nhsNumber];
+    getPractitionerUuid: async (patientUuid) => {
+      logger.info('mixins/patient|byPatientUuid|getPractitionerUuid', { patientUuid });
 
-    return this.adapter.putObject(key, data);
-  }
+      const key = ['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid, 'practitioner'];
 
-  async delete() {
-    logger.info('cache/demographicsCache|delete');
+      return adapter.get(key);
+    },
 
-    const key = ['Discovery'];
+    getByPatientUuids: async (patientUuids) => {
+      logger.info('mixins/patient|byPatientUuid|getByPatientUuids', { patientUuids });
 
-    return this.adapter.delete(key);
-  }
-}
-
-module.exports = DemographicsCache;
+      return patientUuids.map(
+        (patientUuid) => adapter.getObject(['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid])
+      );
+    }
+  };
+};

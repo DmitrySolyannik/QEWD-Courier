@@ -24,50 +24,52 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  2 January 2019
+  12 January 2019
 
 */
 
 'use strict';
 
 const { logger } = require('../../core');
+const { ResourceName } = require('../../shared/enums');
 
-module.exports = (adapter, prefix, name) => {
+module.exports = (adapter, ) => {
   return {
     exists: async (nhsNumber) => {
-      logger.info(`cache/${name}|byNhsNumber|exists`, { nhsNumber });
+      logger.info('mixins/patient/byNhsNumber|exists', { nhsNumber });
 
-      const key = ['Discovery', prefix, 'by_nhsNumber', nhsNumber];
+      const key = ['Discovery', ResourceName.PATIENT, 'by_nhsNumber', nhsNumber];
 
       return adapter.exists(key);
     },
 
-    get: async (nhsNumber) => {
-      logger.info(`cache/${name}|byNhsNumber|exists`, { nhsNumber });
+    getPatientUuid: async (nhsNumber) => {
+      logger.info('mixins/patient/byNhsNumber|getPatientUuid', { nhsNumber });
 
-      const key = ['Discovery', prefix, 'by_nhsNumber', nhsNumber, 'Patient'];
+      const key = ['Discovery', ResourceName.PATIENT, 'by_nhsNumber', nhsNumber, 'Patient'];
 
-      return adapter.get(key);
+      return adapter.qewdSession.data.$(key).firstChild.value;
     },
 
-    getAllPatientIds: async (nhsNumber) => {
-      logger.info(`cache/${name}|byNhsNumber|getAllPatientIds`, { nhsNumber });
+    getAllPatientUuids: async (nhsNumber) => {
+      logger.info('mixins/patient|byNhsNumber|getAllPatientUuids', { nhsNumber });
 
-      const patientIds = [];
-      const key = ['Discovery', prefix, 'by_nhsNumber', nhsNumber, 'Patient'];
+      const patientUuids = [];
+      const key = ['Discovery', ResourceName.PATIENT, 'by_nhsNumber', nhsNumber, 'Patient'];
 
-      adapter.qewdSession.data.$(key).forEachChild((uuid) => {
-        patientIds.push(uuid);
+      adapter.qewdSession.data.$(key).forEachChild((patientUuid) => {
+        patientUuids.push(patientUuid);
       });
 
-      return patientIds;
+      return patientUuids;
     },
-    set: async (nhsNumber, uuid) => {
-      logger.info(`cache/${name}|byNhsNumber|set`, { nhsNumber, uuid });
 
-      const nhsKey = ['Discovery', 'Patient', 'by_nhsNumber', nhsNumber, 'Patient', uuid];
+    setPatientUuid: async (nhsNumber, patientUuid) => {
+      logger.info('mixins/patient|byNhsNumber|setPatientUuid', { nhsNumber, patientUuid });
 
-      adapter.put(nhsKey, uuid);
+      const key = ['Discovery', ResourceName.PATIENT, 'by_nhsNumber', nhsNumber, 'Patient', patientUuid];
+
+      adapter.put(key, patientUuid);
     }
   };
 };

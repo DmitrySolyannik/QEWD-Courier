@@ -1,9 +1,9 @@
 /*
 
  ----------------------------------------------------------------------------
- | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
+ | ripple-cdr-discovery: Ripple Discovery Interface                         |
  |                                                                          |
- | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
+ | Copyright (c) 2017-19 Ripple Foundation Community Interest Company       |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  15 December 2018
+  12 January 2018
 
 */
 
@@ -32,8 +32,11 @@
 
 const P = require('bluebird');
 const { transform } = require('qewd-transform-json').transform;
+const { logger } = require('../core');
+const { ResourceFormat } = require('../shared/enums');
+const { getHeadingTemplate, headingHelpers } = require('../shared/headings');
 const { parseRef } = require('../shared/utils');
-const { getTemplate, headingHelper } = require('../shared/headings');
+const debug = require('debug')('ripple-cdr-discovery:services:heading');
 
 class HeadingService {
   constructor(ctx) {
@@ -45,42 +48,81 @@ class HeadingService {
   }
 
   /**
+   * Gets formatted data by source id
+   *
    * @param {string|number} nhsNumber
    * @param {string} heading
-   * @param {string} headingRef
-   * @param {string} destination
-   * @returns {Promise<*>}
+   * @param {string} sourceId
+   * @param {string|null} format
+   * @returns {Promise.<Object>}
    */
-  async getByReference(nhsNumber, heading, headingRef, destination) {
-    const { resourceName, uuid } = parseRef(headingRef, '_');
-    const template = getTemplate(heading, destination);
-    const helper = headingHelper();
+  async getBySourceId(nhsNumber, heading, sourceId, format = ResourceFormat.PULSETILE) {
+    logger.info('services/headingService|getBySourceId', { nhsNumber, heading, sourceId, format });
+
+    const headingRef = sourceId.split('Discovery-')[1];
+    const { resourceName, uuid } = parseRef(headingRef, { separator: '_' });
 
     const { resourceCache } = this.ctx.cache;
+    const { resourceService } = this.ctx.services;
+
     const resource = await resourceCache.get(resourceName, uuid);
-    const practitioner = await resourceCache.getPractitioner(uuid);
-    resource.practitionerName = practitioner.name.text;
+    const practitioner = await resourceService.getPractitioner(resourceName, uuid);
     resource.nhsNumber = nhsNumber;
-    return transform(template, resource, helper);
+    resource.practitionerName = practitioner
+      ? practitioner.name.text
+      : 'Not known';
+
+    const { source, destination } = this.ctx.getTransformationConfig(format);
+    const template = getHeadingTemplate(heading, source, destination);
+    const helpers = headingHelpers();
+    const result = transform(template, resource, helpers);
+
+    debug('result: %j', result);
+
+    return result;
   }
 
   /**
+   * Gets summary
+   *
    * @param {string|number} nhsNumber
    * @param {string} heading
-   * @param {string} resourceName
-   * @param {string} destination
+   * @param {string|null} format
    * @returns {Promise<[]>}
    */
-  async getSummary(nhsNumber, heading, resourceName, destination) {
-    const template = getTemplate(heading, destination);
-    const helper = headingHelper();
+  async getSummary(nhsNumber, heading, format = ResourceFormat.PULSETILE) {
+    logger.info('services/headingService|getSummary', { nhsNumber, heading, format });
 
-    const { patientCache } = this.ctx.cache;
-    const resources = await patientCache.byResource.get(nhsNumber, resourceName); //@TODO talk about logic in cache
+    const resourceName = this.ctx.headingsConfig[heading];
+
+    const { source, destination } = this.ctx.getTransformationConfig(format);
+    const template = getHeadingTemplate(heading, source, destination);
+    const helpers = headingHelpers();
+
+    const { patientCache, resourceCache } = this.ctx.cache;
+    const { resourceService } = this.ctx.services;
+
     const results = [];
-    await P.each(resources, async (x) => results.push(transform(template, x, helper)));
+    const uuids = await patientCache.byResource.getAllResourceUuids(nhsNumber, resourceName);
+
+    await P.each(uuids, async (uuid) => {
+      const resource = await resourceCache.byUuid.get(resourceName, uuid);
+      const practitioner = await resourceService.getPractitioner(resourceName, uuid);
+
+      resource.nhsNumber = nhsNumber;
+      resource.practitionerName = practitioner
+        ? practitioner.name.text
+        : 'Not known';
+
+      const transformResult = transform(template, resource, helpers);
+
+      debug('uuid: %s, result: %j', uuid, transformResult);
+
+      results.push(transformResult);
+    });
+
     return results;
   }
-
 }
+
 module.exports = HeadingService;

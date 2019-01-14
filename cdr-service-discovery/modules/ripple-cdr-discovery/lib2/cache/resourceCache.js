@@ -24,13 +24,12 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  2 January 2019
+  12 January 2019
 
 */
 
 'use strict';
 
-const { logger } = require('../core');
 const { byUuid } = require('./mixins/resource');
 
 class ResourceCache {
@@ -41,22 +40,6 @@ class ResourceCache {
 
   static create(adapter) {
     return new ResourceCache(adapter);
-  }
-
-  async getPractitioner(uuid) {
-    logger.info('cache/resourceCache|byUuid|getPractitioner');
-
-    const key = ['Discovery', 'Practitioner', 'by_uuid', uuid, 'data'];
-
-    this.adapter.get(key);
-  }
-
-  async get(resourceName, uuid) {
-    logger.info('cache/resourceCache|byUuid|getResource');
-
-    const key = ['Discovery', resourceName, 'by_uuid', uuid, 'data'];
-
-    this.adapter.getObjectWithArrays(key);
   }
 }
 

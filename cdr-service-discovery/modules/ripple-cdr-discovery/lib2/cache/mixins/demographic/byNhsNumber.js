@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  11 January 2019
+  12 January 2019
 
 */
 
@@ -32,21 +32,21 @@
 
 const { logger } = require('../../core');
 
-module.exports = (adapter, prefix, name) => {
+module.exports = (adapter) => {
   return {
-    get: async (uuid) => {
-      logger.info(`cache/${name}|byUuid|get`, { uuid });
+    get: async (nhsNumber) => {
+      logger.info('mixins/demographic/byNhsNumber|get', { nhsNumber });
 
-      const key = ['Discovery', prefix, 'by_uuid', uuid, 'data'];
+      const key = ['Demographics', 'by_nhsNumber', nhsNumber];
 
       return adapter.getObjectWithArrays(key);
     },
-    getLocationByUuid: async (locationUuid) => {
-      logger.info(`cache/${name}|byUuid|getLocation`, { locationUuid });
 
-      const key = ['Discovery', 'Location', 'by_uuid', locationUuid, 'data'];
+    set: async (nhsNumber, data) => {
+      logger.info('mixins/demographic/byNhsNumber|set', { nhsNumber, data });
 
-      return adapter.getObjectWithArrays(key);
+      const key = ['Demographics', 'by_nhsNumber', nhsNumber];
+      adapter.putObject(key, data);
     }
   };
 };

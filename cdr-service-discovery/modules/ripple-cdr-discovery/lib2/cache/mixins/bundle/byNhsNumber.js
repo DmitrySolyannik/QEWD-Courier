@@ -24,40 +24,27 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  2 January 2019
+  12 January 2019
 
 */
 
 'use strict';
 
-const { logger } = require('../core');
-const { byNhsNumber, byUuid } = require('./mixins/patient');
+const { logger } = require('../../core');
 
-class PatientBundleCache {
-  constructor(adapter) {
-    this.adapter = adapter;
-    this.byNhsNumber = byNhsNumber(adapter, 'PatientBundle', 'patientBundleCache');
-    this.byUuid = byUuid(adapter, 'PatientBundle', 'patientBundleCache');
-  }
+module.exports = (adapter) => {
+  return {
+    getAllPatientUuids: async (nhsNumber) => {
+      logger.info('mixins/bundle|byNhsNumber|getAllPatientUuids', { nhsNumber });
 
-  static create(adapter) {
-    return new PatientBundleCache(adapter);
-  }
+      const patientUuids = [];
+      const key = ['Discovery', 'PatientBundle', 'by_nhsNumber', nhsNumber, 'Patient'];
 
-  async exists() {
-    logger.info('cache/patientBundleCache|exists');
+      adapter.qewdSession.data.$(key).forEachChild((patientUuid) => {
+        patientUuids.push(patientUuid);
+      });
 
-    const key = ['Discovery', 'PatientBundle'];
-
-    return this.adapter.exists(key);
-  }
-
-  async import(data) {
-    logger.info('cache/patientBundleCache|import', data);
-
-    const key = ['Discovery', 'PatientBundle'];
-    this.adapter.putObject(key, data);
-  }
-}
-
-module.exports = PatientBundleCache;
+      return patientUuids;
+    }
+  };
+};

@@ -24,51 +24,44 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  2 January 2019
+  12 January 2019
 
 */
 
 'use strict';
 
 const { logger } = require('../../core');
+const { ResourceName } = require('../../shared/enums');
 
 module.exports = (adapter) => {
   return {
+    exists: async (nhsNumber, resourceName) => {
+      logger.info('mixins/patient|byResource|exists', { nhsNumber, resourceName });
 
-    exists: async (patientId, resource) => {
-      logger.info('cache/patientCache|byResource|exists', { patientId, resource });
-
-      const key = ['Discovery', 'Patient', 'by_nhsNumber', patientId, 'resources', resource];
+      const key = ['Discovery', ResourceName.PATIENT, 'by_nhsNumber', nhsNumber, 'resources', resourceName];
 
       return adapter.exists(key);
     },
-    getByName: async (resourceName) => {
-      logger.info('cache/patientCache|byResource|getByName', { resourceName });
 
-      const key = ['Discovery', resourceName, 'by_uuid'];
+    set: async (nhsNumber, patientUuid, resourceName, uuid) => {
+      logger.info('mixins/patient|byResource|setResourceUuid', { nhsNumber, patientUuid, resourceName, uuid });
 
-      return adapter.get(key);
+      const byNhsNumberKey = ['Discovery', ResourceName.PATIENT, 'by_nhsNumber', nhsNumber, 'resources', resourceName, uuid];
+      adapter.put(byNhsNumberKey, uuid);
+
+      const byUuidKey = ['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid, 'resources', resourceName, uuid];
+      adapter.put(byUuidKey, uuid);
     },
-    get: async (nhsNumber, resourceName) => {
-      logger.info('cache/patientCache|byResource|get', { nhsNumber, resourceName });
 
-      const initKey = ['Discovery', 'Patient', 'by_nhsNumber', nhsNumber, 'resources', resourceName];
-      const practitioners = [];
-      adapter.qewdSession.data.$(initKey).forEachChild((uuid) => {
-        let key = ['Discovery', resourceName, 'by_uuid', uuid, 'data'];
-        let resource = adapter.getObjectWithArrays(key);
-        resource.nhsNumber = nhsNumber;
-        if (adapter.exists([...key, 'practitioner'])) {
-          const practitionerUuid = adapter.get([...key, 'practitioner']).value;
-          const keyPractitioner = ['Discovery', 'Practitioner', 'by_uuid', practitionerUuid, 'data'];
-          const practitioner = adapter.getObjectWithArrays(keyPractitioner);
-          resource.practitionerName = practitioner.name.text;
-        } else {
-          resource.practitionerName = 'Not known';
-        }
-        practitioners.push(resource);
+    getAllResourceUuids: async (nhsNumber, resourceName) => {
+      logger.info('mixins/patient|byResource|getAllResourceUuids', { nhsNumber, resourceName });
+
+      const uuids = [];
+      const key = ['Discovery', ResourceName.PATIENT, 'by_nhsNumber', nhsNumber, 'resources', resourceName];
+
+      adapter.qewdSession.data.$(key).forEachChild((uuid) => {
+        uuids.push(uuid);
       });
-      return practitioners;
     }
   };
 };

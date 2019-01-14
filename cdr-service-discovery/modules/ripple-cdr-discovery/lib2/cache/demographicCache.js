@@ -24,23 +24,23 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  2 January 2019
+  12 January 2018
 
 */
 
 'use strict';
 
-const { logger } = require('../../core');
+const { byNhsNumber } = require('./mixins/demographic');
 
-module.exports = (adapter) => {
-  return {
-    set: async (patientUuid, resourceName, resourceUuid) => {
-      logger.info('cache/resourceCache|byNHSNumber|set', { patientUuid, resourceName, resourceUuid });
+class DemographicCache {
+  constructor(adapter) {
+    this.adapter = adapter;
+    this.byNhsNumber = byNhsNumber(adapter);
+  }
 
-      const key = ['Discovery', 'Patient', 'by_uuid', patientUuid, 'resources', resourceName, resourceUuid];
+  static create(adapter) {
+    return new DemographicCache(adapter);
+  }
+}
 
-      return adapter.put(key, resourceUuid);
-    },
-
-  };
-};
+module.exports = DemographicCache;

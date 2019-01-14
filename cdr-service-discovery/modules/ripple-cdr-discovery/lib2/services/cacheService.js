@@ -24,22 +24,38 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  2 January 2019
+  12 January 2018
 
 */
 
 'use strict';
 
-const { logger } = require('../../core');
+const { logger } = require('../core');
 
-module.exports = (adapter) => {
-  return {
-    set: async (patientUuid, resourceName, resourceUuid) => {
-      logger.info('cache/resourceCache|byPatientUuid|set', { patientUuid, resourceName, resourceUuid });
+class CacheService {
+  constructor(ctx) {
+    this.ctx = ctx;
+  }
 
-      const key = ['Discovery', 'Patient', 'by_uuid', patientUuid, 'resources', resourceName, resourceUuid];
+  static create(ctx) {
+    return new CacheService(ctx);
+  }
 
-      return adapter.put(key, resourceUuid);
+  async getDemographics(nhsNumber) {
+    logger.info('services/cacheService|getDemographics', { nhsNumber });
+
+    try {
+      const { demographicCache } = this.ctx.cache;
+      const cachedObj = await demographicCache.byNhsNumber.get(nhsNumber);
+
+      return cachedObj;
+    } catch(err) {
+      logger.error('services/cacheService|getDemographics|err: ' + err.message);
+      logger.error('services/cacheService|getDemographics|stack: ' + err.stack);
+
+      return null;
     }
-  };
-};
+  }
+}
+
+module.exports = CacheService;
