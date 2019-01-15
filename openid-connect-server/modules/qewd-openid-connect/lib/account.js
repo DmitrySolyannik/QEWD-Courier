@@ -28,38 +28,35 @@
 
 */
 
-'use strict';
+var util = require('util');
 
-const util = require('util');
-const debug = require('debug')('qewd-openid-connect:account');
 
 function initialise_account(qoper8) {
-  debug('initialise account');
 
-  const q = qoper8;
+  var q = qoper8;
 
   class Account {
     constructor(id, userObj) {
       this.accountId = id; // the property named accountId is important to oidc-provider
-      this._claims = {};
-
-      for (let name in userObj) {
-        this._claims[name] = userObj[name];
+      this.claims = {};
+      for (var name in userObj) {
+        this.claims[name] = userObj[name];
       }
+      //this.nhsNumber = userObj.nhsNumber;
+      //this.email = userObj.email;
     }
 
     // claims() should return or resolve with an object with claims that are mapped 1:1 to
     // what your OP supports, oidc-provider will cherry-pick the requested ones automatically
 
     claims() {
-      debug('claims: for account id = %s', this.accountId);
+      console.log('**** claims called for ' + this.accountId);
 
-      const data = {
+      var data = {
         sub: this.accountId
       };
-
-      for (let name in this._claims) {
-        data[name] = this._claims[name];
+      for (var name in this.claims) {
+        data[name] = this.claims[name];
       }
 
       return data;
@@ -73,13 +70,13 @@ function initialise_account(qoper8) {
     }
 
     static async findById(ctx, id) {
-      debug('findById: %s', id);
+      console.log('Account findbyId: ' + id);
 
       return {
         accountId: id,
         // @param use {string} - can either be "id_token" or "userinfo", depending on
         //   where the specific claims are intended to be put in
-        // @param scope {string}
+        // @param scope {string} - the intended scope, while oidc-provider will mask
         //   claims depending on the scope automatically you might want to skip
         //   loading some claims from external resources or through db projection etc. based on this
         //   detail or not return them in ID Tokens but only UserInfo and so on
@@ -89,7 +86,7 @@ function initialise_account(qoper8) {
         //   want to skip loading some claims from external resources or through db projection
 
         async claims(use, scope, claims, rejected) {
-          debug('scope = %s', scope);
+          console.log('!!!!! scope = ' + scope);
 
           var results = await q.send_promise({
             type: 'getUser',
@@ -99,15 +96,12 @@ function initialise_account(qoper8) {
             }
           })
           .then (function(result) {
-            debug('result = %j', result);
+            console.log('findbyId result = ' + JSON.stringify(result, null, 2));
             if (result.message.error) return undefined;
             delete result.message.ewd_application;
-            debug('returned message = %j', result.message);
+            console.log('*** returned ' + JSON.stringify(result.message, null, 2));
             return result.message;
           });
-
-          debug('results = %j', results);
-
           return results;
           /*
           return {
@@ -116,16 +110,18 @@ function initialise_account(qoper8) {
             nhsNumber: 9999999015
           };
           */
+          
         }
       };
+
     }
 
     static async authenticate(email, password, grant, ip) {
       if (!email || email === '') return {error: 'Email must be provided'};
       if (!password || password === '') return {error: 'Password must be provided'};
+      const lowercased = String(email).toLowerCase();
 
-      debug('validating user');
-      const results = await q.send_promise({
+      var results = await q.send_promise({
         type: 'validateUser',
         params: {
           email: email,
@@ -135,18 +131,25 @@ function initialise_account(qoper8) {
         }
       })
       .then (function(result) {
-        debug('result = %j', result);
+        console.log('validateUser result = ' + JSON.stringify(result, null, 2));
         delete result.message.ewd_application;
         if (result.message.error) return result.message;
-        debug('returned message = %j', result.message);
+        console.log('*** returned ' + JSON.stringify(result.message, null, 2));
         return result.message;
       });
-
-      debug('results = %j', results);
+      console.log('*!*!*! results = ' + JSON.stringify(results, null, 2));
 
       if (results.error) return results;
 
       return results;
+
+      //  accountId: results.email
+      //};
+
+      //const id = _.findKey(USERS, { email: lowercased });
+      //if (!id) return {error: 'Invalid login attempt'};
+
+      // this is usually a db lookup, so let's just wrap the thing in a promise
 
       //var userPassword = USERS[id].password;
       //if (userPassword && userPassword !== '') {
@@ -175,7 +178,7 @@ function initialise_account(qoper8) {
         if (result.message.error) return result.message;
         return result.message;
       });
-
+      //if (results.error) return results;
       return results;
     }
 
@@ -231,9 +234,10 @@ function initialise_account(qoper8) {
         return result.message;
       });
       return results;
-    }
-  }
 
+    }
+
+  }
   return Account;
 }
 

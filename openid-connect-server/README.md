@@ -67,17 +67,3 @@ The *qewd-server* container always uses port 8080 internally.
 Note 1: if you're using a Raspberry Pi (RPi), use the RPi-specific Container: *rtweed/qewd-server-rpi*
 
 
-## Development
-
-### Linting
-
-    make lint
-
-### Unit tests
-
-    make test-unit
-
-### Integration tests
-
-    make test-integration
-

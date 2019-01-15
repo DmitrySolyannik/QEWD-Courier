@@ -28,8 +28,6 @@
 
 */
 
-'use strict';
-
 var fs = require('fs');
 var transform = require('qewd-transform-json').transform;
 var global_config = require('/opt/qewd/mapped/settings/configuration.json');
@@ -41,10 +39,8 @@ var oidc_config_template = require('./oidc-config.json');
 var oidc_config = transform(oidc_config_template, global_config, helpers);
 console.log('oidc_config = ' + JSON.stringify(oidc_config, null, 2));
 
-const debug = '*ewd*';
-
-let app;
-let bodyParser;
+var bodyParser;
+var app;
 
 config.addMiddleware = function(bp, express, q) {
   bodyParser = bp;
@@ -68,6 +64,7 @@ local_routes[1].afterRouter = [
 ];
 
 function onStarted() {
+
   var documents;
   try {
     documents = require('./documents.json');
@@ -89,16 +86,17 @@ function onStarted() {
     });
   }
 
+
+  var self = this;
   var deleteDocuments = (config.delete_documents === true);
   console.log('Wait a couple of seconds for oidc-provider to be available');
-  setTimeout(() => {
+  setTimeout(function() {
     var oidcServer = require('qewd-openid-connect');
     oidcServer.call(self, app, bodyParser, oidc_config);
   },2000);
 }
 
 module.exports = {
-  debug: debug,
   config: config,
   routes: local_routes,
   onStarted: onStarted
