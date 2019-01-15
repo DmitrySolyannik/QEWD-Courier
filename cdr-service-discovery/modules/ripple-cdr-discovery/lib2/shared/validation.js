@@ -72,10 +72,10 @@ function isHeadingValid(headingsConfig, heading) {
 }
 
 function isSourceIdValid(sourceId) {
-  const isValid = sourceId.indexOf('Discovery-') === -1;
+  const isValid = sourceId ? sourceId.indexOf('Discovery-') === -1 : false;
 
   return {
-    ok: sourceId ? isValid : false
+    ok: isValid
   };
 }
 

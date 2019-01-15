@@ -31,8 +31,6 @@
 'use strict';
 
 const BadRequestError = require('./BadRequestError');
-// const EhrIdNotFoundError = require('./EhrIdNotFoundError');
-// const EhrSessionError = require('./EhrSessionError');
 // const ForbiddenError = require('./ForbiddenError');
 // const NotFoundError = require('./NotFoundError');
 // const UnprocessableEntityError = require('./UnprocessableEntityError');
@@ -50,8 +48,6 @@ function getResponseError(err = new Error('Unknown error')) {
 module.exports = {
   BadRequestError,
   getResponseError,
-  // EhrIdNotFoundError,
-  // EhrSessionError,
   // ForbiddenError,
   // NotFoundError,
   // UnprocessableEntityError,

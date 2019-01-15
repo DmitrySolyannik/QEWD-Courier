@@ -33,7 +33,7 @@
 const { BadRequestError } = require('../errors');
 const { isPatientIdValid } = require('../shared/validation');
 const { Role, ResourceName } = require('../shared/enums');
-const { BaseCommand } = require('./baseCommand');
+const BaseCommand = require('./baseCommand');
 const debug = require('debug')('ripple-cdr-discovery:commands:get-demographics');
 
 class GetDemographicsCommand extends BaseCommand {

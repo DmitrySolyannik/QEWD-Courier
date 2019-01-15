@@ -33,7 +33,7 @@
 const { BadRequestError } = require('../errors');
 const { isHeadingValid, isPatientIdValid } = require('../shared/validation');
 const { Role } = require('../shared/enums');
-const { BaseCommand } = require('./baseCommand');
+const BaseCommand = require('./baseCommand');
 const debug = require('debug')('ripple-cdr-discovery:commands:get-heading-detail');
 
 class GetHeadingSummaryCommand extends BaseCommand {

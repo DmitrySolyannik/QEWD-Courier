@@ -30,7 +30,7 @@
 
 'use strict';
 
-const { logger } = require('../../core');
+const { logger } = require('../../../core');
 
 module.exports = (adapter) => {
   return {

@@ -1,9 +1,9 @@
 /*
 
  ----------------------------------------------------------------------------
- | ripple-cdr-discovery: Ripple Discovery Interface                         |
+ | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
  |                                                                          |
- | Copyright (c) 2017-19 Ripple Foundation Community Interest Company       |
+ | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,28 +24,18 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 January 2018
+  22 December 2018
 
 */
 
 'use strict';
 
-class BaseCommand {
+const GetHeadingDetailCommand = require('./getHeadingDetailCommand');
+const GetHeadingSummaryCommand = require('./getHeadingSummaryCommand');
+const GetDemographicsCommand = require('./getDemographicsCommand');
 
-  constructor() {}
-
-  /**
-   * Prepares data for response
-   *
-   * @param  {*} data
-   * @return {Object}
-   */
-  respond(data) {
-    return {
-      responseFrom: 'discovery_service',
-      results: data
-    };
-  }
-}
-
-module.exports = BaseCommand;
+module.exports = {
+  GetHeadingDetailCommand,
+  GetHeadingSummaryCommand,
+  GetDemographicsCommand
+};

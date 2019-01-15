@@ -30,8 +30,8 @@
 
 'use strict';
 
-const { logger } = require('../../core');
-const { ResourceName } = require('../../shared/enums');
+const { logger } = require('../../../core');
+const { ResourceName } = require('../../../shared/enums');
 
 module.exports = (adapter, ) => {
   return {
