@@ -24,8 +24,14 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  29 June 2018
+  29 January 2018
 
 */
 
-module.exports = require('./lib');
+var oauth_openid = require('./oauth-openid');
+
+module.exports = {
+  init: function() {
+    oauth_openid.init.call(this);
+  }
+};
