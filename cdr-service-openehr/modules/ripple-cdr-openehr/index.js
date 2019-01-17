@@ -28,4 +28,4 @@
 
 */
 
-module.exports = require('./lib/ripple-cdr-openehr');
+module.exports = require('./lib2/index');

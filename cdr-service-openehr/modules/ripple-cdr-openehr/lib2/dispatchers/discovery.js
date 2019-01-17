@@ -33,7 +33,7 @@
 const P = require('bluebird');
 const { logger } = require('../core');
 const { handleResponse } = require('../shared/utils');
-const { ExtraHeading } = require('../shared/enum');
+const { ExtraHeading } = require('../shared/enums');
 const debug = require('debug')('ripple-cdr-openehr:dispatchers:discovery');
 
 class DiscoveryDispatcher {
