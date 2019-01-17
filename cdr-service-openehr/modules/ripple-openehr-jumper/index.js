@@ -24,48 +24,8 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  23 March 2018
+  20 July 2018
 
 */
 
-var router = require('qewd-router');
-
-var build = require('./lib/build');
-var getPatientTemplateData = require('./lib/getPatientTemplateData');
-
-var routes = {
-  '/api/openehr/jumper/build': {
-    GET: build
-  },
-  '/api/openehr/jumper/patient/:patientId/template/:templateName': {
-    GET: getPatientTemplateData
-  }
-
-};
-
-module.exports = {
-  init: function() {
-    router.addMicroServiceHandler(routes, module.exports);
-  },
-
-  beforeMicroServiceHandler: function(req, finished) {
-    var authorised = this.jwt.handlers.validateRestRequest.call(this, req, finished);
-
-    if (authorised) {
-      var userMode = req.session.userMode;
-      console.log('*** userMode = ' + userMode + ' *****');
-      if (req.path === '/api/openehr/jumper/build') {
-        if (userMode !== 'admin' && userMode !== 'primary_startup' && userMode !== 'openehr_startup') {
-          finished({error: 'Unauthorised request'});
-          console.log('**** attempt to use /api/openehr/jumper/build path by a non-admin user ******');
-          return false;
-        }
-      }
-      else {
-        req.qewdSession = this.qewdSessionByJWT.call(this, req);
-      }
-    }
-
-    return authorised;
-  }
-};
+module.exports = require('./lib');
