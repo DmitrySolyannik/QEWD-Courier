@@ -31,65 +31,76 @@
 'use strict';
 
 const { ExecutionContextMock } = require('../../mocks');
-const AuthRestService = require('../../../lib2/services/authRestService');
-const { TokenCache } = require('../../../lib2/cache');
+const ResourceRestService = require('../../../lib2/services/resourceRestService');
 const nock = require('nock');
 
-describe('ripple-cdr-discovery/lib2/services/authRestService', () => {
+describe('ripple-cdr-discovery/lib2/services/resourceRestService', () => {
   let ctx;
   let body;
-  let authService;
+  let patientId;
+  let token;
+
+  let resourceRestService;
 
   beforeEach(() => {
     ctx = new ExecutionContextMock();
-    body = 'username=xxxxxxx&password=yyyyyyyyyyyyyyy&client_id=eds-data-checker&grant_type=password';
+    patientId = 5558526784;
 
-    authService = new AuthRestService(ctx, ctx.serversConfig.auth);
+    resourceRestService = new ResourceRestService(ctx, ctx.serversConfig.api);
+
+    body = 'nhsNumber=5558526784';
+    token = 'testTOken';
   });
 
-  describe('#create (static)', () => {
-    it('should initialize a new instance', async () => {
-      const actual = new TokenCache(ctx.adapter);
+  it('should call getPatients()', async () => {
+    const expected = [{
+      patientId: 5558526785,
+      name: 'Patient#1'
+    }, {
+      patientId: 5558526786,
+      name: 'Patient#2'
+    }];
 
-      expect(actual).toEqual(jasmine.any(TokenCache));
-      expect(actual.adapter).toBe(ctx.adapter);
-    });
-  });
-
-  it('should call authService.authenticate() for token', async () => {
-    const now = Date.now();
-    const expected = {
-      jwt: 'some-token',
-      createdAt: now
-    };
-    nock('https://devauth.endeavourhealth.net')
-      .post('/auth/realms/endeavour/protocol/openid-connect/token', body)
-      .reply(200, {
-        jwt: 'some-token',
-        createdAt: now
-      });
-    const actual = await authService.authenticate();
+    nock('https://deveds.endeavourhealth.net/data-assurance')
+      .get(`/api/fhir/patients?${body}`)
+      .reply(200, expected);
+    const actual = await resourceRestService.getPatients(patientId, token);
     expect(nock).toHaveBeenDone();
     expect(actual).toEqual(expected);
   });
 
-  it('should call authService.authenticate() with error', async () => {
+  it('should call getPatients() with error', async () => {
     const expected = {
-      'message': 'Error while trying to get auth token',
-      'code': 401
+      'message': 'Error while trying to patients',
+      'code': 503
     };
 
-    nock('https://devauth.endeavourhealth.net')
-      .post('/auth/realms/endeavour/protocol/openid-connect/token', body)
-      .replyWithError({
-        'message': 'Error while trying to get auth token',
-        'code': 401
-      });
+    nock('https://deveds.endeavourhealth.net/data-assurance')
+      .get(`/api/fhir/patients?${body}`)
+      .replyWithError(expected);
     try {
-      await authService.authenticate();
+      await resourceRestService.getPatients(patientId, token);
     } catch (err) {
       expect(err).toEqual(expected);
     }
     expect(nock).toHaveBeenDone();
+
   });
+
+  it('should call getPatientResource()', async () => {
+
+    const data = {
+      resource: 'Bundle',
+      patients: ''
+    };
+
+    nock('https://deveds.endeavourhealth.net/data-assurance')
+      .get(`/api/fhir/patients?${body}`)
+      .reply(200, data);
+
+    await resourceRestService.getPatientResources(patientId, token , token);
+    expect(nock).toHaveBeenDone();
+
+  });
+
 });

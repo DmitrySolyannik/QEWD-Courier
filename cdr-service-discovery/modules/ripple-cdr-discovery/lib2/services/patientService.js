@@ -52,7 +52,7 @@ class PatientService {
       : patientCache;
 
     const patientUuids = await targetCache.byNhsNumber.getAllPatientUuids(nhsNumber);
-    const patients = await targetCache.byPatientUuid.getByUuids(patientUuids);
+    const patients = await targetCache.byPatientUuid.getByPatientUuids(patientUuids);
 
     return {
       resourceType: 'Bundle',

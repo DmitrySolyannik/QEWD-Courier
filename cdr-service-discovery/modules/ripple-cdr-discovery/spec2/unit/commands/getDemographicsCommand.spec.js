@@ -84,16 +84,25 @@ describe('ripple-cdr-discovery/lib2/commands/getDemographicsCommand', () => {
 
   });
 
-  it('should call execute command with not valid sourceId', async () => {
-    sourceId = undefined;
+  it('should call execute command already cached data', async () => {
     session.role = 'patient';
+    const now = new Date().getTime();
+    const expected = {
+      id: patientId,
+      nhsNumber: session.nhsNumber,
+      gender: 'female',
+      phone : '+44 58584 5475477',
+      name: 'Megan',
+      dateOfBirth: now,
+      gpName: 'Fox',
+      gpAddress: 'California',
+      address: 'London'
+    };
+    cacheService.getDemographics.and.resolveValue(expected);
     const command = new GetDemographicsCommand(ctx, session);
     const actual = await command.execute(patientId);
 
-    await expect(actual).toEqual({
-      responseFrom: 'discovery_service',
-      results: false
-    });
+    await expect(actual).toEqual(expected);
   });
 
 
