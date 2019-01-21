@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  17 December 2018
+  31 December 2018
 
 */
 
@@ -32,7 +32,7 @@
 
 const request = require('request');
 const config = require('../config');
-const { logger } = require('../core');
+const logger = require('../core/logger');
 const debug = require('debug')('ripple-cdr-openehr:services:ehr-rest');
 
 function requestAsync(options) {
@@ -52,6 +52,11 @@ class EhrRestService {
     this.hostConfig = hostConfig;
   }
 
+  /**
+   * Sends a request to start a new session
+   *
+   * @return {Promise.<Object>}
+   */
   async startSession() {
     logger.info(`services/ehrRestService|${this.host}|startSession`);
 
@@ -72,6 +77,12 @@ class EhrRestService {
     return await requestAsync(options);
   }
 
+  /**
+   * Sends a request to expire existing session
+   *
+   * @param  {string} sessionId
+   * @return {Promise}
+   */
   async stopSession(sessionId) {
     logger.info(`services/ehrRestService|${this.host}|stopSession`, { sessionId });
 
@@ -87,6 +98,13 @@ class EhrRestService {
     return await requestAsync(options);
   }
 
+  /**
+   * Sends a request to get Ehr Id
+   *
+   * @param  {string} sessionId
+   * @param  {string|int} patientId
+   * @return {Promise.<string>}
+   */
   async getEhr(sessionId, patientId) {
     logger.info(`services/ehrRestService|${this.host}|getEhr`, { sessionId, patientId });
 
@@ -106,6 +124,13 @@ class EhrRestService {
     return await requestAsync(options);
   }
 
+  /**
+   * Sends a request to create Ehr Id
+   *
+   * @param  {string} sessionId
+   * @param  {string|int} patientId
+   * @return {Promise.<string>}
+   */
   async postEhr(sessionId, patientId) {
     logger.info(`services/ehrRestService|${this.host}|getEhr`, { sessionId, patientId });
 
@@ -131,6 +156,15 @@ class EhrRestService {
     return await requestAsync(options);
   }
 
+  /**
+   * Sends a request to create a new heading record
+   *
+   * @param  {string} sessionId
+   * @param  {string} ehrId
+   * @param  {string} templateId
+   * @param  {Object} data
+   * @return {Promise.<Object>}
+   */
   async postHeading(sessionId, ehrId, templateId, data) {
     logger.info(`services/ehrRestService|${this.host}|postEhr`, { sessionId, ehrId, templateId, data: typeof data });
 
@@ -154,6 +188,15 @@ class EhrRestService {
     return await requestAsync(options);
   }
 
+  /**
+   * Sends a request to update an existing heading record
+   *
+   * @param  {string} sessionId
+   * @param  {string} compositionId
+   * @param  {string} templateId
+   * @param  {Object} data
+   * @return {Promise.<Object>}
+   */
   async putHeading(sessionId, compositionId, templateId, data) {
     logger.info(`services/ehrRestService|${this.host}|putHeading`, { sessionId, compositionId, templateId, data: typeof data });
 
@@ -176,6 +219,13 @@ class EhrRestService {
     return await requestAsync(options);
   }
 
+  /**
+   * Sends a request to retrieve heading records
+   *
+   * @param  {string} sessionId
+   * @param  {string} query
+   * @return {Promise.<Object[]>}
+   */
   async query(sessionId, query) {
     logger.info(`services/ehrRestService|${this.host}|query`, { sessionId, query });
 
@@ -194,6 +244,13 @@ class EhrRestService {
     return await requestAsync(options);
   }
 
+  /**
+   * Sends a request to delete an existing heading record
+   *
+   * @param  {string} sessionId
+   * @param  {string} compositionId
+   * @return {Promise.<Object>}
+   */
   async deleteHeading(sessionId, compositionId) {
     logger.info(`services/ehrRestService|${this.host}|deleteHeading`, { sessionId, compositionId });
 

@@ -108,23 +108,23 @@ describe('ripple-cdr-openehr/lib/handlers/revertDiscoveryData', () => {
     mockery.disable();
   });
 
-  xit('should revert discovery data', () => {
+  it('should revert discovery data', () => {
     revertDiscoveryData.call(q, args, finished);
   });
 
-  xit('should heading not valid', () => {
+  it('should heading not valid', () => {
     args.heading = null;
 
     revertDiscoveryData.call(q, args, finished);
   });
 
-  xit('should patientID not valid', () => {
+  it('should patientID not valid', () => {
     args.patientId = '';
 
     revertDiscoveryData.call(q, args, finished);
   });
 
-  xit('should delete patient heading', () => {
+  it('should delete patient heading', () => {
     deletePatientHeading.and.callFake((args, callback) => {
       return callback({
         deleted: true,
@@ -142,7 +142,7 @@ describe('ripple-cdr-openehr/lib/handlers/revertDiscoveryData', () => {
     expect(deletePatientHeading).toHaveBeenCalledTimes(2);
   });
 
-  xit('should were no matching records', () => {
+  it('should were no matching records', () => {
     args.heading = 'counts';
 
     revertDiscoveryData.call(q, args, finished);

@@ -24,13 +24,32 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  23 December 2018
+  29 December 2018
 
 */
 
 'use strict';
 
 const { lazyLoadAdapter } = require('../../lib2/shared/utils');
+
+function getMethods(id, dir) {
+  const Target = require(`../../lib2/${dir}/${id}`);
+
+  return Reflect
+    .ownKeys(Target.prototype)
+    .filter(x => x !== 'constructor');
+}
+
+function getMixins(id, dir) {
+  try {
+    const name = id.split(/(?=[A-Z])/g)[0];
+    const mixins = require(`../../lib2/${dir}/mixins/${name}`);
+
+    return mixins;
+  } catch (err) {
+    return {};
+  }
+}
 
 class CacheRegistryMock {
   constructor() {
@@ -40,12 +59,18 @@ class CacheRegistryMock {
   initialise(id) {
     if (this.freezed) return;
 
-    const Cache = require(`../../lib2/cache/${id}`);
-    const methods = Reflect
-      .ownKeys(Cache.prototype)
-      .filter(x => x !== 'constructor');
+    const methods = getMethods(id, 'cache');
+    const spyObj = jasmine.createSpyObj(id, methods);
 
-    return jasmine.createSpyObj(id, methods);
+    const mixins = getMixins(id, 'cache');
+    Object.keys(mixins).forEach(key => {
+      const mixin = mixins[key]();
+      const mixinMethods = Reflect.ownKeys(mixin);
+
+      spyObj[key] = jasmine.createSpyObj(key, mixinMethods);
+    });
+
+    return spyObj;
   }
 
   freeze() {

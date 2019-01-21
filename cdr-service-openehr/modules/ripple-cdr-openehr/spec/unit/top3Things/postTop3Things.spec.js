@@ -76,7 +76,7 @@ describe('ripple-cdr-openehr/lib/top3Things/postTop3Things', () => {
     q.db.reset();
   });
 
-  xit('should return invalid or missing patientId error', () => {
+  it('should return invalid or missing patientId error', () => {
     args.patientId = 'foo';
 
     postTop3Things.call(q, args, finished);
@@ -86,7 +86,7 @@ describe('ripple-cdr-openehr/lib/top3Things/postTop3Things', () => {
     });
   });
 
-  xit('should return must specify at least 1 top thing error when name1 missed', () => {
+  it('should return must specify at least 1 top thing error when name1 missed', () => {
     delete args.req.body.name1;
 
     postTop3Things.call(q, args, finished);
@@ -96,7 +96,7 @@ describe('ripple-cdr-openehr/lib/top3Things/postTop3Things', () => {
     });
   });
 
-  xit('should return must specify at least 1 top thing error when description1 missed', () => {
+  it('should return must specify at least 1 top thing error when description1 missed', () => {
     delete args.req.body.description1;
 
     postTop3Things.call(q, args, finished);
@@ -106,7 +106,7 @@ describe('ripple-cdr-openehr/lib/top3Things/postTop3Things', () => {
     });
   });
 
-  xit('should return description for the 2nd top thing was defined but its summary name was not defined error', () => {
+  it('should return description for the 2nd top thing was defined but its summary name was not defined error', () => {
     delete args.req.body.name2;
 
     postTop3Things.call(q, args, finished);
@@ -116,7 +116,7 @@ describe('ripple-cdr-openehr/lib/top3Things/postTop3Things', () => {
     });
   });
 
-  xit('should return description for the 3rd top thing was defined but its summary name was not defined error', () => {
+  it('should return description for the 3rd top thing was defined but its summary name was not defined error', () => {
     delete args.req.body.name3;
 
     postTop3Things.call(q, args, finished);
@@ -126,7 +126,7 @@ describe('ripple-cdr-openehr/lib/top3Things/postTop3Things', () => {
     });
   });
 
-  xit('should post top 3 things', () => {
+  it('should post top 3 things', () => {
     postTop3Things.call(q, args, finished);
 
     expect(finished).toHaveBeenCalledWith({
@@ -152,7 +152,7 @@ describe('ripple-cdr-openehr/lib/top3Things/postTop3Things', () => {
     expect(top3Things.$(['byPatient', 9999999000, 'latest']).value).toBe(sourceId);
   });
 
-  xit('should post top 3 things when 2nd thing is missed', () => {
+  it('should post top 3 things when 2nd thing is missed', () => {
     delete args.req.body.name2;
     delete args.req.body.description2;
 
@@ -181,7 +181,7 @@ describe('ripple-cdr-openehr/lib/top3Things/postTop3Things', () => {
     expect(top3Things.$(['byPatient', 9999999000, 'latest']).value).toBe(sourceId);
   });
 
-  xit('should post top 3 things when 3rd thing is missed', () => {
+  it('should post top 3 things when 3rd thing is missed', () => {
     delete args.req.body.name3;
     delete args.req.body.description3;
 
@@ -210,7 +210,7 @@ describe('ripple-cdr-openehr/lib/top3Things/postTop3Things', () => {
     expect(top3Things.$(['byPatient', 9999999000, 'latest']).value).toBe(sourceId);
   });
 
-  xit('should post top 3 things when patientId was overridden for PHR users', () => {
+  it('should post top 3 things when patientId was overridden for PHR users', () => {
     args.session.role = 'phrUser';
 
     postTop3Things.call(q, args, finished);

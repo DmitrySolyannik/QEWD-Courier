@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  20 December 2018
+  31 December 2018
 
 */
 
@@ -35,6 +35,13 @@ const debug = require('debug')('ripple-cdr-openehr:cache:heading:bySourceId');
 
 module.exports = (adapter) => {
   return {
+
+    /**
+     * Gets data
+     *
+     * @param  {string} sourceId
+     * @return {Promise.<Object>}
+     */
     get: async (sourceId) => {
       logger.info('cache/headingCache|bySourceId|get', { sourceId });
 
@@ -43,6 +50,13 @@ module.exports = (adapter) => {
       return adapter.getObjectWithArrays(key);
     },
 
+    /**
+     * Sets data
+     *
+     * @param  {string} sourceId
+     * @param  {Object} data
+     * @return {Promise}
+     */
     set: async (sourceId, data) => {
       logger.info('cache/headingCache|bySourceId|set', { sourceId, data: typeof data });
 
@@ -52,6 +66,12 @@ module.exports = (adapter) => {
       adapter.putObject(key, data);
     },
 
+    /**
+     * Deletes data
+     *
+     * @param  {string} sourceId
+     * @return {Promise}
+     */
     delete: async (sourceId) => {
       logger.info('cache/headingCache|bySourceId|delete', { sourceId });
 

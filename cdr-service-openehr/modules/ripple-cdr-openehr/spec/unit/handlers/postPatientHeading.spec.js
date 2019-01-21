@@ -84,7 +84,7 @@ describe('ripple-cdr-openehr/lib/handlers/postPatientHeading', () => {
     q.db.reset();
   });
 
-  xit('should return invalid or missing patientId error', () => {
+  it('should return invalid or missing patientId error', () => {
     args.patientId = 'foo';
 
     postPatientHeading.call(q, args, finished);
@@ -94,7 +94,7 @@ describe('ripple-cdr-openehr/lib/handlers/postPatientHeading', () => {
     });
   });
 
-  xit('should return invalid or missing heading error', () => {
+  it('should return invalid or missing heading error', () => {
     args.heading = 'bar';
 
     postPatientHeading.call(q, args, finished);
@@ -104,7 +104,7 @@ describe('ripple-cdr-openehr/lib/handlers/postPatientHeading', () => {
     });
   });
 
-  xit('should return no body content was sent for heading error', () => {
+  it('should return no body content was sent for heading error', () => {
     args.req.body = [];
 
     postPatientHeading.call(q, args, finished);
@@ -114,7 +114,7 @@ describe('ripple-cdr-openehr/lib/handlers/postPatientHeading', () => {
     });
   });
 
-  xit('should post patient heading with pulsetile format', () => {
+  it('should post patient heading with pulsetile format', () => {
     const expectedData = {
       format: 'pulsetile',
       data: {
@@ -134,7 +134,7 @@ describe('ripple-cdr-openehr/lib/handlers/postPatientHeading', () => {
     expect(finished).toHaveBeenCalledWith({quux: 'bar'});
   });
 
-  xit('should post patient heading with openehr-jumper format', () => {
+  it('should post patient heading with openehr-jumper format', () => {
     const expectedData = {
       format: 'openehr-jumper',
       data: {
@@ -155,7 +155,7 @@ describe('ripple-cdr-openehr/lib/handlers/postPatientHeading', () => {
     expect(finished).toHaveBeenCalledWith({quux: 'bar'});
   });
 
-  xit('should override patientId for PHR users', () => {
+  it('should override patientId for PHR users', () => {
     const expectedData = {
       format: 'pulsetile',
       data: {

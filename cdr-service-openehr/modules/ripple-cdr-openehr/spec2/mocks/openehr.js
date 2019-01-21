@@ -11,74 +11,50 @@
  |                                                                          |
  | Author: Rob Tweed, M/Gateway Developments Ltd                            |
  |                                                                          |
- | Licensed under the Apache License, Version 2.0 (the 'License');          |
+ | Licensed under the Apache License, Version 2.0 (the "License");          |
  | you may not use this file except in compliance with the License.         |
  | You may obtain a copy of the License at                                  |
  |                                                                          |
  |     http://www.apache.org/licenses/LICENSE-2.0                           |
  |                                                                          |
  | Unless required by applicable law or agreed to in writing, software      |
- | distributed under the License is distributed on an 'AS IS' BASIS,        |
+ | distributed under the License is distributed on an "AS IS" BASIS,        |
  | WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. |
  | See the License for the specific language governing permissions and      |
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  19 July 2018
+  29 December 2018
 
 */
 
 'use strict';
 
-const mockery = require('mockery');
-const Worker = require('../../mocks/worker');
+const EhrRestService = require('../../lib2/services/ehrRestService');
+const { lazyLoadAdapter } = require('../../lib2/shared/utils');
 
-describe('ripple-cdr-openehr/lib/handlers/getMyHeadingSummary', () => {
-  let getMyHeadingSummary;
+class OpenEhrRegistryMock {
+  constructor() {
+    this.freezed = false;
+  }
 
-  let q;
-  let args;
-  let finished;
+  initialise(host) {
+    if (this.freezed) return;
 
-  let getHeadingSummary;
+    const methods = Reflect
+      .ownKeys(EhrRestService.prototype)
+      .filter(x => x !== 'constructor');
 
-  beforeAll(() => {
-    mockery.enable({
-      warnOnUnregistered: false
-    });
-  });
+    return jasmine.createSpyObj(host, methods);
+  }
 
-  afterAll(() => {
-    mockery.disable();
-  });
+  freeze() {
+    this.freezed = true;
+  }
 
-  beforeEach(() => {
-    q = new Worker();
+  static create() {
+    return lazyLoadAdapter(new OpenEhrRegistryMock());
+  }
+}
 
-    args = {
-      patientId: 9999999000,
-      session: {
-        nhsNumber: 9434765919
-      }
-    };
-    finished = jasmine.createSpy();
-
-    getHeadingSummary = jasmine.createSpy();
-    mockery.registerMock('./getHeadingSummary', getHeadingSummary);
-
-    delete require.cache[require.resolve('../../../lib/handlers/getMyHeadingSummary')];
-    getMyHeadingSummary = require('../../../lib/handlers/getMyHeadingSummary');
-  });
-
-  afterEach(() => {
-    mockery.deregisterAll();
-    q.db.reset();
-  });
-
-  it('should return get heading summary for correct patientId', () => {
-    getMyHeadingSummary.call(q, args, finished);
-
-    expect(args.patientId).toBe(9434765919);
-    expect(getHeadingSummary).toHaveBeenCalledWithContext(q, args, finished);
-  });
-});
+module.exports = OpenEhrRegistryMock;

@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  20 December 2018
+  31 December 2018
 
 */
 
@@ -134,10 +134,6 @@ class DiscoveryService {
   async delete(sourceId) {
     logger.info('services/discoveryService|delete', { sourceId });
 
-    //TODO:
-    //var discovery_map = this.db.use('DiscoveryMap');
-    // if (!discovery_map.exists) return;
-
     const { discoveryDb } = this.ctx.db;
     const dbData = await discoveryDb.getBySourceId(sourceId);
 
@@ -155,8 +151,9 @@ class DiscoveryService {
     logger.info('services/discoveryService|getAllSourceIds');
 
     const { discoveryDb } = this.ctx.db;
+    const sourceIds = await discoveryDb.getAllSourceIds();
 
-    return await discoveryDb.getAllSourceIds();
+    return sourceIds;
   }
 
   /**
@@ -166,11 +163,12 @@ class DiscoveryService {
    * @return {Promise.<string[]>}
    */
   async getSourceIds(filter) {
-    logger.info('services/discoveryService|getSourceIds');
+    logger.info('services/discoveryService|getSourceIds', { filter: typeof filter });
 
     const { discoveryDb } = this.ctx.db;
+    const sourceIds = await discoveryDb.getSourceIds(filter);
 
-    return await discoveryDb.getSourceIds(filter);
+    return sourceIds;
   }
 
   /**
@@ -183,8 +181,9 @@ class DiscoveryService {
     logger.info('services/discoveryService|getBySourceId', { sourceId });
 
     const { discoveryDb } = this.ctx.db;
+    const dbData = await discoveryDb.getBySourceId(sourceId);
 
-    return await discoveryDb.getBySourceId();
+    return dbData;
   }
 }
 

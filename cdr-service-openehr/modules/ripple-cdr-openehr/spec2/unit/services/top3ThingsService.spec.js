@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  17 December 2018
+  30 December 2018
 
 */
 
@@ -32,7 +32,7 @@
 
 const { ExecutionContextMock } = require('../../mocks');
 const { uuidV4Regex } = require('../../helpers/utils');
-const Top3ThingsService = require('../../../lib2/services/Top3ThingsService');
+const Top3ThingsService = require('../../../lib2/services/top3ThingsService');
 
 describe('ripple-cdr-openehr/lib/services/top3ThingsService', () => {
   let ctx;
@@ -65,6 +65,16 @@ describe('ripple-cdr-openehr/lib/services/top3ThingsService', () => {
 
   afterEach(() => {
     jasmine.clock().uninstall();
+  });
+
+  describe('#create (static)', () => {
+    it('should initialize a new instance', async () => {
+      const actual = Top3ThingsService.create(ctx);
+
+      expect(actual).toEqual(jasmine.any(Top3ThingsService));
+      expect(actual.ctx).toBe(ctx);
+      expect(actual.top3ThingsDb).toBe(top3ThingsDb);
+    });
   });
 
   describe('#getLatestSummaryByPatientId', () => {

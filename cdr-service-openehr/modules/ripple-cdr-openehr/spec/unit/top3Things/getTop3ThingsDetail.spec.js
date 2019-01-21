@@ -76,7 +76,7 @@ describe('ripple-cdr-openehr/lib/top3Things/getTop3ThingsDetail', () => {
     q.db.reset();
   });
 
-  xit('should return invalid or missing patientId error', () => {
+  it('should return invalid or missing patientId error', () => {
     args.patientId = 'foo';
 
     getTop3ThingsDetail.call(q, args, finished);
@@ -86,7 +86,7 @@ describe('ripple-cdr-openehr/lib/top3Things/getTop3ThingsDetail', () => {
     });
   });
 
-  xit('should return emply list', () => {
+  it('should return emply list', () => {
     args.patientId = 9434765919;
 
     getTop3ThingsDetail.call(q, args, finished);
@@ -94,7 +94,7 @@ describe('ripple-cdr-openehr/lib/top3Things/getTop3ThingsDetail', () => {
     expect(finished).toHaveBeenCalledWith([]);
   });
 
-  xit('should return top 3 things detail', () => {
+  it('should return top 3 things detail', () => {
     getTop3ThingsDetail.call(q, args, finished);
 
     expect(finished).toHaveBeenCalledWith({
@@ -110,7 +110,7 @@ describe('ripple-cdr-openehr/lib/top3Things/getTop3ThingsDetail', () => {
     });
   });
 
-  xit('should override patientId for PHR users', () => {
+  it('should override patientId for PHR users', () => {
     args.session.role = 'phrUser';
 
     getTop3ThingsDetail.call(q, args, finished);

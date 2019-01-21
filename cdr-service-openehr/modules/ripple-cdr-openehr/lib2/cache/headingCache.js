@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  20 December 2018
+  31 December 2018
 
 */
 
@@ -47,6 +47,14 @@ class HeadingCache {
     return new HeadingCache(adapter);
   }
 
+  /**
+   * Deletes heading cache
+   *
+   * @param  {string} host
+   * @param  {string|int} patientId
+   * @param  {string} heading
+   * @return {Promise}
+   */
   async deleteAll(host, patientId, heading) {
     logger.info('cache/headingCache|deleteAll', { host, patientId, heading });
 

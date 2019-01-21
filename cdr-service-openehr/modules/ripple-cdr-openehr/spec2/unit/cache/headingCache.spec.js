@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  23 December 2018
+  31 December 2018
 
 */
 
@@ -41,10 +41,9 @@ describe('ripple-cdr-openehr/lib/cache/headingCache', () => {
   beforeEach(() => {
     ctx = new ExecutionContextMock();
     headingCache = new HeadingCache(ctx.adapter);
+    qewdSession = ctx.adapter.qewdSession;
 
     ctx.cache.freeze();
-
-    qewdSession = ctx.adapter.qewdSession;
   });
 
   afterEach(() => {
@@ -57,7 +56,11 @@ describe('ripple-cdr-openehr/lib/cache/headingCache', () => {
 
       expect(actual).toEqual(jasmine.any(HeadingCache));
       expect(actual.adapter).toBe(ctx.adapter);
-      expect(actual.adapter).toBe(ctx.adapter);
+      expect(actual.byDate).toEqual(jasmine.any(Object));
+      expect(actual.byHeading).toEqual(jasmine.any(Object));
+      expect(actual.byHost).toEqual(jasmine.any(Object));
+      expect(actual.bySourceId).toEqual(jasmine.any(Object));
+      expect(actual.fetchCount).toEqual(jasmine.any(Object));
     });
   });
 
@@ -180,19 +183,19 @@ describe('ripple-cdr-openehr/lib/cache/headingCache', () => {
         {
           patientId: 9999999000,
           heading: 'procedures',
-          sourceId: '33a93da2-6677-42a0-8b39-9d1e012dde12',
+          sourceId: 'ethercis-33a93da2-6677-42a0-8b39-9d1e012dde12',
           date: 1514734500000
         },
         {
           patientId: 9999999000,
           heading: 'procedures',
-          sourceId: 'eaf394a9-5e05-49c0-9c69-c710c77eda76',
+          sourceId: 'ethercis-eaf394a9-5e05-49c0-9c69-c710c77eda76',
           date: 1514767800000
         },
         {
           patientId: 9999999000,
           heading: 'procedures',
-          sourceId: '260a7be5-e00f-4b1e-ad58-27d95604d010',
+          sourceId: 'marand-260a7be5-e00f-4b1e-ad58-27d95604d010',
           date: 1514790100000
         }
       ].forEach(x => {
@@ -209,7 +212,7 @@ describe('ripple-cdr-openehr/lib/cache/headingCache', () => {
               procedures: {
                 byDate: {
                   '1514734500000': {
-                    '33a93da2-6677-42a0-8b39-9d1e012dde12': true
+                    'ethercis-33a93da2-6677-42a0-8b39-9d1e012dde12': true
                   }
                 }
               }
@@ -219,7 +222,7 @@ describe('ripple-cdr-openehr/lib/cache/headingCache', () => {
 
         const patientId = 9999999000;
         const heading = 'procedures';
-        const sourceId = '33a93da2-6677-42a0-8b39-9d1e012dde12';
+        const sourceId = 'ethercis-33a93da2-6677-42a0-8b39-9d1e012dde12';
         const date = 1514734500000;
 
         await headingCache.byDate.set(patientId, heading, sourceId, date);
@@ -238,10 +241,10 @@ describe('ripple-cdr-openehr/lib/cache/headingCache', () => {
               procedures: {
                 byDate: {
                   '1514767800000': {
-                    'eaf394a9-5e05-49c0-9c69-c710c77eda76': true
+                    'ethercis-eaf394a9-5e05-49c0-9c69-c710c77eda76': true
                   },
                   '1514790100000': {
-                    '260a7be5-e00f-4b1e-ad58-27d95604d010': true
+                    'marand-260a7be5-e00f-4b1e-ad58-27d95604d010': true
                   }
                 }
               }
@@ -253,7 +256,7 @@ describe('ripple-cdr-openehr/lib/cache/headingCache', () => {
 
         const patientId = 9999999000;
         const heading = 'procedures';
-        const sourceId = '33a93da2-6677-42a0-8b39-9d1e012dde12';
+        const sourceId = 'ethercis-33a93da2-6677-42a0-8b39-9d1e012dde12';
         const date = 1514734500000;
 
         await headingCache.byDate.delete(patientId, heading, sourceId, date);
@@ -267,8 +270,8 @@ describe('ripple-cdr-openehr/lib/cache/headingCache', () => {
     describe('#getAllSourceIds', () => {
       it('should return all source ids', async () => {
         const expected = [
-          '260a7be5-e00f-4b1e-ad58-27d95604d010',
-          'eaf394a9-5e05-49c0-9c69-c710c77eda76'
+          'marand-260a7be5-e00f-4b1e-ad58-27d95604d010',
+          'ethercis-eaf394a9-5e05-49c0-9c69-c710c77eda76'
         ];
 
         seeds();
@@ -279,6 +282,364 @@ describe('ripple-cdr-openehr/lib/cache/headingCache', () => {
         const actual = await headingCache.byDate.getAllSourceIds(patientId, heading, { limit: 2 });
 
         expect(actual).toEqual(expected);
+      });
+    });
+  });
+
+  describe('byHeading', () => {
+    function seeds() {
+      [
+        {
+          heading: 'procedures',
+          sourceId: 'ethercis-33a93da2-6677-42a0-8b39-9d1e012dde12',
+        },
+        {
+          heading: 'procedures',
+          sourceId: 'ethercis-eaf394a9-5e05-49c0-9c69-c710c77eda76'
+        },
+        {
+          heading: 'problems',
+          sourceId: 'marand-260a7be5-e00f-4b1e-ad58-27d95604d010'
+        }
+      ].forEach(x => {
+        const key = ['headings', 'byHeading', x.heading, x.sourceId];
+        qewdSession.data.$(key).value = 'true';
+      });
+    }
+
+    describe('#delete', () => {
+      it('should delete single source id', async () => {
+        const expected = {
+          byHeading: {
+            procedures: {
+              'ethercis-33a93da2-6677-42a0-8b39-9d1e012dde12': true
+            },
+            problems: {
+              'marand-260a7be5-e00f-4b1e-ad58-27d95604d010': true
+            }
+          }
+        };
+
+        seeds();
+
+        const heading = 'procedures';
+        const sourceId = 'ethercis-eaf394a9-5e05-49c0-9c69-c710c77eda76';
+
+        await headingCache.byHeading.delete(heading, sourceId);
+
+        const actual = qewdSession.data.$('headings').getDocument();
+
+        expect(actual).toEqual(expected);
+      });
+    });
+
+    describe('#deleteAll', () => {
+      it('should delete all source ids by heading', async () => {
+        const expected = {
+          byHeading: {
+            problems: {
+              'marand-260a7be5-e00f-4b1e-ad58-27d95604d010': true
+            }
+          }
+        };
+
+        seeds();
+
+        const heading = 'procedures';
+
+        await headingCache.byHeading.deleteAll(heading);
+
+        const actual = qewdSession.data.$('headings').getDocument();
+
+        expect(actual).toEqual(expected);
+      });
+    });
+  });
+
+  describe('byHost', () => {
+    function seeds() {
+      [
+        {
+          patientId: 9999999000,
+          heading: 'procedures',
+          sourceId: 'ethercis-33a93da2-6677-42a0-8b39-9d1e012dde12',
+          host: 'ethercis'
+        },
+        {
+          patientId: 9999999000,
+          heading: 'procedures',
+          sourceId: 'ethercis-eaf394a9-5e05-49c0-9c69-c710c77eda76',
+          host: 'ethercis'
+        },
+        {
+          patientId: 9999999000,
+          heading: 'procedures',
+          sourceId: 'marand-260a7be5-e00f-4b1e-ad58-27d95604d010',
+          host: 'marand'
+        }
+      ].forEach(x => {
+        const key = ['headings', 'byPatientId', x.patientId, x.heading, 'byHost', x.host, x.sourceId];
+        qewdSession.data.$(key).value = 'true';
+      });
+    }
+
+    describe('#set', () => {
+      it('should set correct value', async () => {
+        const expected = {
+          byPatientId: {
+            '9999999000': {
+              procedures: {
+                byHost: {
+                  ethercis: {
+                    'ethercis-33a93da2-6677-42a0-8b39-9d1e012dde12': true
+                  }
+                }
+              }
+            }
+          }
+        };
+
+        const patientId = 9999999000;
+        const heading = 'procedures';
+        const sourceId = 'ethercis-33a93da2-6677-42a0-8b39-9d1e012dde12';
+        const host = 'ethercis';
+
+        await headingCache.byHost.set(patientId, heading, sourceId, host);
+
+        const actual = qewdSession.data.$('headings').getDocument();
+
+        expect(actual).toEqual(expected);
+      });
+    });
+
+    describe('#delete', () => {
+      it('should delete value', async () => {
+        const expected = {
+          byPatientId: {
+            '9999999000': {
+              procedures: {
+                byHost: {
+                  ethercis: {
+                    'ethercis-eaf394a9-5e05-49c0-9c69-c710c77eda76': true
+                  },
+                  marand: {
+                    'marand-260a7be5-e00f-4b1e-ad58-27d95604d010': true
+                  }
+                }
+              }
+            }
+          }
+        };
+
+        seeds();
+
+        const patientId = 9999999000;
+        const heading = 'procedures';
+        const sourceId = 'ethercis-33a93da2-6677-42a0-8b39-9d1e012dde12';
+        const host = 'ethercis';
+
+        await headingCache.byHost.delete(patientId, heading, sourceId, host);
+
+        const actual = qewdSession.data.$('headings').getDocument();
+
+        expect(actual).toEqual(expected);
+      });
+    });
+
+    describe('#exists', () => {
+      it('should return false', async () => {
+        const expected = false;
+
+        seeds();
+
+        const patientId = 9999999000;
+        const heading = 'procedures';
+        const host = 'foo';
+
+        const actual = await headingCache.byHost.exists(patientId, heading, host);
+
+        expect(actual).toEqual(expected);
+      });
+
+      it('should return true', async () => {
+        const expected = true;
+
+        seeds();
+
+        const patientId = 9999999000;
+        const heading = 'procedures';
+        const host = 'ethercis';
+
+        const actual = await headingCache.byHost.exists(patientId, heading, host);
+
+        expect(actual).toEqual(expected);
+      });
+    });
+
+    describe('#getAllSourceIds', () => {
+      it('should return all source ids', async () => {
+        const expected = [
+          'ethercis-33a93da2-6677-42a0-8b39-9d1e012dde12',
+          'ethercis-eaf394a9-5e05-49c0-9c69-c710c77eda76',
+          'marand-260a7be5-e00f-4b1e-ad58-27d95604d010'
+        ];
+
+        seeds();
+
+        const patientId = 9999999000;
+        const heading = 'procedures';
+
+        const actual = await headingCache.byHost.getAllSourceIds(patientId, heading);
+
+        expect(actual).toEqual(expected);
+      });
+    });
+  });
+
+  describe('bySourceId', () => {
+    function seeds() {
+      [
+        {
+          sourceId: 'ethercis-33a93da2-6677-42a0-8b39-9d1e012dde12',
+          data: {
+            text: 'foo'
+          }
+        },
+        {
+          sourceId: 'ethercis-eaf394a9-5e05-49c0-9c69-c710c77eda76',
+          data: {
+            text: 'bar'
+          }
+        },
+        {
+          sourceId: 'marand-260a7be5-e00f-4b1e-ad58-27d95604d010',
+          data: {
+            text: 'baz'
+          }
+        }
+      ].forEach(x => {
+        const key = ['headings', 'bySourceId', x.sourceId];
+        qewdSession.data.$(key).setDocument(x.data);
+      });
+    }
+
+    describe('#set', () => {
+      it('should set new data', async () => {
+        const expected = {
+          bySourceId: {
+            'marand-ce437b97-4f6e-4c96-89bb-0b58b29a79cb': {
+              text: 'quux'
+            }
+          }
+        };
+
+        const sourceId = 'marand-ce437b97-4f6e-4c96-89bb-0b58b29a79cb';
+        const data = {
+          text: 'quux'
+        };
+        await headingCache.bySourceId.set(sourceId, data);
+
+        const actual = qewdSession.data.$('headings').getDocument();
+
+        expect(actual).toEqual(expected);
+      });
+
+      it('should update existing data', async () => {
+        const expected = {
+          bySourceId: {
+            'ethercis-33a93da2-6677-42a0-8b39-9d1e012dde12': {
+              text: 'quux'
+            },
+            'ethercis-eaf394a9-5e05-49c0-9c69-c710c77eda76': {
+              text: 'bar'
+            },
+            'marand-260a7be5-e00f-4b1e-ad58-27d95604d010': {
+              text: 'baz'
+            }
+          }
+        };
+
+        seeds();
+
+        const sourceId = 'ethercis-33a93da2-6677-42a0-8b39-9d1e012dde12';
+        const data = {
+          text: 'quux'
+        };
+        await headingCache.bySourceId.set(sourceId, data);
+
+        const actual = qewdSession.data.$('headings').getDocument();
+
+        expect(actual).toEqual(expected);
+      });
+    });
+
+    describe('#get', () => {
+      it('should return null', async () => {
+        const expected = null;
+
+        seeds();
+
+        const sourceId = 'ethercis-foo-bar-baz-quux';
+        const actual = await headingCache.bySourceId.get(sourceId);
+
+        expect(actual).toEqual(expected);
+      });
+
+      it('should return data', async () => {
+        const expected = {
+          text: 'bar'
+        };
+
+        seeds();
+
+        const sourceId = 'ethercis-eaf394a9-5e05-49c0-9c69-c710c77eda76';
+        const actual = await headingCache.bySourceId.get(sourceId);
+
+        expect(actual).toEqual(expected);
+      });
+    });
+
+    describe('#delete', () => {
+      it('should delete value', async () => {
+        const expected = {
+          bySourceId: {
+            'ethercis-33a93da2-6677-42a0-8b39-9d1e012dde12': {
+              text: 'foo'
+            },
+            'marand-260a7be5-e00f-4b1e-ad58-27d95604d010': {
+              text: 'baz'
+            }
+          }
+        };
+
+        seeds();
+
+        const sourceId = 'ethercis-eaf394a9-5e05-49c0-9c69-c710c77eda76';
+        await headingCache.bySourceId.delete(sourceId);
+
+        const actual = qewdSession.data.$('headings').getDocument();
+
+        expect(actual).toEqual(expected);
+      });
+    });
+  });
+
+  describe('fetchCount', () => {
+    function seeds() {
+      qewdSession.data.$(['headings', 'byPatientId', 9999999000, 'procedures', 'fetch_count']).setDocument({});
+    }
+
+    describe('#increment', () => {
+      it('should increment value', async () => {
+        seeds();
+
+        const patientId = 9999999000;
+        const heading = 'procedures';
+        const actual1 = await headingCache.fetchCount.increment(patientId, heading);
+        const actual2 = await headingCache.fetchCount.increment(patientId, heading);
+
+        expect(actual1).toBe(1);
+        expect(actual2).toBe(2);
       });
     });
   });

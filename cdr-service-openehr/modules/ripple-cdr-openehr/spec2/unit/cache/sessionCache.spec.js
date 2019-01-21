@@ -31,26 +31,26 @@
 'use strict';
 
 const { ExecutionContextMock } = require('../../mocks');
-const { StatusCache } = require('../../../lib2/cache');
+const { SessionCache } = require('../../../lib2/cache');
 
-describe('ripple-cdr-openehr/lib/cache/statusCache', () => {
+describe('ripple-cdr-openehr/lib/cache/sessionCache', () => {
   let ctx;
-  let statusCache;
+  let sessionCache;
   let qewdSession;
 
   function seeds() {
-    qewdSession.data.$(['record_status']).setDocument({
-      new_patient: true,
-      requestNo: 1,
-      status: 'loading_data'
+    qewdSession.data.$(['openEHR', 'sessions', 'ethercis']).setDocument({
+      id: 'e5770469-7c26-47f7-afe0-57bce80eb2ee',
+      creationTime: 1546300800000
     });
   }
 
   beforeEach(() => {
     ctx = new ExecutionContextMock();
-    statusCache = new StatusCache(ctx.adapter);
+    sessionCache = new SessionCache(ctx.adapter);
     qewdSession = ctx.adapter.qewdSession;
 
+    seeds();
     ctx.cache.freeze();
   });
 
@@ -60,9 +60,9 @@ describe('ripple-cdr-openehr/lib/cache/statusCache', () => {
 
   describe('#create (static)', () => {
     it('should initialize a new instance', async () => {
-      const actual = StatusCache.create(ctx.adapter);
+      const actual = SessionCache.create(ctx.adapter);
 
-      expect(actual).toEqual(jasmine.any(StatusCache));
+      expect(actual).toEqual(jasmine.any(SessionCache));
       expect(actual.adapter).toBe(ctx.adapter);
     });
   });
@@ -71,44 +71,53 @@ describe('ripple-cdr-openehr/lib/cache/statusCache', () => {
     it('should return null', async () => {
       const expected = null;
 
-      const actual = await statusCache.get();
+      const host = 'marand';
+      const actual = await sessionCache.get(host);
 
       expect(actual).toEqual(expected);
     });
 
-    it('should return status', async () => {
+    it('should return data', async () => {
       const expected = {
-        new_patient: true,
-        requestNo: 1,
-        status: 'loading_data'
+        id: 'e5770469-7c26-47f7-afe0-57bce80eb2ee',
+        creationTime: 1546300800000
       };
 
-      seeds();
-
-      const actual = await statusCache.get();
+      const host = 'ethercis';
+      const actual = await sessionCache.get(host);
 
       expect(actual).toEqual(expected);
     });
   });
 
   describe('#set', () => {
-    it('should set status', async () => {
+    it('should set data', async () => {
       const expected = {
-        new_patient: false,
-        requestNo: 3,
-        status: 'ready'
+        id: 'e5770469-7c26-47f7-afe0-57bce80eb2ee',
+        creationTime: 1546300845123
       };
 
+      const host = 'marand';
       const data = {
-        new_patient: false,
-        requestNo: 3,
-        status: 'ready'
+        id: 'e5770469-7c26-47f7-afe0-57bce80eb2ee',
+        creationTime: 1546300845123
       };
-      await statusCache.set(data);
+      await sessionCache.set(host, data);
 
-      const actual = qewdSession.data.$('record_status').getDocument();
-
+      const actual = qewdSession.data.$(['openEHR', 'sessions', 'marand']).getDocument();
       expect(actual).toEqual(expected);
+    });
+  });
+
+  describe('#delete', () => {
+    it('should delete data', async () => {
+      const expected = null;
+
+      const host = 'ethercis';
+      await sessionCache.delete(host);
+
+      const actual = qewdSession.data.$(['openEHR', 'sessions', 'ethercis']).exists;
+      expect(actual).toBeFalsy(expected);
     });
   });
 });

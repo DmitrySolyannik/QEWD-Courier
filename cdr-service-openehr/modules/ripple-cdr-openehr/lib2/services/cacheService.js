@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  20 December 2018
+  31 December 2018
 
 */
 
@@ -42,6 +42,14 @@ class CacheService {
     return new CacheService(ctx);
   }
 
+  /**
+   * Deletes heading cache by host in all active sessions
+   *
+   * @param  {string} host
+   * @param  {string|int} patientId
+   * @param  {string} heading
+   * @return {Promise}
+   */
   async delete(host, patientId, heading) {
     logger.info('cache/cacheService|delete', { host, patientId, heading });
 

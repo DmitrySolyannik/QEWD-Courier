@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  14 December 2018
+  30 December 2018
 
 */
 
@@ -181,6 +181,20 @@ class PhrFeedDb {
 
     this.phrFeeds.$(['byEmail', data.email, data.sourceId]).value = 'true';
     this.phrFeeds.$(['bySourceId', data.sourceId]).setDocument(data);
+  }
+
+  /**
+   * Updates an existing db record
+   *
+   * @param  {string} sourceId
+   * @param  {Object} data
+   * @return {Promise}
+   */
+  async update(sourceId, data) {
+    logger.info('db/phrFeedDb|update', { sourceId, data });
+
+    this.phrFeeds.$(['bySourceId', sourceId]).delete();
+    this.phrFeeds.$(['bySourceId', sourceId]).setDocument(data);
   }
 }
 

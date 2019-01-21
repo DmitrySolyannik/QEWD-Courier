@@ -24,91 +24,123 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  31 December 2018
+  30 December 2018
 
 */
 
 'use strict';
 
 const { ExecutionContextMock } = require('../../mocks');
-const { StatusCache } = require('../../../lib2/cache');
+const StatusService = require('../../../lib2/services/statusService');
 
-describe('ripple-cdr-openehr/lib/cache/statusCache', () => {
+describe('ripple-cdr-openehr/lib/services/statusService', () => {
   let ctx;
-  let statusCache;
-  let qewdSession;
+  let statusService;
 
-  function seeds() {
-    qewdSession.data.$(['record_status']).setDocument({
-      new_patient: true,
-      requestNo: 1,
-      status: 'loading_data'
-    });
-  }
+  let statusCache;
 
   beforeEach(() => {
     ctx = new ExecutionContextMock();
-    statusCache = new StatusCache(ctx.adapter);
-    qewdSession = ctx.adapter.qewdSession;
+    statusService = new StatusService(ctx);
 
-    ctx.cache.freeze();
-  });
+    statusCache = ctx.cache.statusCache;
 
-  afterEach(() => {
-    ctx.worker.db.reset();
+    ctx.freeze();
   });
 
   describe('#create (static)', () => {
     it('should initialize a new instance', async () => {
-      const actual = StatusCache.create(ctx.adapter);
+      const actual = StatusService.create(ctx);
 
-      expect(actual).toEqual(jasmine.any(StatusCache));
-      expect(actual.adapter).toBe(ctx.adapter);
+      expect(actual).toEqual(jasmine.any(StatusService));
+      expect(actual.ctx).toBe(ctx);
+      expect(actual.statusCache).toBe(statusCache);
+    });
+  });
+
+  describe('#check', () => {
+    it('should return null', async () => {
+      const expected = null;
+
+      const actual = await statusService.check();
+
+      expect(statusCache.get).toHaveBeenCalled();
+      expect(actual).toEqual(expected);
+    });
+
+    it('should increment requestNo and return updated state ', async () => {
+      const expected = {
+        requestNo: 4
+      };
+
+      statusCache.get.and.resolveValue({
+        requestNo: 3
+      });
+
+      const actual = await statusService.check();
+
+      expect(statusCache.get).toHaveBeenCalled();
+      expect(statusCache.set).toHaveBeenCalledWith({
+        requestNo: 4
+      });
+
+      expect(actual).toEqual(expected);
     });
   });
 
   describe('#get', () => {
-    it('should return null', async () => {
-      const expected = null;
-
-      const actual = await statusCache.get();
-
-      expect(actual).toEqual(expected);
-    });
-
-    it('should return status', async () => {
+    it('should return record state ', async () => {
       const expected = {
-        new_patient: true,
-        requestNo: 1,
-        status: 'loading_data'
+        status: 'loading_data',
+        new_patient: 'not_known_yet',
+        requestNo: 1
       };
 
-      seeds();
+      const dbData = {
+        status: 'loading_data',
+        new_patient: 'not_known_yet',
+        requestNo: 1
+      };
+      statusCache.get.and.resolveValue(dbData);
 
-      const actual = await statusCache.get();
+      const actual = await statusService.get();
 
+      expect(statusCache.get).toHaveBeenCalled();
       expect(actual).toEqual(expected);
     });
   });
 
-  describe('#set', () => {
-    it('should set status', async () => {
-      const expected = {
-        new_patient: false,
-        requestNo: 3,
-        status: 'ready'
+  describe('#create', () => {
+    it('should create record state ', async () => {
+      const state = {
+        status: 'loading_data',
+        new_patient: true,
+        requestNo: 5
       };
+      await statusService.create(state);
 
-      const data = {
-        new_patient: false,
-        requestNo: 3,
-        status: 'ready'
+      expect(statusCache.set).toHaveBeenCalledWith({
+        status: 'loading_data',
+        new_patient: true,
+        requestNo: 5
+      });
+    });
+  });
+
+  describe('#update', () => {
+    it('should update record state ', async () => {
+      const state = {
+        status: 'ready',
+        new_patient: true,
+        requestNo: 7
       };
-      await statusCache.set(data);
+      await statusService.update(state);
 
-      const actual = qewdSession.data.$('record_status').getDocument();
-
-      expect(actual).toEqual(expected);
+      expect(statusCache.set).toHaveBeenCalledWith({
+        status: 'ready',
+        new_patient: true,
+        requestNo: 7
+      });
     });
   });
 });

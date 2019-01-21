@@ -86,7 +86,7 @@ describe('ripple-cdr-openehr/lib/feeds/getSummary', () => {
     q.db.reset();
   });
 
-  xit('should return feeds', () => {
+  it('should return feeds', () => {
     const feeds = [
       {
         name: 'NYTimes.com',

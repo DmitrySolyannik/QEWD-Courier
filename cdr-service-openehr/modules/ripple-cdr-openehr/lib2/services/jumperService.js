@@ -24,13 +24,14 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  20 December 2018
+  31 December 2018
 
 */
 
 'use strict';
 
-const { jumper, logger } = require('../core');
+const { logger } = require('../core');
+const jumper = require('../jumper');
 const OpenEhrAdapter = jumper.OpenEhrAdapter;
 
 class JumperService {
@@ -42,35 +43,55 @@ class JumperService {
     return new JumperService(ctx);
   }
 
+  /**
+   * Checks and returns jumper config
+   *
+   * @param  {string} heading
+   * @param  {string} method
+   * @return {Object}
+   */
   check(heading, method) {
     logger.info('services/jumperService|check', { heading, method });
 
     const headingConfig = this.ctx.getHeadingConfig(heading);
-    const result = jumper[method] && headingConfig && headingConfig.template && headingConfig.name;
-
+    const result = Boolean(jumper[method] && headingConfig && headingConfig.template && headingConfig.template.name);
     const jumperObj = {
       ok: result
     };
 
-    if (headingConfig.synopsisField) {
+    if (headingConfig && headingConfig.synopsisField) {
       jumperObj.synopsisField = headingConfig.synopsisField;
     }
 
-    if (headingConfig.summaryTableFields) {
+    if (headingConfig && headingConfig.summaryTableFields) {
       jumperObj.summaryTableFields = headingConfig.summaryTableFields.slice(0);
     }
 
     return jumperObj;
   }
 
+  /**
+   * Gets data by source id
+   *
+   * @param  {string} sourceId
+   * @return {Promise.<Object>}
+   */
   async getBySourceId(sourceId) {
     logger.info('services/jumperService|getBySourceId', { sourceId });
 
     const format = 'pulsetile';
 
-    return jumper.getBySourceId.call(this.worker, sourceId, format, this.ctx.qewdSession);
+    return jumper.getBySourceId.call(this.ctx.worker, sourceId, format, this.ctx.qewdSession);
   }
 
+  /**
+   * Gets heading records
+   *
+   * @param  {string} host
+   * @param  {string|int} patientId
+   * @param  {string} heading
+   * @return {Promise.<Object>}
+   */
   async query(host, patientId, heading) {
     logger.info('services/jumperService|query', { host, patientId, heading });
 
@@ -92,7 +113,7 @@ class JumperService {
         qewdSession: this.ctx.qewdSession
       };
 
-      jumper.query.call(this.worker, params, (responseObj) => {
+      jumper.query.call(this.ctx.worker, params, (responseObj) => {
         if (responseObj.error) return reject(responseObj);
 
         return resolve(responseObj);
@@ -100,6 +121,15 @@ class JumperService {
     });
   }
 
+  /**
+   * Creates a new heading record
+   *
+   * @param  {string} host
+   * @param  {string|int} patientId
+   * @param  {string} heading
+   * @param  {Object} data
+   * @return {Promise.<Object>}
+   */
   async post(host, patientId, heading, data) {
     logger.info('services/jumperService|post', { host, patientId, heading, data: typeof data});
 
@@ -113,7 +143,7 @@ class JumperService {
         qewdSession: this.ctx.qewdSession
       };
 
-      jumper.post.call(this.worker, params, (responseObj) => {
+      jumper.post.call(this.ctx.worker, params, (responseObj) => {
         if (responseObj.error) return reject(responseObj);
 
         return resolve(responseObj);
@@ -121,6 +151,16 @@ class JumperService {
     });
   }
 
+  /**
+   * Updates an existing heading record
+   *
+   * @param  {string} host
+   * @param  {string|int} patientId
+   * @param  {string} heading
+   * @param  {string} compositionId
+   * @param  {Object} data
+   * @return {Promise.<Object>}
+   */
   async put(host, patientId, heading, compositionId, data) {
     logger.info('services/jumperService|put', { host, patientId, heading, compositionId, data: typeof data});
 
@@ -135,7 +175,7 @@ class JumperService {
         qewdSession: this.ctx.qewdSession
       };
 
-      jumper.post.call(this.worker, params, (responseObj) => {
+      jumper.post.call(this.ctx.worker, params, (responseObj) => {
         if (responseObj.error) return reject(responseObj);
 
         return resolve(responseObj);

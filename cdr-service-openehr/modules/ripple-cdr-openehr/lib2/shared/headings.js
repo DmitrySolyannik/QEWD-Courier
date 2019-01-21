@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  22 December 2018
+  29 December 2018
 
 */
 
@@ -35,6 +35,16 @@ const debug = require('debug')('ripple-cdr-openehr:shared:heading-helpers');
 
 const headings = {};
 const aql = {};
+
+function loadHeadingModule(heading) {
+  debug('loading heading: %s', heading);
+
+  try {
+    return require(`../headings/${heading}/${heading}`);
+  } catch (err) {
+    debug('error loading heading %s module: %s', heading, err);
+  }
+}
 
 function headingHelpers(host, heading, method = 'get') {
 
@@ -73,8 +83,7 @@ function headingHelpers(host, heading, method = 'get') {
   // augment with heading-specific helper methods
 
   if (!headings[heading]) {
-    debug('loading heading: %s', heading);
-    headings[heading] = require(`../headings/${heading}/${heading}`);
+    headings[heading] = loadHeadingModule(heading);
   }
 
   if (headings[heading][method] && headings[heading][method].helperFunctions) {
@@ -101,8 +110,7 @@ function getHeadingAql(heading) {
 
 function getHeadingDefinition(heading) {
   if (!headings[heading]) {
-    debug('loading heading: %s', heading);
-    headings[heading] = require(`../headings/${heading}/${heading}`);
+    headings[heading] = loadHeadingModule(heading);
   }
 
   return headings[heading];
@@ -110,11 +118,10 @@ function getHeadingDefinition(heading) {
 
 function getHeadingMap(heading, method = 'get') {
   if (!headings[heading]) {
-    debug('loading heading: %s', heading);
-    headings[heading] = require(`../headings/${heading}/${heading}`);
+    headings[heading] = loadHeadingModule(heading);
   }
 
-  return headings[heading][method];
+  return headings[heading] && headings[heading][method];
 }
 
 module.exports = {

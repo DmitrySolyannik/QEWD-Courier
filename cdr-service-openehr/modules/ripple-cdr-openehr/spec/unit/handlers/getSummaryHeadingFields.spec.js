@@ -86,7 +86,7 @@ describe('ripple-cdr-openehr/lib/handlers/getSummaryHeadingFields', () => {
     q.db.reset();
   });
 
-  xit('should return invalid request error', () => {
+  it('should return invalid request error', () => {
     args.session.userMode = 'idcr';
 
     getSummaryHeadingFields.call(q, args, finished);
@@ -96,7 +96,7 @@ describe('ripple-cdr-openehr/lib/handlers/getSummaryHeadingFields', () => {
     });
   });
 
-  xit('should return feeds records are not maintained error', () => {
+  it('should return feeds records are not maintained error', () => {
     args.heading = 'feeds';
 
     getSummaryHeadingFields.call(q, args, finished);
@@ -106,7 +106,7 @@ describe('ripple-cdr-openehr/lib/handlers/getSummaryHeadingFields', () => {
     });
   });
 
-  xit('should return top3Things records are not maintained error', () => {
+  it('should return top3Things records are not maintained error', () => {
     args.heading = 'top3Things';
 
     getSummaryHeadingFields.call(q, args, finished);
@@ -116,7 +116,7 @@ describe('ripple-cdr-openehr/lib/handlers/getSummaryHeadingFields', () => {
     });
   });
 
-  xit('should return invalid or missing heading error', () => {
+  it('should return invalid or missing heading error', () => {
     args.heading = 'bar';
 
     getSummaryHeadingFields.call(q, args, finished);
@@ -126,13 +126,13 @@ describe('ripple-cdr-openehr/lib/handlers/getSummaryHeadingFields', () => {
     });
   });
 
-  xit('should return summary heading fields from heading definition', () => {
+  it('should return summary heading fields from heading definition', () => {
     getSummaryHeadingFields.call(q, args, finished);
 
     expect(finished).toHaveBeenCalledWith(['desc']);
   });
 
-  xit('should return summary heading fields from config', () => {
+  it('should return summary heading fields from config', () => {
     args.heading = 'vaccinations';
 
     getSummaryHeadingFields.call(q, args, finished);

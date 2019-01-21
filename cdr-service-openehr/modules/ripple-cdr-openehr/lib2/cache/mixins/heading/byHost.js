@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  20 December 2018
+  31 December 2018
 
 */
 
@@ -34,6 +34,16 @@ const { logger } = require('../../../core');
 
 module.exports = (adapter) => {
   return {
+
+    /**
+     * Deletes a relation heading by host
+     *
+     * @param  {string|int} patientId
+     * @param  {string} heading
+     * @param  {string} sourceId
+     * @param  {strinf} host
+     * @return {Promise}
+     */
     delete: async (patientId, heading, sourceId, host) => {
       logger.info('cache/headingCache|byHost|delete', { patientId, heading, sourceId, host });
 
@@ -41,6 +51,14 @@ module.exports = (adapter) => {
       adapter.delete(key);
     },
 
+    /**
+     * Checks if a heading has any data for a host
+     *
+     * @param  {string|int} patientId
+     * @param  {string} heading
+     * @param  {strinf} host
+     * @return {Promise.<bool>}
+     */
     exists: async (patientId, heading, host) => {
       logger.info('cache/headingCache|byHost|exists', { patientId, heading, host });
 
@@ -49,6 +67,15 @@ module.exports = (adapter) => {
       return adapter.exists(key);
     },
 
+    /**
+     * Sets a relation heading by host
+     *
+     * @param  {string|int} patientId
+     * @param  {string} heading
+     * @param  {string} sourceId
+     * @param  {strinf} host
+     * @return {Promise}
+     */
     set: async (patientId, heading, sourceId, host) => {
       logger.info('cache/headingCache|byHost|set', { patientId, heading, sourceId, host });
 
@@ -56,7 +83,14 @@ module.exports = (adapter) => {
       adapter.put(key, 'true');
     },
 
-    async getAllSourceIds(patientId, heading) {
+    /**
+     * Gets all source ids
+     *
+     * @param  {string|int} patientId
+     * @param  {string} heading
+     * @return {Promise.<string[]>}
+     */
+    getAllSourceIds: async (patientId, heading) => {
       logger.info('cache/headingCache|byHost|getAllSourceIds', { patientId, heading });
 
       const sourceIds = [];
@@ -64,7 +98,9 @@ module.exports = (adapter) => {
       const byHost = qewdSession.data.$(['headings', 'byPatientId', patientId, heading, 'byHost']);
 
       byHost.forEachChild((host, node) => {
-        node.forEachChild(sourceId => sourceIds.push(sourceId));
+        node.forEachChild((sourceId) => {
+          sourceIds.push(sourceId);
+        });
       });
 
       return sourceIds;

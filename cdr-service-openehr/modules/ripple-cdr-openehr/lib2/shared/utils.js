@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  20 December 2018
+  31 December 2018
 
 */
 
@@ -70,14 +70,6 @@ function flatten(obj) {
   return flatObj;
 }
 
-function handleResponse(responseObj, successHandler, errorHandler) {
-  if (responseObj.error) {
-    errorHandler(responseObj);
-  } else {
-    successHandler(responseObj.message);
-  }
-}
-
 function equals(l, r) {
   return l.toString() === r.toString();
 }
@@ -104,6 +96,5 @@ module.exports = {
   buildSourceId,
   flatten,
   equals,
-  handleResponse,
   lazyLoadAdapter
 };

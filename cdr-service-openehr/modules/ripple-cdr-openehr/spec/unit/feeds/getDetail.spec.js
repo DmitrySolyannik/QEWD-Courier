@@ -67,7 +67,7 @@ describe('ripple-cdr-openehr/lib/feeds/getDetail', () => {
     q.db.reset();
   });
 
-  xit('should return missing or empty sourceId error', () => {
+  it('should return missing or empty sourceId error', () => {
     delete args.sourceId;
 
     getDetail.call(q, args, finished);
@@ -77,7 +77,7 @@ describe('ripple-cdr-openehr/lib/feeds/getDetail', () => {
     });
   });
 
-  xit('should return invalid sourceId error', () => {
+  it('should return invalid sourceId error', () => {
     args.sourceId = 'foobar';
 
     getDetail.call(q, args, finished);
@@ -87,7 +87,7 @@ describe('ripple-cdr-openehr/lib/feeds/getDetail', () => {
     });
   });
 
-  xit('should return feed details', () => {
+  it('should return feed details', () => {
     getDetail.call(q, args, finished);
 
     expect(finished).toHaveBeenCalledWith({

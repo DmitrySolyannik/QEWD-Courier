@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  19 December 2018
+  29 December 2018
 
 */
 
@@ -52,6 +52,17 @@ describe('ripple-cdr-openehr/lib/services/discoveryService', () => {
     headingService = ctx.services.headingService;
 
     discoveryDb = ctx.db.discoveryDb;
+
+    ctx.freeze();
+  });
+
+  describe('#create (static)', () => {
+    it('should initialize a new instance', async () => {
+      const actual = DiscoveryService.create(ctx);
+
+      expect(actual).toEqual(jasmine.any(DiscoveryService));
+      expect(actual.ctx).toBe(ctx);
+    });
   });
 
   describe('#mergeAll', () => {
@@ -203,11 +214,11 @@ describe('ripple-cdr-openehr/lib/services/discoveryService', () => {
       expect(actual).toEqual(expected);
     });
 
-    it('should return false when no response from OpenEHR server', async () => {
+    it('should return false when non ok response from OpenEHR server', async () => {
       const expected = false;
 
       discoveryDb.getSourceIdByDiscoverySourceId.and.resolveValue(null);
-      headingService.post.and.resolveValue();
+      headingService.post.and.resolveValue({ ok: false });
 
       const host = 'ethercis';
       const patientId = 9999999000;
@@ -280,6 +291,87 @@ describe('ripple-cdr-openehr/lib/services/discoveryService', () => {
         }
       );
 
+      expect(actual).toEqual(expected);
+    });
+  });
+
+  describe('#delete', () => {
+    it('should do nothing when record not found', async () => {
+      const sourceId = 'ethercis-0f7192e9-168e-4dea-812a-3e1d236ae46d';
+      await discoveryService.delete(sourceId);
+
+      expect(discoveryDb.getBySourceId).toHaveBeenCalledWith('ethercis-0f7192e9-168e-4dea-812a-3e1d236ae46d');
+      expect(discoveryDb.delete).not.toHaveBeenCalled();
+    });
+
+    it('should delete discovery data', async () => {
+      const dbData = {
+        discovery: '3020ad3c-8072-4b38-95f7-d8adbbbfb07a'
+      };
+      discoveryDb.getBySourceId.and.resolveValue(dbData);
+
+      const sourceId = 'ethercis-0f7192e9-168e-4dea-812a-3e1d236ae46d';
+      await discoveryService.delete(sourceId);
+
+      expect(discoveryDb.getBySourceId).toHaveBeenCalledWith('ethercis-0f7192e9-168e-4dea-812a-3e1d236ae46d');
+      expect(discoveryDb.delete).toHaveBeenCalledWith(
+        '3020ad3c-8072-4b38-95f7-d8adbbbfb07a',
+        'ethercis-0f7192e9-168e-4dea-812a-3e1d236ae46d'
+      );
+    });
+  });
+
+  describe('#getAllSourceIds', () => {
+    it('should return all source ids', async () => {
+      const expected = [
+        'ethercis-3020ad3c-8072-4b38-95f7-d8adbbbfb07a',
+        'marand-0f7192e9-168e-4dea-812a-3e1d236ae46d'
+      ];
+
+      discoveryDb.getAllSourceIds.and.resolveValue([
+        'ethercis-3020ad3c-8072-4b38-95f7-d8adbbbfb07a',
+        'marand-0f7192e9-168e-4dea-812a-3e1d236ae46d'
+      ]);
+
+      const actual = await discoveryService.getAllSourceIds();
+
+      expect(discoveryDb.getAllSourceIds).toHaveBeenCalled();
+      expect(actual).toEqual(expected);
+    });
+  });
+
+  describe('#getSourceIds', () => {
+    it('should return source ids by filter', async () => {
+      const expected = [
+        'ethercis-3020ad3c-8072-4b38-95f7-d8adbbbfb07a'
+      ];
+
+      discoveryDb.getSourceIds.and.resolveValue([
+        'ethercis-3020ad3c-8072-4b38-95f7-d8adbbbfb07a'
+      ]);
+
+      const filter = x => x.name === 'Alexey';
+      const actual = await discoveryService.getSourceIds(filter);
+
+      expect(discoveryDb.getSourceIds).toHaveBeenCalledWith(filter);
+      expect(actual).toEqual(expected);
+    });
+  });
+
+  describe('#getBySourceId', () => {
+    it('should return data by source id', async () => {
+      const expected = {
+        foo: 'bar'
+      };
+
+      discoveryDb.getBySourceId.and.resolveValue({
+        foo: 'bar'
+      });
+
+      const sourceId = 'ethercis-3020ad3c-8072-4b38-95f7-d8adbbbfb07a';
+      const actual = await discoveryService.getBySourceId(sourceId);
+
+      expect(discoveryDb.getBySourceId).toHaveBeenCalledWith('ethercis-3020ad3c-8072-4b38-95f7-d8adbbbfb07a');
       expect(actual).toEqual(expected);
     });
   });
