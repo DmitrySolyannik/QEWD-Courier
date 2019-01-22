@@ -94,5 +94,16 @@ describe('ripple-cdr-discovery/lib2/commands/getHeadingDetailCommand', () => {
     });
   });
 
+  it('should call execute command with not valid heading', async () => {
+    heading = 'unknown-heading';
+    const command = new GetHeadingDetailCommand(ctx, session);
+    const actual = await command.execute(patientId, heading, sourceId);
+
+    await expect(actual).toEqual({
+      responseFrom: 'discovery_service',
+      results: false
+    });
+  });
+
 
 });
