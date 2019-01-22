@@ -74,8 +74,8 @@ class ResourceRestService {
     return requestAsync(options);
   }
 
-  async getPatientResources(patientId, data, token) {
-    logger.info('services/resourceRestService|getPatientResources', { patientId, data: typeof data, token: typeof token });
+  async getPatientResources(data, token) {
+    logger.info('services/resourceRestService|getPatientResources', { data: typeof data, token: typeof token });
 
     debug('data: %j', data);
     debug('token: %s', token);

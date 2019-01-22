@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  23 December 2018
+  29 December 2018
 
 */
 
@@ -42,10 +42,17 @@ class ExecutionContextMock extends ExecutionContext {
     const qewdSession = q.sessions.create('mock');
 
     super(q, { qewdSession });
+
     this.adapter = new QewdCacheAdapter(qewdSession);
     this.cache = CacheRegistryMock.create();
     this.db = DbRegistryMock.create();
     this.services = ServiceRegistryMock.create();
+  }
+
+  freeze() {
+    this.cache.freeze();
+    this.db.freeze();
+    this.services.freeze();
   }
 }
 

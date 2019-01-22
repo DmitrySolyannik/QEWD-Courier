@@ -40,7 +40,7 @@ const { getResponseError } = require('../errors');
 module.exports = async function (args, finished) {
   try {
     const command = new GetDemographicsCommand(args.req.ctx, args.session);
-    const responseObj = await command.execute(args.patientId, args.session);
+    const responseObj = await command.execute(args.patientId);
 
     finished(responseObj);
   } catch (err) {

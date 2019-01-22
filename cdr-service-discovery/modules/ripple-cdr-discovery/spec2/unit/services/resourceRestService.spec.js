@@ -52,6 +52,15 @@ describe('ripple-cdr-discovery/lib2/services/resourceRestService', () => {
     token = 'testTOken';
   });
 
+  describe('#create (static)', () => {
+    it('should initialize a new instance', async () => {
+      const actual = ResourceRestService.create(ctx, ctx.serversConfig.api);
+
+      expect(actual).toEqual(jasmine.any(ResourceRestService));
+      expect(actual.ctx).toBe(ctx);
+    });
+  });
+
   it('should call getPatients()', async () => {
     const expected = [{
       patientId: 5558526785,
@@ -89,16 +98,37 @@ describe('ripple-cdr-discovery/lib2/services/resourceRestService', () => {
 
   it('should call getPatientResource()', async () => {
 
+    //@TODO change test data to closely related patient data, should I add expected values for each service method ???
     const data = {
       resource: 'Bundle',
-      patients: ''
+      patients: {
+        patientId: 5558526786,
+        name: 'Patient#2'
+      }
     };
 
     nock('https://deveds.endeavourhealth.net/data-assurance')
-      .get(`/api/fhir/patients?${body}`)
+      .post('/api/fhir/resources', data)
       .reply(200, data);
 
-    await resourceRestService.getPatientResources(patientId, token , token);
+    await resourceRestService.getPatientResources(data , token);
+    expect(nock).toHaveBeenDone();
+
+  });
+
+  it('should call getResource()', async () => {
+
+    //@TODO change reference data to similar real data
+
+    const reference = 'some-reference';
+
+    nock('https://deveds.endeavourhealth.net/data-assurance')
+      .get(`/api/fhir/reference?reference=${reference}`)
+      .reply(200, {
+        test: 'some-data'
+      });
+
+    await resourceRestService.getResource(reference , 'AllergyIntolerance');
     expect(nock).toHaveBeenDone();
 
   });

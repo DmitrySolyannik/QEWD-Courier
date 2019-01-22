@@ -50,7 +50,7 @@ class ResourceService {
    * @returns {Promise}
    */
   async fetchPatients(nhsNumber) {
-    logger.info('services/resourceService|getPatients', { nhsNumber });
+    logger.info('services/resourceService|fetchPatients', { nhsNumber });
 
     const { patientCache } = this.ctx.cache;
     const exists = patientCache.byNhsNumber.exists(nhsNumber);
@@ -83,7 +83,7 @@ class ResourceService {
    * @returns {Promise}
    */
   async fetchPatientResources(nhsNumber, resourceName) {
-    logger.info('services/resourceService|getPatientResources', { nhsNumber, resourceName });
+    logger.info('services/resourceService|fetchPatientResources', { nhsNumber, resourceName });
 
     const { patientCache } = this.ctx.cache;
     const exists = patientCache.byResource.exists(nhsNumber, resourceName);
@@ -98,7 +98,7 @@ class ResourceService {
     };
     const token = await tokenService.get();
 
-    const response = await resourcesRestService.getPatientResources(nhsNumber, data, token);
+    const response = await resourcesRestService.getPatientResources(data, token);
     debug('response: %j', response);
     if (!response.entry) return false;
 
@@ -109,7 +109,7 @@ class ResourceService {
 
     await fetchCache.deleteAll();
 
-    await P.each(data.entry, async (x) => {
+    await P.each(response.entry, async (x) => {
       if (x.resource.resourceType !== resourceName) return;
 
       const resource = x.resource;

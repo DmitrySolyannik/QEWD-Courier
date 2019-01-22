@@ -31,64 +31,60 @@
 'use strict';
 
 const { ExecutionContextMock } = require('../../mocks');
-const AuthRestService = require('../../../lib2/services/authRestService');
-const nock = require('nock');
+const CacheService = require('../../../lib2/services/cacheService');
+const { BadRequestError } = require('../../../lib2/errors');
 
-describe('ripple-cdr-discovery/lib2/services/authRestService', () => {
+describe('ripple-cdr-discovery/lib2/services/cacheService', () => {
   let ctx;
-  let body;
-  let authService;
+  let nhsNumber;
+  let patientId;
+
+  let cacheService;
+  let demographicCache;
 
   beforeEach(() => {
     ctx = new ExecutionContextMock();
-    body = 'username=xxxxxxx&password=yyyyyyyyyyyyyyy&client_id=eds-data-checker&grant_type=password';
+    nhsNumber = 5558526784;
+    patientId = 5558526784;
 
-    authService = new AuthRestService(ctx, ctx.serversConfig.auth);
+    cacheService = new CacheService(ctx);
+    demographicCache = ctx.cache.demographicCache;
+
+    ctx.cache.freeze();
   });
 
   describe('#create (static)', () => {
     it('should initialize a new instance', async () => {
-      const actual = AuthRestService.create(ctx, ctx.serversConfig.auth);
+      const actual = CacheService.create(ctx);
 
-      expect(actual).toEqual(jasmine.any(AuthRestService));
+      expect(actual).toEqual(jasmine.any(CacheService));
       expect(actual.ctx).toBe(ctx);
     });
   });
 
-  it('should call authService.authenticate() for token', async () => {
-    const now = Date.now();
+
+
+  it('should call getDemographics and return data', async () => {
     const expected = {
-      jwt: 'some-token',
-      createdAt: now
+      id: patientId,
+      nhsNumber: nhsNumber,
+      gender: 'female',
+      phone : '+44 58584 5475477',
+      name: 'Megan',
+      dateOfBirth: Date.now(),
+      gpName: 'Fox',
+      gpAddress: 'California',
+      address: 'London'
     };
-    nock('https://devauth.endeavourhealth.net')
-      .post('/auth/realms/endeavour/protocol/openid-connect/token', body)
-      .reply(200, {
-        jwt: 'some-token',
-        createdAt: now
-      });
-    const actual = await authService.authenticate();
-    expect(nock).toHaveBeenDone();
+
+    demographicCache.byNhsNumber.get.and.resolveValue(expected);
+    const actual = await cacheService.getDemographics(nhsNumber);
     expect(actual).toEqual(expected);
   });
 
-  it('should call authService.authenticate() with error', async () => {
-    const expected = {
-      'message': 'Error while trying to get auth token',
-      'code': 401
-    };
-
-    nock('https://devauth.endeavourhealth.net')
-      .post('/auth/realms/endeavour/protocol/openid-connect/token', body)
-      .replyWithError({
-        'message': 'Error while trying to get auth token',
-        'code': 401
-      });
-    try {
-      await authService.authenticate();
-    } catch (err) {
-      expect(err).toEqual(expected);
-    }
-    expect(nock).toHaveBeenDone();
+  it('should call getDemographics and returns error', async () => {
+    ctx.cache.demographicCache = undefined;
+    const actual = await cacheService.getDemographics(nhsNumber);
+    expect(actual).toEqual(null);
   });
 });

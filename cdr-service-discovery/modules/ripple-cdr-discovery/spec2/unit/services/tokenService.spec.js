@@ -31,64 +31,68 @@
 'use strict';
 
 const { ExecutionContextMock } = require('../../mocks');
-const AuthRestService = require('../../../lib2/services/authRestService');
-const nock = require('nock');
+const TokenService = require('../../../lib2/services/tokenService');
+const { BadRequestError } = require('../../../lib2/errors');
 
-describe('ripple-cdr-discovery/lib2/services/authRestService', () => {
+describe('ripple-cdr-discovery/lib2/services/tokenService', () => {
   let ctx;
-  let body;
-  let authService;
+
+
+  let authRestService;
+  let tokenService;
+  let tokenCache;
 
   beforeEach(() => {
     ctx = new ExecutionContextMock();
-    body = 'username=xxxxxxx&password=yyyyyyyyyyyyyyy&client_id=eds-data-checker&grant_type=password';
 
-    authService = new AuthRestService(ctx, ctx.serversConfig.auth);
+    tokenService = new TokenService(ctx);
+    tokenCache = ctx.cache.tokenCache;
+    authRestService = ctx.services.authRestService;
+
+    ctx.services.freeze();
   });
 
   describe('#create (static)', () => {
     it('should initialize a new instance', async () => {
-      const actual = AuthRestService.create(ctx, ctx.serversConfig.auth);
+      const actual = TokenService.create(ctx, ctx.serversConfig.api);
 
-      expect(actual).toEqual(jasmine.any(AuthRestService));
+      expect(actual).toEqual(jasmine.any(TokenService));
       expect(actual.ctx).toBe(ctx);
     });
   });
 
-  it('should call authService.authenticate() for token', async () => {
+
+  it('should call get token if already exists in cache', async () => {
     const now = Date.now();
     const expected = {
-      jwt: 'some-token',
-      createdAt: now
+      createdAt: now,
+      jwt: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.'
+      + 'eyJpc3MiOiJ0b3B0YWwuY29tIiwiZXhwIjoxNDI2NDIwODAwLCJodHRwOi8vdG9wdGFsLmNvbS9qd3RfY2xhaW1zL2lzX2FkbWluIjp0cnVlLCJjb21wYW55IjoiVG9wdGFsIiwiYXdlc29tZSI6dHJ1ZX0.'
+      + 'yRQYnWzskCZUxPwaQupWkiUzKELZ49eM7oWxAQK_ZXw'
     };
-    nock('https://devauth.endeavourhealth.net')
-      .post('/auth/realms/endeavour/protocol/openid-connect/token', body)
-      .reply(200, {
-        jwt: 'some-token',
-        createdAt: now
-      });
-    const actual = await authService.authenticate();
-    expect(nock).toHaveBeenDone();
-    expect(actual).toEqual(expected);
+    tokenCache.get.and.resolveValue(expected);
+    const actual = await tokenService.get();
+    expect(actual).toEqual(expected.jwt);
   });
 
-  it('should call authService.authenticate() with error', async () => {
+  it('should call authRestService.authenticate', async () => {
     const expected = {
-      'message': 'Error while trying to get auth token',
-      'code': 401
+      createdAt: Date.now(),
+      access_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.'
+      + 'eyJpc3MiOiJ0b3B0YWwuY29tIiwiZXhwIjoxNDI2NDIwODAwLCJodHRwOi8vdG9wdGFsLmNvbS9qd3RfY2xhaW1zL2lzX2FkbWluIjp0cnVlLCJjb21wYW55IjoiVG9wdGFsIiwiYXdlc29tZSI6dHJ1ZX0.'
+      + 'yRQYnWzskCZUxPwaQupWkiUzKELZ49eM7oWxAQK_ZXw'
     };
 
-    nock('https://devauth.endeavourhealth.net')
-      .post('/auth/realms/endeavour/protocol/openid-connect/token', body)
-      .replyWithError({
-        'message': 'Error while trying to get auth token',
-        'code': 401
-      });
-    try {
-      await authService.authenticate();
-    } catch (err) {
-      expect(err).toEqual(expected);
-    }
-    expect(nock).toHaveBeenDone();
+    tokenCache.get.and.resolveValue(null);
+    authRestService.authenticate.and.resolveValue(expected);
+    const actual = await tokenService.get();
+    expect(actual).toEqual(expected.access_token);
+  });
+
+  it('should call get token with error', async () => {
+    tokenCache.get.and.resolveValue(null);
+    authRestService.authenticate.and.resolveValue(undefined);
+    const actual = tokenService.get();
+    await expectAsync(actual).toBeRejectedWith(new BadRequestError('Cannot read property \'access_token\' of undefined'));
   });
 });

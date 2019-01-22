@@ -39,6 +39,7 @@ const { clone } = require('../helpers/utils');
 module.exports = function (config) {
   this.db = new DbGlobals();
   this.documentStore = new DocumentStore(this.db);
+
   userDefined.config = config || {};
 
   sessions.init(this.documentStore);

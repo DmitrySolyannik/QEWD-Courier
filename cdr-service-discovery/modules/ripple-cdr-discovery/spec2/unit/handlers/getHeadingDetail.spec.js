@@ -31,15 +31,16 @@
 'use strict';
 
 const mockery = require('mockery');
-const { ExecutionContextMock } = require('../../mocks');
-// const { GetHeadingDetailCommand } = require('../../../lib2/commands');
+const { ExecutionContextMock, CommandMock } = require('../../mocks');
 
 describe('ripple-cdr-discovery/lib2/handlers/getHeadingDetail', () => {
   let args;
   let finished;
+  let command;
 
 
   let handler;
+  let GetHeadingDetailCommand;
 
   beforeAll(() => {
     mockery.enable({
@@ -61,10 +62,13 @@ describe('ripple-cdr-discovery/lib2/handlers/getHeadingDetail', () => {
       },
       session: {
         nhsNumber: 9999999000,
-        email: 'john.doe@example.org'
       }
     };
     finished = jasmine.createSpy();
+
+    command = new CommandMock();
+    GetHeadingDetailCommand = jasmine.createSpy().and.returnValue(command);
+    mockery.registerMock('../commands/getHeadingDetailCommand', GetHeadingDetailCommand );
 
     delete require.cache[require.resolve('../../../lib2/handlers/getHeadingDetail')];
     handler = require('../../../lib2/handlers/getHeadingDetail');
@@ -75,13 +79,29 @@ describe('ripple-cdr-discovery/lib2/handlers/getHeadingDetail', () => {
   });
 
   it('should return response object', async () => {
+    const responseObj = {
+      responseFrom: 'discovery_service',
+      results: false
+    };
+    command.execute.and.resolveValue(responseObj);
     await handler(args, finished);
+
+    expect(GetHeadingDetailCommand).toHaveBeenCalledWith(args.req.ctx, args.session);
+    expect(command.execute).toHaveBeenCalledWith(args.patientId, args.heading, args.sourceId);
+    expect(finished).toHaveBeenCalledWith(responseObj);
   });
 
-  it('should call auth', async () => {
+  it('should call handler with error', async () => {
+    command.execute.and.rejectValue(new Error('Some unknown error'));
+
     await handler(args, finished);
-    // const command = new GetHeadingDetailCommand(ctx, session);
-    // const actual = command.execute(patientId, heading, sourceId);
+
+    expect(GetHeadingDetailCommand).toHaveBeenCalledWith(args.req.ctx, args.session);
+    expect(command.execute).toHaveBeenCalledWith(args.patientId, args.heading, args.sourceId);
+
+    expect(finished).toHaveBeenCalledWith({
+      error: 'Some unknown error'
+    });
   });
 
 });

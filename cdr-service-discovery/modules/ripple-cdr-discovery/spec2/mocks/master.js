@@ -24,17 +24,24 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 December 2018
+  31 December 2018
 
 */
 
 'use strict';
 
-module.exports = function () {
+const userDefined = require('../support/userDefined.json');
+const { clone } = require('../helpers/utils');
+
+module.exports = function (config) {
   this.handleMessage = jasmine.createSpy();
+  this.microServiceRouter = jasmine.createSpy();
   this.jwt = {
     handlers: {
       getProperty: jasmine.createSpy()
     }
   };
+
+  userDefined.config = config || {};
+  this.userDefined = clone(userDefined);
 };

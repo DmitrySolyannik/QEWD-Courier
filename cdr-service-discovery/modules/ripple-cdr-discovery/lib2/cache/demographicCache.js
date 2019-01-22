@@ -41,6 +41,10 @@ class DemographicCache {
   static create(adapter) {
     return new DemographicCache(adapter);
   }
+
+  async exists() {
+   return true;
+  }
 }
 
 module.exports = DemographicCache;
