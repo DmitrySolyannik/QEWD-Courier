@@ -64,12 +64,27 @@ describe('ripple-cdr-discovery/lib2/commands/getDemographicsCommand', () => {
   });
 
   it('should call execute command with valid data', async () => {
+    const expected = {
+      id: patientId,
+      nhsNumber: session.nhsNumber,
+      gender: 'female',
+      phone : '+44 58584 5475477',
+      name: 'Megan',
+      dateOfBirth: new Date().getTime(),
+      gpName: 'Fox',
+      gpAddress: 'California',
+      address: 'London'
+    };
+
+    demographicService.getByPatientId.and.resolveValue(expected);
+
     const command = new GetDemographicsCommand(ctx, session);
-    await command.execute(patientId);
+    const actual = await command.execute(patientId);
 
     expect(resourceService.fetchPatients).toHaveBeenCalledWith(patientId);
     expect(resourceService.fetchPatientResources).toHaveBeenCalledWith(patientId, 'Patient');
     expect(demographicService.getByPatientId).toHaveBeenCalledWith(patientId);
+    expect(actual).toEqual(expected);
   });
 
   it('should call execute command with not valid patientId', async () => {

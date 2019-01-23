@@ -33,14 +33,14 @@
 const mockery = require('mockery');
 const { ExecutionContextMock, CommandMock } = require('../../mocks');
 
-describe('ripple-cdr-discovery/lib2/handlers/getHeadingDetail', () => {
+describe('ripple-cdr-discovery/lib2/handlers/getDemographics', () => {
   let args;
   let finished;
   let command;
 
 
   let handler;
-  let GetHeadingDetailCommand;
+  let GetDemographicsCommand;
 
   beforeAll(() => {
     mockery.enable({
@@ -54,9 +54,7 @@ describe('ripple-cdr-discovery/lib2/handlers/getHeadingDetail', () => {
 
   beforeEach(() => {
     args = {
-      heading: 'procedures',
       patientId: 9999999000,
-      sourceId: 'Discovery-MedicationStatement/eaf394a9-5e05-49c0-9c69-c710c77eda76',
       req: {
         ctx: new ExecutionContextMock(),
       },
@@ -67,11 +65,11 @@ describe('ripple-cdr-discovery/lib2/handlers/getHeadingDetail', () => {
     finished = jasmine.createSpy();
 
     command = new CommandMock();
-    GetHeadingDetailCommand = jasmine.createSpy().and.returnValue(command);
-    mockery.registerMock('../commands/getHeadingDetailCommand', GetHeadingDetailCommand );
+    GetDemographicsCommand = jasmine.createSpy().and.returnValue(command);
+    mockery.registerMock('../commands/getDemographicsCommand', GetDemographicsCommand );
 
-    delete require.cache[require.resolve('../../../lib2/handlers/getHeadingDetail')];
-    handler = require('../../../lib2/handlers/getHeadingDetail');
+    delete require.cache[require.resolve('../../../lib2/handlers/getDemographics')];
+    handler = require('../../../lib2/handlers/getDemographics');
   });
 
   afterEach(() => {
@@ -79,6 +77,7 @@ describe('ripple-cdr-discovery/lib2/handlers/getHeadingDetail', () => {
   });
 
   it('should call handler and return response object', async () => {
+    //@TODO add correct return data
     const responseObj = {
       responseFrom: 'discovery_service',
       results: false
@@ -86,8 +85,8 @@ describe('ripple-cdr-discovery/lib2/handlers/getHeadingDetail', () => {
     command.execute.and.resolveValue(responseObj);
     await handler(args, finished);
 
-    expect(GetHeadingDetailCommand).toHaveBeenCalledWith(args.req.ctx, args.session);
-    expect(command.execute).toHaveBeenCalledWith(args.patientId, args.heading, args.sourceId);
+    expect(GetDemographicsCommand).toHaveBeenCalledWith(args.req.ctx, args.session);
+    expect(command.execute).toHaveBeenCalledWith(args.patientId);
     expect(finished).toHaveBeenCalledWith(responseObj);
   });
 
@@ -96,8 +95,8 @@ describe('ripple-cdr-discovery/lib2/handlers/getHeadingDetail', () => {
 
     await handler(args, finished);
 
-    expect(GetHeadingDetailCommand).toHaveBeenCalledWith(args.req.ctx, args.session);
-    expect(command.execute).toHaveBeenCalledWith(args.patientId, args.heading, args.sourceId);
+    expect(GetDemographicsCommand).toHaveBeenCalledWith(args.req.ctx, args.session);
+    expect(command.execute).toHaveBeenCalledWith(args.patientId);
 
     expect(finished).toHaveBeenCalledWith({
       error: 'Some unknown error'

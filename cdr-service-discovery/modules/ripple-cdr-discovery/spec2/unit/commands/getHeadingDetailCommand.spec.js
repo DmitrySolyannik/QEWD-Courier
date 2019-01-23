@@ -62,12 +62,30 @@ describe('ripple-cdr-discovery/lib2/commands/getHeadingDetailCommand', () => {
   });
 
   it('should call execute command with valid data', async () => {
+    const expected = {
+      responseFrom: 'discovery_service',
+      results: {
+        'vaccinationName': 'Rotavirus',
+        'comment': 'Vaccination for 18 yrs old patient',
+        'series': 'Inactivated poliovirus',
+        'vaccinationDateTime': new Date().getTime(),
+        'author': 'Dr.House',
+        'dateCreated': new Date().getTime(),
+        'source': 'openEHR_to_Pulsetile.json',
+        'sourceId': sourceId,
+        'patientId': patientId
+      }
+    };
+
+    headingService.getBySourceId.and.resolveValue(expected.results);
+
     const command = new GetHeadingDetailCommand(ctx, session);
-    await command.execute(patientId, heading, sourceId);
+    const actual = await command.execute(patientId, heading, sourceId);
 
     expect(resourceService.fetchPatients).toHaveBeenCalledWith(patientId);
     expect(resourceService.fetchPatientResources).toHaveBeenCalledWith(patientId, 'Immunization');
     expect(headingService.getBySourceId).toHaveBeenCalledWith(patientId, heading, sourceId);
+    expect(actual).toEqual(expected);
   });
 
   it('should call execute command with not valid patientId', async () => {

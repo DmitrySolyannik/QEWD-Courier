@@ -31,57 +31,98 @@
 'use strict';
 
 const { ExecutionContextMock } = require('../../mocks');
-const CacheService = require('../../../lib2/services/cacheService');
+const DemographicService = require('../../../lib2/services/demographicService');
+// const { getOrganisationRef, parseName, parseAddress } = require('../../../lib2/shared/utils');
 
 describe('ripple-cdr-discovery/lib2/services/cacheService', () => {
   let ctx;
   let nhsNumber;
-  let patientId;
 
-  let cacheService;
+  let demographicService;
+  let resourceService;
+
   let demographicCache;
+  let resourceCache;
+  let patientCache;
 
   beforeEach(() => {
     ctx = new ExecutionContextMock();
     nhsNumber = 5558526784;
-    patientId = 5558526784;
 
-    cacheService = new CacheService(ctx);
+    demographicService = new DemographicService(ctx);
+    resourceService = ctx.services.resourceService;
+
+
     demographicCache = ctx.cache.demographicCache;
+    resourceCache = ctx.cache.resourceCache;
+    patientCache = ctx.cache.patientCache;
 
     ctx.cache.freeze();
+    ctx.services.freeze();
   });
 
   describe('#create (static)', () => {
     it('should initialize a new instance', async () => {
-      const actual = CacheService.create(ctx);
+      const actual = DemographicService.create(ctx);
 
-      expect(actual).toEqual(jasmine.any(CacheService));
+      expect(actual).toEqual(jasmine.any(DemographicService));
       expect(actual.ctx).toBe(ctx);
     });
   });
 
-  it('should call getDemographics and return data', async () => {
-    const expected = {
-      id: patientId,
+  fit('should call getByPatientId and return demographics', async () => {
+    const practitioneer = {
+      practitionerRole: [
+        {
+          managingOrganisation: {
+            reference : 'practitioneerData'
+          }
+        }
+      ],
+      name: 'John Snow'
+    };
+
+    const address = {
+      address : {
+        text: 'California'
+      }
+    };
+
+    const patient = {
+      id: 5558526784,
       nhsNumber: nhsNumber,
       gender: 'female',
-      phone : '+44 58584 5475477',
-      name: 'Megan',
-      dateOfBirth: Date.now(),
+      telecom : '+44 58584 5475477',
+      name: [
+        {
+          text: 'Megan'
+        }
+      ],
+      dateOfBirth: '1991-01-01',
       gpName: 'Fox',
       gpAddress: 'California',
       address: 'London'
     };
 
-    demographicCache.byNhsNumber.get.and.resolveValue(expected);
-    const actual = await cacheService.getDemographics(nhsNumber);
-    expect(actual).toEqual(expected);
+    patientCache.byNhsNumber.getPatientUuid.and.resolveValue();
+    patientCache.byPatientUuid.get.and.resolveValue(patient);
+    patientCache.byPatientUuid.getPractitionerUuid.and.resolveValue(5558526785);
+    resourceCache.byUuid.get.and.resolveValue(practitioneer);
+
+    resourceService.getOrganisationLocation.and.resolveValue(address);
+
+    demographicCache.byNhsNumber.delete.and.resolveValue();
+    demographicCache.byNhsNumber.set.and.resolveValue();
+
+    await demographicService.getByPatientId(nhsNumber);
+
+    expect(patientCache.byNhsNumber.getPatientUuid).toHaveBeenCalled();
+    expect(patientCache.byPatientUuid.get).toHaveBeenCalled();
+    expect(patientCache.byPatientUuid.getPractitionerUuid).toHaveBeenCalled();
+    expect(resourceCache.byUuid.get).toHaveBeenCalled();
+    expect(resourceService.getOrganisationLocation).toHaveBeenCalled();
+    expect(demographicCache.byNhsNumber.delete).toHaveBeenCalled();
+    expect(demographicCache.byNhsNumber.set).toHaveBeenCalled();
   });
 
-  it('should call getDemographics and returns error', async () => {
-    ctx.cache.demographicCache = undefined;
-    const actual = await cacheService.getDemographics(nhsNumber);
-    expect(actual).toEqual(null);
-  });
 });

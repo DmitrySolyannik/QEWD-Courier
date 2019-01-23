@@ -90,7 +90,7 @@ class DemographicService {
       demographics
     };
 
-    await demographicCache.byNhsNumber.delete(nhsNumber);
+    await demographicCache.byNhsNumber.delete(nhsNumber); //@TODO Talk regarding this functionality
     await demographicCache.byNhsNumber.set(nhsNumber, resultObj);
 
     return resultObj;

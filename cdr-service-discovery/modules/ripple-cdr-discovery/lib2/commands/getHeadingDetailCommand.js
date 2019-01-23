@@ -69,7 +69,6 @@ class GetHeadingDetailCommand extends BaseCommand {
       return this.respond(false);
     }
 
-    //@TODO create new validation for sourceID
     const sourceIdValid = isSourceIdValid(sourceId);
     if (!sourceIdValid.ok) {
       return this.respond(false);

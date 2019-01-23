@@ -43,7 +43,7 @@ class DemographicCache {
   }
 
   async exists() {
-   return true;
+   return 'some-value-test';
   }
 }
 

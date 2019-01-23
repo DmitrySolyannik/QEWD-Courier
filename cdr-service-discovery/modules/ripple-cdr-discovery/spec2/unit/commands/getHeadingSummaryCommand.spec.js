@@ -60,12 +60,41 @@ describe('ripple-cdr-discovery/lib2/commands/getHeadingSummaryCommand', () => {
   });
 
   it('should call execute command with valid data', async () => {
+    const expected = {
+    responseFrom: 'discovery_service',
+    results: [{
+      'vaccinationName': 'Rotavirus',
+      'comment': 'Vaccination for 18 yrs old patient',
+      'series': 'Inactivated poliovirus',
+      'vaccinationDateTime': new Date().getTime(),
+      'author': 'Dr. House',
+      'dateCreated': new Date().getTime(),
+      'source': 'openEHR_to_Pulsetile.json',
+      'sourceId': 'eaf394a9-5e05-49c0-9c69-c710c77eda76',
+      'patientId': patientId
+    },
+      {
+        'vaccinationName': 'Varicella',
+        'comment': 'Vaccination for 20 yrs old patient',
+        'series': 'Influenza',
+        'vaccinationDateTime': new Date().getTime(),
+        'author': 'Dr. Wilson',
+        'dateCreated': new Date().getTime(),
+        'source': 'openEHR_to_Pulsetile.json',
+        'sourceId': 'eaf394a9-5e05-49c0-9c69-c710c77eda76',
+        'patientId': patientId
+      }]
+  };
+
+    headingService.getSummary.and.resolveValue(expected.results);
+
     const command = new GetHeadingSummaryCommand(ctx, session);
-    await command.execute(patientId, heading);
+    const actual = await command.execute(patientId, heading);
 
     expect(resourceService.fetchPatients).toHaveBeenCalledWith(patientId);
     expect(resourceService.fetchPatientResources).toHaveBeenCalledWith(patientId, 'Immunization');
     expect(headingService.getSummary).toHaveBeenCalledWith(patientId, heading);
+    expect(actual).toEqual(expected);
   });
 
   it('should call execute command with not valid patientId', async () => {

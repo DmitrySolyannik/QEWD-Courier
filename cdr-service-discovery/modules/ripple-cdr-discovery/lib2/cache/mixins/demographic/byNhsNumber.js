@@ -47,6 +47,12 @@ module.exports = (adapter) => {
 
       const key = ['Demographics', 'by_nhsNumber', nhsNumber];
       adapter.putObject(key, data);
+    },
+    delete: async () => {
+      logger.info('mixins/demographic/byNhsNumber|delete');
+
+      const key = ['Discovery'];
+      adapter.delete(key);
     }
   };
 };
