@@ -28,8 +28,6 @@
 
 */
 
-'use strict';
-
 var transform = require('qewd-transform-json').transform;
 var global_config = require('/opt/qewd/mapped/settings/configuration.json');
 var helpers = require('../../../helpers');
@@ -38,81 +36,58 @@ var documentsPath = '/opt/qewd/mapped/documents.json';
 
 var load = require('./loader');
 var qewd_interface = require('./qewd_interface');
-var debug = require('debug')('qewd-openid-connect:qewd-openid-connect');
 
-let documents;
+var documents;
 try {
   var documents_template = require(documentsPath);
   documents = transform(documents_template, global_config, helpers);
-  debug('documents loaded: %j', documents);
   //console.log('documents = ' + JSON.stringify(documents, null, 2));
 }
-catch(err) {
-  console.log(err)
-  debug('error during loading documents: %s', err);
-}
+catch(err) {};
 
 function start(app, bodyParser, params) {
 
   qewd_interface.call(this);
 
-  function registerAsync() {
-    return this.send_promise({
-      type: 'ewd-register',
-      application: 'qewd-openid-connect'
-    });
-  }
-
-  function loginAsync() {
-    return this.send_promise({
-      type: 'login',
-      params: {
-        password: this.userDefined.config.managementPassword
-      }
-    });
-  }
-
-  function getParamsAsync() {
-    const message = {
-      type: 'getParams'
-    };
-
-    if (documents) {
-      message.params = {
-        documents: documents,
-        documentsPath: DOCUMENTS_PATH
-      };
-    }
-
-    return this.send_promise(message);
-  }
-
-  function handleError(err) {
-    /*eslint-disable no-console*/
-    console.error(err);
-    /*eslint-enable no-console*/
-  }
+  var self = this;
 
   // start the QEWD session for database interactions
-  registerAsync.call(this).then(result => {
-    debug('ewd-register|result = %j', result);
 
-    this.openid_server.token = result.message.token;
+  this.send_promise({
+    type: 'ewd-register',
+    application: 'qewd-openid-connect'
+  })
+    .then (function(result) {
+      self.openid_server.token = result.message.token;
 
-    return loginAsync.call(this);
-  }).then(result => {
-    debug('login|result = %j', result);
+      self.send_promise({
+        type: 'login',
+        params: {
+          password: self.userDefined.config.managementPassword
+        }
+      })
+        .then (function(result) {
+  
+          // fetch or generate the keystore & config params
 
-    return getParamsAsync.call(this);
-  }).then(result => {
-    debug('getParams|result = %j', result);
+          var msg = {type: 'getParams'};
+          if (documents) msg.params = {
+            documents: documents,
+            documentsPath: documentsPath
+          };
+          self.send_promise(msg)
+            .then (function(result) {
 
-    // start up the OpenID Connect Server
-    Object.keys(result.message).forEach((name) => {
-      params[name] = result.message[name];
-    });
-    load.call(this, app, bodyParser, params);
-  }).catch(handleError);
-}
+              // start up the OpenID Connect Server
+
+              for (var name in result.message) {
+                params[name] = result.message[name];
+              }
+
+              load.call(self, app, bodyParser, params);
+          });
+      });
+  });
+};
 
 module.exports = start;

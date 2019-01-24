@@ -28,21 +28,17 @@
 
 */
 
-'use strict';
-
 const LRU = require('lru-cache');
 const epochTime = require('oidc-provider/lib/helpers/epoch_time');
 const storage = new LRU({});
-const debug = require('debug')('qewd-openid-connect:adapter');
 
 function grantKeyFor(id) {
   return `grant:${id}`;
 }
 
 function initialise_adapter(qoper8) {
-  debug('initialise adapter');
 
-  const q = qoper8;
+  var q = qoper8;
 
   class qewd_adapter {
 
@@ -55,11 +51,8 @@ function initialise_adapter(qoper8) {
     }
 
     destroy(id) {
-      debug('destroy: %s', id);
-
       const key = this.key(id);
       const grantId = storage.get(key) && storage.get(key).grantId;
-      debug('key = %s, grantId = %s', key, grantId);
 
       console.log('** destroy: id = ' + id);
       console.log('key = ' + key);
@@ -84,57 +77,40 @@ function initialise_adapter(qoper8) {
     }
 
     consume(id) {
-      debug('consume: %s', id);
-
-      const key = this.key(id);
-      debug('key = %s', key);
-      storage.get(key).consumed = epochTime();
-
+      storage.get(this.key(id)).consumed = epochTime();
       return Promise.resolve();
     }
 
     async find(id) {
-      debug('find: id = %s for name = %s', id, this.name);
-
-      let results;
-      let key;
+      console.log('***** in find with id = ' + id + '; ' + this.name);
 
       if (this.name === 'Client') {
-        results = await q.send_promise({
+
+        var results = await q.send_promise({
           type: 'getClient',
           params: {
             id: id
           }
         })
         .then (function(result) {
-          debug('result = %j', result);
           if (result.error) return {};
           delete result.message.ewd_application;
-          debug('returned message = %j', result.message);
+          console.log('*** returned ' + JSON.stringify(result.message, null, 2));
           return result.message;
         });
-
-        debug('results = %j', results);
-
+        console.log('*!*!*! results = ' + results);
         return results;
       }
       else {
-        key = this.key(id);
-        results = storage.get(key);
-        debug('key = %s, results = %j', key, results);
-
-        return Promise.resolve(results);
+        console.log('storage.get(this.key(id)) = ' + JSON.stringify(storage.get(this.key(id)), null, 2));
+        return Promise.resolve(storage.get(this.key(id)));
       }
     }
 
     upsert(id, payload, expiresIn) {
-      debug('upsert: id = %s, payload = %j,expiresIn = %d', id, payload, expiresIn);
-
       const key = this.key(id);
+
       const { grantId } = payload;
-
-      debug('key = %s, grantId = %s', key, grantId);
-
       if (grantId) {
         const grantKey = grantKeyFor(grantId);
         const grant = storage.get(grantKey);
@@ -154,8 +130,8 @@ function initialise_adapter(qoper8) {
       // noop
     }
   }
-
-  return qewd_adapter;
+  return qewd_adapter
 }
+
 
 module.exports = initialise_adapter;

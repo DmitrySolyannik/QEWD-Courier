@@ -33,7 +33,6 @@ var nodemailer = require('nodemailer');
 var randomstring = require('randomstring');
 var mustache = require('mustache');
 var fs = require('fs');
-var path = require('path');
 
 var global_config = require('/opt/qewd/mapped/settings/configuration.json');
 var nodemailer_params = global_config.email_server;
@@ -87,8 +86,8 @@ module.exports = function(messageObj, session, send, finished) {
   userDoc.$('password').value = hash;
   userDoc.$('updatedAt').value = new Date().toISOString();
   userDoc.$('modifiedBy').value = id;
-
-  var text = getTextFromFile(path.join(__dirname, '../templates/requestNewPasswordEmail.txt');
+  
+  var text = getTextFromFile(__dirname + '/../requestNewPasswordEmail.txt');
 
   var subst = {
     password: password

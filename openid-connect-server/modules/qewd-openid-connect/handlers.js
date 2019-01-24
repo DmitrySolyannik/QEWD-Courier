@@ -28,23 +28,21 @@
 
 */
 
-'use strict';
-
-const login = require('./lib/handlers/login');
-const getParams = require('./lib/handlers/getParams');
-const getClient = require('./lib/handlers/getClient');
-const getUser = require('./lib/handlers/getUser');
-const validateUser = require('./lib/handlers/validateUser');
-const confirmCode = require('./lib/handlers/confirmCode');
-const changePassword = require('./lib/handlers/changePassword');
-const requestNewPassword = require('./lib/handlers/requestNewPassword');
-const saveGrant = require('./lib/handlers/saveGrant');
-const deleteGrant = require('./lib/handlers/deleteGrant');
-const keepAlive = require('./lib/handlers/keepAlive');
+var login = require('./src/login');
+var getParams = require('./src/getParams');
+var getClient = require('./src/getClient');
+var getUser = require('./src/getUser');
+var validateUser = require('./src/validateUser');
+var confirmCode = require('./src/confirmCode');
+var changePassword = require('./src/changePassword');
+var requestNewPassword = require('./src/requestNewPassword');
+var saveGrant = require('./src/saveGrant');
+var deleteGrant = require('./src/deleteGrant');
+var keepAlive = require('./src/keepAlive');
 
 module.exports = {
 
-  beforeHandler: function (messageObj, session, send, finished) {
+  beforeHandler: function(messageObj, session, send, finished) {
     if (messageObj.type === 'login') return;
     if (!session.authenticated) {
       finished({error: 'User MUST be authenticated'});

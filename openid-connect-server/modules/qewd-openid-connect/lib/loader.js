@@ -28,44 +28,22 @@
 
 */
 
-'use strict';
-
-const path = require('path');
 const Provider = require('oidc-provider');
 const account = require('./account');
 const adapter = require('./adapter');
 const logoutSource = require('./logoutSource');
-const debug = require('debug')('qewd-openid-connect:loader');
+
+var path = require('path');
+//var util = require('util');
 
 module.exports = function(app, bodyParser, params) {
 
   console.log('OpenId Connect Server Loader starting with params:');
   console.log(JSON.stringify(params, null, 2));
 
-  const qewd_adapter = adapter(this);
-  const Account = account(this);
-  const q = this;
-
-  /* eslint-disable-next-line no-unused-vars */
-  async function postLogoutRedirectUri(ctx) {
-    debug('postLogoutRedirectUri function returning: %s', params.postLogoutRedirectUri);
-    return params.postLogoutRedirectUri;
-  }
-
-  function reqLogger(req) {
-    debug('%s %s', req.method, req.originalUrl);
-    debug('params: %j', req.params);
-    debug('query: %j', req.query);
-    debug('body: %j', req.body);
-    debug('headers: %j', req.headers);
-  }
-
-  function logger() {
-    return (req, res, next) => {
-      reqLogger(req);
-      next();
-    };
-  }
+  var qewd_adapter = adapter(this);
+  var Account = account(this);
+  var q = this;
 
   const configuration = {
     claims: params.Claims,
@@ -98,11 +76,18 @@ module.exports = function(app, bodyParser, params) {
   }
 
   if (params.postLogoutRedirectUri) {
-    debug('loading postLogoutRedirectUri: %s', params.postLogoutRedirectUri);
+
+    console.log('loading postLogoutRedirectUri: ' + params.postLogoutRedirectUri)
+
+    async function postLogoutRedirectUri(ctx) {
+      console.log('postLogoutRedirectUri function returning ' + params.postLogoutRedirectUri);
+      return params.postLogoutRedirectUri;
+    }
+
     configuration.postLogoutRedirectUri = postLogoutRedirectUri;
   }
 
-  let issuer = params.issuer.host;
+  var issuer = params.issuer.host;
   if (params.issuer.port) issuer = issuer + ':' + params.issuer.port;
   issuer = issuer + '/openid';
 
@@ -120,7 +105,7 @@ module.exports = function(app, bodyParser, params) {
     const parse = bodyParser.urlencoded({ extended: false });
 
     app.get('/openid/interaction/logout', async (req, res) => {
-      debug('logout redirection page');
+      //console.log('*** logout redirection page');
       res.render('logout');
     });
 
@@ -138,6 +123,7 @@ module.exports = function(app, bodyParser, params) {
             token: q.openid_server.token
           });
         }
+
         res.render('login', { details });
       }
       catch(err) {
@@ -151,7 +137,7 @@ module.exports = function(app, bodyParser, params) {
         oidc.interactionFinished(req, res, {
           consent: {},
         });
-      }
+      } 
       catch (err) {
         next(err);
       }
@@ -167,7 +153,7 @@ module.exports = function(app, bodyParser, params) {
 
       Account.authenticate(req.body.email, req.body.password, req.params.grant, ip).then((account) => {
         if (account.error) {
-          const details = {
+          var details = {
             params: {
               error: account.error
             },
@@ -291,7 +277,7 @@ module.exports = function(app, bodyParser, params) {
           },
           consent: {
             // TODO: remove offline_access from scopes if remember is not checked
-          }
+          },
         });
       }).catch(next);
     });
@@ -329,27 +315,21 @@ module.exports = function(app, bodyParser, params) {
 
     app.use('/openid', oidc.callback);
 
-    app.get('/healthcheck', async (req, res) => {
-      res.json({
-        ok: true,
-        timestamp: Date.now()
-      });
-    });
-
     app.use((err, req, res, next) => {
       console.log('**** Error occurred: ' + err);
       res.render('error');
     });
   });
 
-  const keepAliveTimer = setInterval(() => {
-    this.send_promise({
+  var self = this;
+  var keepAliveTimer = setInterval(function() {
+    self.send_promise({
       type: 'keepAlive'
     });
   }, 1000000);
 
   this.on('stop', function() {
-    debug('Stopping keepAliveTimer');
+    console.log('Stopping keepAliveTimer');
     clearInterval(keepAliveTimer);
   });
 
