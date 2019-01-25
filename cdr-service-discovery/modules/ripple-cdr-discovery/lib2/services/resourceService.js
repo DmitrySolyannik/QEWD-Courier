@@ -53,13 +53,15 @@ class ResourceService {
     logger.info('services/resourceService|fetchPatients', { nhsNumber });
 
     const { patientCache } = this.ctx.cache;
-    const exists = patientCache.byNhsNumber.exists(nhsNumber);
-    if (exists) return { ok: false };
+    const exists = await patientCache.byNhsNumber.exists(nhsNumber);
 
-    const { resourcesRestService, tokenService } = this.ctx.services;
+    if (exists) return { ok: false };
+    console.log('hererere');
+    const { resourceRestService, tokenService } = this.ctx.services;
     try {
       const token = await tokenService.get();
-      const data = await resourcesRestService.getPatients(nhsNumber, token);
+
+      const data = await resourceRestService.getPatients(nhsNumber, token);
       await P.each(data.entry, async (x) => {
         const patient = x.resource;
         const patientUuid = patient.id;

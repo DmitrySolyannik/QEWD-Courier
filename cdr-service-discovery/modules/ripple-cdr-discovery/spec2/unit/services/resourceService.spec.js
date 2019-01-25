@@ -31,97 +31,79 @@
 'use strict';
 
 const { ExecutionContextMock } = require('../../mocks');
-const DemographicService = require('../../../lib2/services/demographicService');
+const ResourceService = require('../../../lib2/services/resourceService');
 
-describe('ripple-cdr-discovery/lib2/services/cacheService', () => {
+describe('ripple-cdr-discovery/lib2/services/resourceService', () => {
   let ctx;
   let nhsNumber;
 
-  let demographicService;
   let resourceService;
+  let tokenService;
+  let resourceRestService;
 
-  let demographicCache;
-  let resourceCache;
   let patientCache;
+
 
   beforeEach(() => {
     ctx = new ExecutionContextMock();
     nhsNumber = 5558526784;
 
-    demographicService = new DemographicService(ctx);
-    resourceService = ctx.services.resourceService;
+    resourceService = new ResourceService(ctx);
 
-
-    demographicCache = ctx.cache.demographicCache;
-    resourceCache = ctx.cache.resourceCache;
     patientCache = ctx.cache.patientCache;
 
+    tokenService = ctx.services.tokenService;
+    resourceRestService = ctx.services.resourceRestService;
+
     ctx.cache.freeze();
-    ctx.services.freeze();
+    ctx.cache.freeze();
   });
 
   describe('#create (static)', () => {
     it('should initialize a new instance', async () => {
-      const actual = DemographicService.create(ctx);
+      const actual = ResourceService.create(ctx);
 
-      expect(actual).toEqual(jasmine.any(DemographicService));
+      expect(actual).toEqual(jasmine.any(ResourceService));
       expect(actual.ctx).toBe(ctx);
     });
   });
 
-  it('should call getByPatientId and return demographics', async () => {
-    const practitioneer = {
-      practitionerRole: [
+  it('should call fetchPatients and cache data', async () => {
+    const jwt = {
+      jwt: 'jwt-token',
+      createdAt: new Date().getTime()
+    };
+    const data = {
+      entry: [
         {
-          managingOrganisation: {
-            reference : 'practitioneerData'
+          resource: {
+            patient : {
+              id: 5558526785
+            }
+          }
+        },
+        {
+          resource: {
+            patient : {
+              id: 5558526786
+            }
+          }
+        },
+        {
+          resource: {
+            patient : {
+              id: 5558526787
+            }
           }
         }
-      ],
-      name: 'John Snow'
+      ]
     };
 
-    const address = {
-      address : {
-        text: 'California'
-      }
-    };
+    patientCache.byNhsNumber.exists.and.resolveValue(false);
+    tokenService.get.and.resolveValue(jwt);
+    resourceRestService.getPatients.and.resolveValue(data);
 
-    const patient = {
-      id: 5558526784,
-      nhsNumber: nhsNumber,
-      gender: 'female',
-      telecom : '+44 58584 5475477',
-      name: [
-        {
-          text: 'Megan'
-        }
-      ],
-      dateOfBirth: '1991-01-01',
-      gpName: 'Fox',
-      gpAddress: 'California',
-      address: 'London'
-    };
-
-    patientCache.byNhsNumber.getPatientUuid.and.resolveValue();
-    patientCache.byPatientUuid.get.and.resolveValue(patient);
-    patientCache.byPatientUuid.getPractitionerUuid.and.resolveValue(5558526785);
-    resourceCache.byUuid.get.and.resolveValue(practitioneer);
-
-    resourceService.getOrganisationLocation.and.resolveValue(address);
-
-    demographicCache.byNhsNumber.delete.and.resolveValue();
-    demographicCache.byNhsNumber.set.and.resolveValue();
-
-    await demographicService.getByPatientId(nhsNumber);
-
-    expect(patientCache.byNhsNumber.getPatientUuid).toHaveBeenCalled();
-    expect(patientCache.byPatientUuid.get).toHaveBeenCalled();
-    expect(patientCache.byPatientUuid.getPractitionerUuid).toHaveBeenCalled();
-    expect(resourceCache.byUuid.get).toHaveBeenCalled();
-    expect(resourceService.getOrganisationLocation).toHaveBeenCalled();
-    expect(demographicCache.byNhsNumber.delete).toHaveBeenCalled();
-    expect(demographicCache.byNhsNumber.set).toHaveBeenCalled();
+    await resourceService.fetchPatients(nhsNumber);
   });
 
 });

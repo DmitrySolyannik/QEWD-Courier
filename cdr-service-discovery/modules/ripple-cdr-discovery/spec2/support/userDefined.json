@@ -26,11 +26,11 @@
   "transformations": {
     "pulsetile": {
       "source": "openehr",
-      "destinaton": "pulsetile"
+      "destination": "pulsetile"
     },
     "defaults": {
       "source": "discovery",
-      "destinaton": "openehr"
+      "destination": "openehr"
     }
   }
 }

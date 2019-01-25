@@ -75,6 +75,7 @@ describe('ripple-cdr-discovery/lib2/services/patientService', () => {
     bundleCache = ctx.cache.bundleCache;
 
     ctx.cache.freeze();
+    ctx.cache.freeze();
   });
 
   describe('#create (static)', () => {

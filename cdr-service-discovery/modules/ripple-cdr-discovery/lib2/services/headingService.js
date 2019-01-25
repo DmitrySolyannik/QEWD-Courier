@@ -31,7 +31,7 @@
 'use strict';
 
 const P = require('bluebird');
-const { transform } = require('qewd-transform-json').transform;
+const transform = require('qewd-transform-json').transform;
 const { logger } = require('../core');
 const { ResourceFormat } = require('../shared/enums');
 const { getHeadingTemplate, headingHelpers } = require('../shared/headings');
@@ -65,7 +65,7 @@ class HeadingService {
     const { resourceCache } = this.ctx.cache;
     const { resourceService } = this.ctx.services;
 
-    const resource = await resourceCache.get(resourceName, uuid);
+    const resource = await resourceCache.byUuid.get(resourceName, uuid);
     const practitioner = await resourceService.getPractitioner(resourceName, uuid);
     resource.nhsNumber = nhsNumber;
     resource.practitionerName = practitioner
