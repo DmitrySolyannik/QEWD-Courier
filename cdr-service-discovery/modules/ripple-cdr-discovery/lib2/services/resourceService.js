@@ -63,17 +63,19 @@ class ResourceService {
       const data = await resourceRestService.getPatients(nhsNumber, token);
       debug('data: %j', data);
 
-      await P.each(data.entry, async (x) => {
-        const patient = x.resource;
-        const patientUuid = patient.id;
+      if (data && data.entry.length) {
+        await P.each(data.entry, async (x) => {
+          const patient = x.resource;
+          const patientUuid = patient.id;
 
-        const exists = await patientCache.byPatientUuid.exists(patientUuid);
-        if (exists) return;
+          const exists = await patientCache.byPatientUuid.exists(patientUuid);
+          if (exists) return;
 
-        await patientCache.byPatientUuid.set(patientUuid, patient);
-        await patientCache.byPatientUuid.setNhsNumber(patientUuid, nhsNumber);
-        await patientCache.byNhsNumber.setPatientUuid(nhsNumber, patientUuid);
-      });
+          await patientCache.byPatientUuid.set(patientUuid, patient);
+          await patientCache.byPatientUuid.setNhsNumber(patientUuid, nhsNumber);
+          await patientCache.byNhsNumber.setPatientUuid(nhsNumber, patientUuid);
+        });
+      }
     } catch (err) {
       throw err;
     }
