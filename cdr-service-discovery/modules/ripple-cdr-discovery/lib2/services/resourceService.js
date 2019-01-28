@@ -63,7 +63,7 @@ class ResourceService {
       const data = await resourceRestService.getPatients(nhsNumber, token);
       debug('data: %j', data);
 
-      if (data && data.entry.length) {
+      if (data && data.entry) {
         await P.each(data.entry, async (x) => {
           const patient = x.resource;
           const patientUuid = patient.id;
