@@ -56,19 +56,9 @@ describe('ripple-cdr-discovery/lib2/services/resourceService', () => {
     resourceRestService = ctx.services.resourceRestService;
 
     ctx.cache.freeze();
-    ctx.cache.freeze();
   });
 
-  describe('#create (static)', () => {
-    it('should initialize a new instance', async () => {
-      const actual = ResourceService.create(ctx);
-
-      expect(actual).toEqual(jasmine.any(ResourceService));
-      expect(actual.ctx).toBe(ctx);
-    });
-  });
-
-  it('should call fetchPatients and cache data', async () => {
+  function seeds() {
     const jwt = {
       jwt: 'jwt-token',
       createdAt: new Date().getTime()
@@ -99,11 +89,64 @@ describe('ripple-cdr-discovery/lib2/services/resourceService', () => {
       ]
     };
 
+    return { jwt, data };
+  }
+
+  describe('#create (static)', () => {
+    it('should initialize a new instance', async () => {
+      const actual = ResourceService.create(ctx);
+
+      expect(actual).toEqual(jasmine.any(ResourceService));
+      expect(actual.ctx).toBe(ctx);
+    });
+  });
+
+  it('should call fetchPatients and cache data', async () => {
+    const { jwt , data } = seeds();
+
     patientCache.byNhsNumber.exists.and.resolveValue(false);
     tokenService.get.and.resolveValue(jwt);
     resourceRestService.getPatients.and.resolveValue(data);
+    patientCache.byPatientUuid.exists.and.resolveValue(false);
+    patientCache.byPatientUuid.set.and.resolveValue();
+    patientCache.byPatientUuid.setNhsNumber.and.resolveValue();
+    patientCache.byNhsNumber.setPatientUuid.and.resolveValue();
 
     await resourceService.fetchPatients(nhsNumber);
+
+    expect(patientCache.byNhsNumber.exists).toHaveBeenCalled();
+    expect(tokenService.get).toHaveBeenCalled();
+    expect(resourceRestService.getPatients).toHaveBeenCalled();
+    expect(patientCache.byPatientUuid.set).toHaveBeenCalled();
+    expect(patientCache.byPatientUuid.setNhsNumber).toHaveBeenCalled();
+    expect(patientCache.byNhsNumber.setPatientUuid).toHaveBeenCalled();
+  });
+
+  it('should call fetchPatients with existing patient cache', async () => {
+    patientCache.byNhsNumber.exists.and.resolveValue(true);
+
+    const actual = await resourceService.fetchPatients(nhsNumber);
+
+    expect(patientCache.byNhsNumber.exists).toHaveBeenCalled();
+    expect(actual).toEqual({
+      ok: false
+    });
+  });
+
+  it('should call fetchPatients with existing cache by patient uuid', async() => {
+    const { jwt , data } = seeds();
+    patientCache.byNhsNumber.exists.and.resolveValue(false);
+    tokenService.get.and.resolveValue(jwt);
+    resourceRestService.getPatients.and.resolveValue(data);
+    patientCache.byPatientUuid.exists.and.resolveValue(true);
+
+    await resourceService.fetchPatients(nhsNumber);
+
+    expect(patientCache.byNhsNumber.exists).toHaveBeenCalled();
+    expect(tokenService.get).toHaveBeenCalled();
+    expect(resourceRestService.getPatients).toHaveBeenCalled();
+    expect(patientCache.byPatientUuid.exists).toHaveBeenCalled();
+
   });
 
 });

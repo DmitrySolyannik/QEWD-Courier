@@ -87,17 +87,15 @@ function onStarted() {
     console.log('Stopping dumpDocumentsTimer');
     clearInterval(self.dumpDocumentsTimer);
   });
-
+ 
   */
 
 }
 
 var userDefined_template = require('./userDefined-openid.json');
 var userDefined = transform(userDefined_template, global_config, helpers);
-if (process.env.NODE_ENV === 'test') {
-  userDefined = require('./spec/support/userDefined-openid.json');
-}
 console.log('userDefined = ' + JSON.stringify(userDefined, null, 2));
+
 
 module.exports = {
   config: config,

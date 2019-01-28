@@ -95,4 +95,39 @@ describe('ripple-cdr-discovery/lib2/services/tokenService', () => {
     const actual = tokenService.get();
     await expectAsync(actual).toBeRejectedWith(new BadRequestError('Cannot read property \'access_token\' of undefined'));
   });
+
+  it('should call authenticate with already valid token and date', async () => {
+    const expected = {
+      createdAt: Date.now() - 51000,
+      jwt: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.'
+      + 'eyJpc3MiOiJ0b3B0YWwuY29tIiwiZXhwIjoxNDI2NDIwODAwLCJodHRwOi8vdG9wdGFsLmNvbS9qd3RfY2xhaW1zL2lzX2FkbWluIjp0cnVlLCJjb21wYW55IjoiVG9wdGFsIiwiYXdlc29tZSI6dHJ1ZX0.'
+      + 'yRQYnWzskCZUxPwaQupWkiUzKELZ49eM7oWxAQK_ZXw'
+    };
+
+    tokenCache.get.and.resolveValue(expected);
+    authRestService.authenticate.and.resolveValue(expected);
+    const actual = await tokenService.get();
+    expect(actual).toEqual(expected.jwt);
+  });
+
+  it('should call authenticate with already valid token', async () => {
+    const jwt = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.'
+      + 'eyJpc3MiOiJ0b3B0YWwuY29tIiwiZXhwIjoxNDI2NDIwODAwLCJodHRwOi8vdG9wdGFsLmNvbS9qd3RfY2xhaW1zL2lzX2FkbWluIjp0cnVlLCJjb21wYW55IjoiVG9wdGFsIiwiYXdlc29tZSI6dHJ1ZX0.'
+      + 'yRQYnWzskCZUxPwaQupWkiUzKELZ49eM7oWxAQK_ZXw';
+
+    const expectedToken = {
+      createdAt: 5500,
+      jwt: jwt
+    };
+
+    const expected = {
+      createdAt: 5500,
+      access_token: jwt
+    };
+
+    tokenCache.get.and.resolveValue(expectedToken);
+    authRestService.authenticate.and.resolveValue(expected);
+    const actual = await tokenService.get();
+    expect(actual).toEqual(jwt);
+  });
 });

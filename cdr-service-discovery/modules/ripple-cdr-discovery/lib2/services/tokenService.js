@@ -55,6 +55,7 @@ class TokenService {
     const now = Date.now();
 
     const token = await tokenCache.get();
+
     if (token) {
       if ((now - token.createdAt) < config.auth.tokenTimeout) {
         return token.jwt;

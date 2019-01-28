@@ -124,4 +124,60 @@ describe('ripple-cdr-discovery/lib2/services/cacheService', () => {
     expect(demographicCache.byNhsNumber.set).toHaveBeenCalled();
   });
 
+  it('should call getByPatientId with array of patient data', async () => {
+    const practitioneer = {
+      practitionerRole: [
+        {
+          managingOrganisation: {
+            reference : 'practitioneerData'
+          }
+        }
+      ],
+      name: 'John Snow'
+    };
+
+    const address = {
+      address : {
+        text: null
+      }
+    };
+
+    const patient = {
+      id: 5558526784,
+      nhsNumber: nhsNumber,
+      gender: ['M', 'ale'],
+      telecom : [{
+        value: '+44 58584 5475477'
+      }],
+      name: [
+        {
+          text: 'Megan'
+        }
+      ],
+      dateOfBirth: '1991-01-01',
+      gpName: 'Fox',
+      address: 'London'
+    };
+
+    patientCache.byNhsNumber.getPatientUuid.and.resolveValue();
+    patientCache.byPatientUuid.get.and.resolveValue(patient);
+    patientCache.byPatientUuid.getPractitionerUuid.and.resolveValue(5558526785);
+    resourceCache.byUuid.get.and.resolveValue(practitioneer);
+
+    resourceService.getOrganisationLocation.and.resolveValue(address);
+
+    demographicCache.byNhsNumber.delete.and.resolveValue();
+    demographicCache.byNhsNumber.set.and.resolveValue();
+
+    await demographicService.getByPatientId(nhsNumber);
+
+    expect(patientCache.byNhsNumber.getPatientUuid).toHaveBeenCalled();
+    expect(patientCache.byPatientUuid.get).toHaveBeenCalled();
+    expect(patientCache.byPatientUuid.getPractitionerUuid).toHaveBeenCalled();
+    expect(resourceCache.byUuid.get).toHaveBeenCalled();
+    expect(resourceService.getOrganisationLocation).toHaveBeenCalled();
+    expect(demographicCache.byNhsNumber.delete).toHaveBeenCalled();
+    expect(demographicCache.byNhsNumber.set).toHaveBeenCalled();
+  });
+
 });
