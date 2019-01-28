@@ -56,12 +56,13 @@ class ResourceService {
     const exists = await patientCache.byNhsNumber.exists(nhsNumber);
 
     if (exists) return { ok: false };
-    console.log('hererere');
     const { resourceRestService, tokenService } = this.ctx.services;
     try {
       const token = await tokenService.get();
 
       const data = await resourceRestService.getPatients(nhsNumber, token);
+      debug('data: %j', data);
+
       await P.each(data.entry, async (x) => {
         const patient = x.resource;
         const patientUuid = patient.id;
@@ -139,6 +140,8 @@ class ResourceService {
     // - the practitioner is already cached; or
     // - the practioner is already in the process of being fetched in an earlier iteration
     const { resource } = await this.fetchResource(reference);
+
+    debug('resource: %j', resource);
     if (!resource) return;
 
     // ensure organisation records for practioner are also fetched and cached
