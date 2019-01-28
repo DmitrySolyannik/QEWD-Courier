@@ -59,6 +59,7 @@ class ResourceService {
     const { resourceRestService, tokenService } = this.ctx.services;
     try {
       const token = await tokenService.get();
+      debug('token: %j', token);
 
       const data = await resourceRestService.getPatients(nhsNumber, token);
       debug('data: %j', data);
