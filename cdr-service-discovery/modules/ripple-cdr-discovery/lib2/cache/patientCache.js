@@ -39,7 +39,7 @@ class PatientCache {
     this.adapter = adapter;
     this.byNhsNumber = byNhsNumber(adapter);
     this.byPatientUuid = byPatientUuid(adapter);
-    this.byPatientUuid = byResource(adapter);
+    this.byResource = byResource(adapter);
   }
 
   static create(adapter) {
