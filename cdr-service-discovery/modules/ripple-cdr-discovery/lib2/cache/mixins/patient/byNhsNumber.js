@@ -70,6 +70,12 @@ module.exports = (adapter, ) => {
       const key = ['Discovery', ResourceName.PATIENT, 'by_nhsNumber', nhsNumber, 'Patient', patientUuid];
 
       adapter.put(key, patientUuid);
+    },
+    setResourceUuid: async (nhsNumber, resourceName, uuid) => {
+      logger.info('mixins/patient|byResource|setResourceUuid', { nhsNumber, resourceName, uuid });
+
+      const key = ['Discovery', 'Patient','by_nhsNumber', nhsNumber, 'resources', resourceName, uuid];
+      adapter.put(key, uuid);
     }
   };
 };

@@ -31,7 +31,6 @@
 'use strict';
 
 const CacheRegistry = require('./cache');
-const DbRegistry = require('./db');
 const ServiceRegistry = require('./services');
 
 class ExecutionContext {
@@ -41,7 +40,6 @@ class ExecutionContext {
     this.qewdSession = qewdSession || q.qewdSessionByJWT.call(q, req);
 
     this.cache = CacheRegistry.create(this);
-    this.db = DbRegistry.create(this);
     this.services = ServiceRegistry.create(this);
   }
 

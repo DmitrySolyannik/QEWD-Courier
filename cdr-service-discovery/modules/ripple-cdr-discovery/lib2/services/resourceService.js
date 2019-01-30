@@ -92,11 +92,11 @@ class ResourceService {
     logger.info('services/resourceService|fetchPatientResources', { nhsNumber, resourceName });
 
     const { patientCache } = this.ctx.cache;
-    const exists = patientCache.byResource.exists(nhsNumber, resourceName);
+    const exists = await patientCache.byResource.exists(nhsNumber, resourceName);
     if (exists) return false;
 
     const { resourceCache, fetchCache } = this.ctx.cache;
-    const { resourcesRestService, patientService, tokenService } = this.ctx.services;
+    const { resourceRestService, patientService, tokenService } = this.ctx.services;
     const patientBundle = await patientService.getPatientBundle(nhsNumber);
     const data = {
       resource: [resourceName],
@@ -104,7 +104,7 @@ class ResourceService {
     };
     const token = await tokenService.get();
 
-    const response = await resourcesRestService.getPatientResources(data, token);
+    const response = await resourceRestService.getPatientResources(data, token);
     debug('response: %j', response);
     if (!response.entry) return false;
 
@@ -147,7 +147,9 @@ class ResourceService {
     debug('resource: %j', resource);
     if (!resource) return;
 
-    // ensure organisation records for practioner are also fetched and cached
+    // console.log('resource.practitionerRole =====', resource.practitionerRole);
+
+    // ensure organisation records for practitioner are also fetched and cached
     await P.each(resource.practitionerRole, async (role) => {
       const organisationRef = role.managingOrganisation.reference;
       const { resource } = await this.fetchResource(organisationRef);
@@ -194,7 +196,7 @@ class ResourceService {
     const organisationUuid = parseRef(reference).uuid;
     if (!organisationUuid) return null;
 
-    const organisation = await resourceCache.byUuid(ResourceName.ORGANIZATION, organisationUuid);
+    const organisation = await resourceCache.byUuid.get(ResourceName.ORGANIZATION, organisationUuid);
     debug('organisation: %j', organisation);
     if (!organisation || !organisation.extension) return null;
 
@@ -214,10 +216,10 @@ class ResourceService {
     const practitionerUuid = await resourceCache.byUuid.getPractitionerUuid(resourceName, uuid);
     if (!practitionerUuid) return null;
 
-    const practioner = await resourceCache.byUuid.get(ResourceName.PRACTITIONER, practitionerUuid);
-    debug('practioner: %j', practioner);
+    const practitioner = await resourceCache.byUuid.get(ResourceName.PRACTITIONER, practitionerUuid);
+    debug('practioner: %j', practitioner);
 
-    return practioner;
+    return practitioner;
   }
 }
 

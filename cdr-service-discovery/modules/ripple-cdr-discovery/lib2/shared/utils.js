@@ -37,7 +37,7 @@ function getLocationRef(resource) {
 
   return resource.extension
   .filter(x => x.valueReference)
-  .find(x => x.valueReference.reference);
+  .find(x => x.valueReference.reference).valueReference.reference;
 }
 
 function getPractitionerRef(resource) {
@@ -69,6 +69,8 @@ function getPractitionerRef(resource) {
   if (resource.performer) {
     return resource.performer.reference;
   }
+
+  return null;
 
   // debug('bad resource: %j', resource)
 }
