@@ -49,13 +49,6 @@ class FetchCache {
     return this.adapter.exists(key);
   }
 
-  async set(reference) {
-    logger.info('cache/fetchCache|set', { reference });
-
-    const key = ['fetchingResource', reference];
-
-    return this.adapter.set(key, true);
-  }
 
   async deleteAll() {
     logger.info('cache/fetchCache|deleteAll');

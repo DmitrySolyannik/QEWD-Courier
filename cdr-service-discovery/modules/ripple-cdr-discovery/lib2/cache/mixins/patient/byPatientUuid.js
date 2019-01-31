@@ -47,14 +47,15 @@ module.exports = (adapter) => {
       logger.info('mixins/patient|byPatientUuid|exists', { patientUuid, patient });
 
       const key = ['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid];
-      adapter.setObject(key, patient);
+      adapter.putObject(key, patient);
     },
 
     get: async(patientUuid) => {
       logger.info('mixins/patient|byPatientUuid|get', { patientUuid });
 
       const key = ['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid];
-      adapter.getObject(key);
+
+      return adapter.getObject(key);
     },
 
     setNhsNumber: async (patientUuid, nhsNumber) => {
@@ -83,7 +84,7 @@ module.exports = (adapter) => {
       logger.info('mixins/patient|byPatientUuid|getByPatientUuids', { patientUuids });
 
       return patientUuids.map(
-        (patientUuid) => this.get(patientUuid)
+        (patientUuid) => adapter.getObject(['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid])
       );
     }
   };

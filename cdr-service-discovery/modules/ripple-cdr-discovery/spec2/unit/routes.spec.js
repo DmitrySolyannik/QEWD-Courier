@@ -3,7 +3,7 @@
  ----------------------------------------------------------------------------
  | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
  |                                                                          |
- | Copyright (c) 2018-19 Ripple Foundation Community Interest Company       |
+ | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,72 +24,53 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  25 January 2019
+  22 December 2018
 
 */
 
 'use strict';
 
-const { lazyLoadAdapter } = require('../../lib2/shared/utils');
+const { flatten } = require('../../lib2/shared/utils');
 
-function getMethods(id, dir) {
-  const Target = require(`../../lib2/${dir}/${id}`);
+describe('ripple-cdr-openehr/lib/routes', () => {
+  let routes;
 
-  return Reflect
-    .ownKeys(Target.prototype)
-    .filter(x => x !== 'constructor');
-}
-
-function getMixins(id, dir) {
-  try {
-    const name = id.split(/(?=[A-Z])/g)[0];
-    const mixins = require(`../../lib2/${dir}/mixins/${name}`);
-
-    return mixins;
-  } catch (err) {
-    return {};
-  }
-}
-
-function createSpyObj(baseName, methodNames) {
-  // methodNames must contain at least one method defined
-  // otherwise target be undefined
-  if (methodNames.length === 0) {
-    methodNames.push(Date.now().toString());
+  function resolveHandler(url, method) {
+    return routes[url][method.toUpperCase()];
   }
 
-  return jasmine.createSpyObj(baseName, methodNames);
-}
+  beforeAll(() => {
+    delete require.cache[require.resolve('../../lib2/routes')];
+    routes = require('../../lib2/routes');
+  });
 
-class CacheRegistryMock {
-  constructor() {
-    this.freezed = false;
-  }
+  it('should return correct routes count', () => {
+    const expected = 4;
+    const actual = Object.keys(flatten(routes)).length;
+    expect(actual).toBe(expected);
+  });
 
-  initialise(id) {
-    if (this.freezed) return;
+  it('GET /api/patients/:patientId/:heading', () => {
+    const expected = require('../../lib2/handlers/getHeadingSummary');
+    const actual = resolveHandler('/api/patients/:patientId/:heading', 'GET');
+    expect(actual).toBe(expected);
+  });
 
-    const methods = getMethods(id, 'cache');
-    const spyObj = createSpyObj(id, methods);
+  it('GET /api/discovery/:patientId/:heading', () => {
+    const expected = require('../../lib2/handlers/getHeadingSummary');
+    const actual = resolveHandler('/api/discovery/:patientId/:heading', 'GET');
+    expect(actual).toBe(expected);
+  });
 
-    const mixins = getMixins(id, 'cache');
-    Object.keys(mixins).forEach(key => {
-      const mixin = mixins[key]();
-      const mixinMethods = Reflect.ownKeys(mixin);
+  it('GET /api/patients/:patientId/:heading/:sourceId', () => {
+    const expected = require('../../lib2/handlers/getHeadingDetail');
+    const actual = resolveHandler('/api/patients/:patientId/:heading/:sourceId', 'GET');
+    expect(actual).toBe(expected);
+  });
 
-      spyObj[key] = createSpyObj(key, mixinMethods);
-    });
-
-    return spyObj;
-  }
-
-  freeze() {
-    this.freezed = true;
-  }
-
-  static create() {
-    return lazyLoadAdapter(new CacheRegistryMock());
-  }
-}
-
-module.exports = CacheRegistryMock;
+  it('GET /api/demographics/:patientId', () => {
+    const expected = require('../../lib2/handlers/getDemographics');
+    const actual = resolveHandler('/api/demographics/:patientId', 'GET');
+    expect(actual).toBe(expected);
+  });
+});

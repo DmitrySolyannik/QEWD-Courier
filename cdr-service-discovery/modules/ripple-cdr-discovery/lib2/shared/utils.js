@@ -31,6 +31,41 @@
 'use strict';
 
 const { ResourceName } = require('./enums');
+const traverse = require('traverse');
+const { isNumeric } = require('./validation');
+
+function flatten(obj) {
+  const flatObj = {};
+
+  traverse(obj).map(function (node) {
+    if (this.isLeaf) {
+      let flatPath = '';
+      let slash = '';
+      let colon = '';
+
+      const lastPathIndex = this.path.length - 1;
+      const pathArr = this.path;
+
+      pathArr.forEach(function (path, index) {
+        if (isNumeric(path)) {
+          flatPath = flatPath + colon + path;
+        } else {
+          if (index === lastPathIndex && path[0] === '|' && isNumeric(pathArr[index -1])) {
+            slash = '';
+          }
+          flatPath = flatPath + slash + path;
+        }
+
+        slash = '/';
+        colon = ':';
+      });
+
+      flatObj[flatPath] = node;
+    }
+  });
+
+  return flatObj;
+}
 
 function getLocationRef(resource) {
   if (!resource.extension) return null;
@@ -189,5 +224,6 @@ module.exports = {
   getOrganisationRef,
   getLocationRef,
   parseName,
-  parseAddress
+  parseAddress,
+  flatten
 };

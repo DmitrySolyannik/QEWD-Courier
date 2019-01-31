@@ -42,9 +42,6 @@ class ResourceCache {
     return new ResourceCache(adapter);
   }
 
-  async exists() {
-    return 'some-value-test';
-  }
 }
 
 module.exports = ResourceCache;

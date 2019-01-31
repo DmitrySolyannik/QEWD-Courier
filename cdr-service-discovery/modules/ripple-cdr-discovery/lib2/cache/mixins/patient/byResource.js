@@ -62,6 +62,8 @@ module.exports = (adapter) => {
       adapter.qewdSession.data.$(key).forEachChild((uuid) => {
         uuids.push(uuid);
       });
+
+      return uuids;
     }
   };
 };
