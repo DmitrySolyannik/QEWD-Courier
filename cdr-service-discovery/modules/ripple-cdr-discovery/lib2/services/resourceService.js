@@ -34,7 +34,7 @@ const P = require('bluebird');
 const { logger } = require('../core');
 const { ResourceName } = require('../shared/enums');
 const { getLocationRef, getPractitionerRef, parseRef, getPatientUuid } = require('../shared/utils');
-const debug = require('debug')('ripple-cdr-discovery:services:resource');
+const debug = require('debug');
 
 class ResourceService {
   constructor(ctx) {
@@ -51,6 +51,7 @@ class ResourceService {
    */
   async fetchPatients(nhsNumber) {
     logger.info('services/resourceService|fetchPatients', { nhsNumber });
+    debug.enable('ripple-cdr-discovery:services:resource');
 
     const { patientCache } = this.ctx.cache;
     const exists = await patientCache.byNhsNumber.exists(nhsNumber);
