@@ -51,18 +51,22 @@ class ResourceService {
    */
   async fetchPatients(nhsNumber) {
     logger.info('services/resourceService|fetchPatients', { nhsNumber });
-    debug.enable('ripple-cdr-discovery:services:resource');
 
     const { patientCache } = this.ctx.cache;
     const exists = await patientCache.byNhsNumber.exists(nhsNumber);
+    logger.info('fetchPatients | exists', { exists });
 
     // if (exists) return { ok: false }; //@TODO Debugging , remove after
     const { resourceRestService, tokenService } = this.ctx.services;
     try {
       const token = await tokenService.get();
+      logger.info('fetchPatients | token', { token });
+
       debug('token: %j', token);
 
       const data = await resourceRestService.getPatients(nhsNumber, token);
+      logger.info('fetchPatients | getPatients', { data });
+
       debug('data: %j', data);
 
       if (!data || !data.entry) return false;
