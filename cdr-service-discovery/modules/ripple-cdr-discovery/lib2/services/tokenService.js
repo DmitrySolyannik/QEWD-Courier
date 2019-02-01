@@ -56,6 +56,8 @@ class TokenService {
 
     const token = await tokenCache.get();
 
+    logger.info('/tokenService1|get', { token });
+
     if (token) {
       if ((now - token.createdAt) < config.auth.tokenTimeout) {
         return token.jwt;
@@ -66,6 +68,8 @@ class TokenService {
 
     try {
       const data = await authRestService.authenticate();
+
+      logger.info('/tokenService1|data', { data });
 
       debug('data: %j', data);
 
