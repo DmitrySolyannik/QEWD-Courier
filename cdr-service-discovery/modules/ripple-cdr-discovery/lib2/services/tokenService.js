@@ -58,7 +58,7 @@ class TokenService {
 
     logger.info('/tokenService1|get', { token });
 
-    if (token) {
+    if (token && token.jwt) {
       if ((now - token.createdAt) < config.auth.tokenTimeout) {
         return token.jwt;
       }
