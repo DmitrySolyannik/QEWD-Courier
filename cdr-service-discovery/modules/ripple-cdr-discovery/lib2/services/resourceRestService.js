@@ -71,6 +71,8 @@ class ResourceRestService {
       json: true
     };
 
+    logger.info('options get patients', { options });
+
     return requestAsync(options);
   }
 
