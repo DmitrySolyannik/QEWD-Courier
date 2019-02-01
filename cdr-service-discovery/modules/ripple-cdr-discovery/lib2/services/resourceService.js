@@ -55,7 +55,7 @@ class ResourceService {
     const { patientCache } = this.ctx.cache;
     const exists = await patientCache.byNhsNumber.exists(nhsNumber);
 
-    if (exists) return { ok: false };
+    // if (exists) return { ok: false }; //@TODO Debugging , remove after
     const { resourceRestService, tokenService } = this.ctx.services;
     try {
       const token = await tokenService.get();
@@ -64,19 +64,19 @@ class ResourceService {
       const data = await resourceRestService.getPatients(nhsNumber, token);
       debug('data: %j', data);
 
-      if (data && data.entry) {
-        await P.each(data.entry, async (x) => {
-          const patient = x.resource;
-          const patientUuid = patient.id;
+      if (!data || !data.entry) return false;
 
-          const exists = await patientCache.byPatientUuid.exists(patientUuid);
-          if (exists) return;
+      await P.each(data.entry, async (x) => {
+        const patient = x.resource;
+        const patientUuid = patient.id;
 
-          await patientCache.byPatientUuid.set(patientUuid, patient);
-          await patientCache.byPatientUuid.setNhsNumber(patientUuid, nhsNumber);
-          await patientCache.byNhsNumber.setPatientUuid(nhsNumber, patientUuid);
-        });
-      }
+        const exists = await patientCache.byPatientUuid.exists(patientUuid);
+        if (exists) return;
+
+        await patientCache.byPatientUuid.set(patientUuid, patient);
+        await patientCache.byPatientUuid.setNhsNumber(patientUuid, nhsNumber);
+        await patientCache.byNhsNumber.setPatientUuid(nhsNumber, patientUuid);
+      });
     } catch (err) {
       throw err;
     }
