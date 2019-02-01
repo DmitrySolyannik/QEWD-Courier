@@ -31,6 +31,7 @@
 'use strict';
 
 const request = require('request');
+const { logger } = require('../core');
 const debug = require('debug')('ripple-cdr-discovery:services:resource-rest');
 
 function requestAsync(options) {
@@ -67,6 +68,7 @@ class AuthRestService {
       },
       json: true
     };
+    logger.info('/authRestService/options', { options });
 
     return requestAsync(options);
   }
