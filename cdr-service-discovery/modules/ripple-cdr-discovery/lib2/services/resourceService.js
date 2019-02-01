@@ -106,7 +106,7 @@ class ResourceService {
 
     const response = await resourceRestService.getPatientResources(data, token);
     debug('response: %j', response);
-    if (!response.entry) return false;
+    if (!response || !response.entry) return false;
 
     if (resourceName === ResourceName.PATIENT) {
       await patientService.updateBundle();
