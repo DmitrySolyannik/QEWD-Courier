@@ -66,9 +66,8 @@ class ResourceRestService {
         Authorization: `Bearer ${token}`
       },
       qs: {
-        nhsNumber: patientId
-      },
-      json: true
+        nhsNumber: 5558526785
+      }
     };
 
     logger.info('options get patients', { options });
@@ -88,10 +87,9 @@ class ResourceRestService {
       headers: {
         Authorization: `Bearer ${token}`
       },
-      body: data,
-      json: true
+      body: JSON.stringify(data)
     };
-
+    console.log('** getPatientResources: ' + JSON.stringify(options, null, 2));
     return requestAsync(options);
   }
 

@@ -64,7 +64,8 @@ class ResourceService {
 
       debug('token: %j', token);
 
-      const data = await resourceRestService.getPatients(nhsNumber, token);
+      let data = await resourceRestService.getPatients(nhsNumber, token);
+      data = JSON.parse(data);
       logger.info('fetchPatients | getPatients', { data });
 
       debug('data: %j', data);
@@ -79,7 +80,7 @@ class ResourceService {
         if (exists) return;
 
         await patientCache.byPatientUuid.set(patientUuid, patient);
-        await patientCache.byPatientUuid.setNhsNumber(patientUuid, nhsNumber);
+        await patientCache.byPatientUuid.setNhsNumber(patientUuid, nhsNumber); //@TODO check
         await patientCache.byNhsNumber.setPatientUuid(nhsNumber, patientUuid);
       });
     } catch (err) {
@@ -104,7 +105,7 @@ class ResourceService {
     const { resourceRestService, patientService, tokenService } = this.ctx.services;
     const patientBundle = await patientService.getPatientBundle(nhsNumber);
     const data = {
-      resource: [resourceName],
+      resources: [resourceName],
       patients: patientBundle
     };
     const token = await tokenService.get();

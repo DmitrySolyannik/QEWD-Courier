@@ -82,10 +82,15 @@ module.exports = (adapter) => {
 
     getByPatientUuids: async (patientUuids) => {
       logger.info('mixins/patient|byPatientUuid|getByPatientUuids', { patientUuids });
-
-      return patientUuids.map(
-        (patientUuid) => adapter.getObject(['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid])
+      const uuids = patientUuids.map(
+        (patientUuid) => {
+          return {
+            resource: adapter.getObject(['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid])
+          }
+        }
       );
+
+     return uuids;
     }
   };
 };
