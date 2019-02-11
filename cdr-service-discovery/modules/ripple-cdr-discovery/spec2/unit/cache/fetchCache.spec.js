@@ -56,8 +56,12 @@ describe('ripple-cdr-discovery/lib/cache/fetchCache', () => {
     ctx.cache.freeze();
   });
 
+  afterEach(() => {
+    ctx.worker.db.reset();
+  });
+
   describe('#create (static)', () => {
-    it('should initialize a new instance', async () => {
+    it('should initialize a new instance', () => {
       const actual = FetchCache.create(ctx.adapter);
 
       expect(actual).toEqual(jasmine.any(FetchCache));
@@ -66,29 +70,29 @@ describe('ripple-cdr-discovery/lib/cache/fetchCache', () => {
   });
 
   describe('#exists', () => {
-    it('should return false', async () => {
+    it('should return false', () => {
       const expected = false;
 
-      const actual = await fetchCache.exists(reference);
+      const actual = fetchCache.exists(reference);
 
       expect(actual).toEqual(expected);
     });
 
-    it('should return true when fetch cache for reference exists', async () => {
+    it('should return true when fetch cache for reference exists', () => {
       const expected = true;
 
       seeds();
-      const actual = await fetchCache.exists(reference);
+      const actual = fetchCache.exists(reference);
 
       expect(actual).toEqual(expected);
     });
   });
 
   describe('#set', () => {
-    it('should set fetch cache for a reference', async () => {
+    it('should set fetch cache for a reference', () => {
       const expected = true;
 
-      await fetchCache.set(reference);
+      fetchCache.set(reference);
 
       const actual = qewdSession.data.$(['fetchingResource', reference]).value;
       expect(actual).toEqual(expected);
@@ -96,10 +100,10 @@ describe('ripple-cdr-discovery/lib/cache/fetchCache', () => {
   });
 
   describe('#deleteAll', () => {
-    it('should delete all fetching cache for all references', async () => {
+    it('should delete all fetching cache for all references', () => {
       const expected = {};
 
-      await fetchCache.deleteAll();
+      fetchCache.deleteAll();
 
       const actual = qewdSession.data.$(['fetchingResource']).getDocument();
       expect(actual).toEqual(expected);

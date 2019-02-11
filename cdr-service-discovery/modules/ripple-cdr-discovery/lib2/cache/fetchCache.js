@@ -47,7 +47,7 @@ class FetchCache {
    * @param {string} reference
    * @return {bool}
    */
-  async exists(reference) {
+  exists(reference) {
     logger.info('cache/fetchCache|exists', { reference });
 
     const key = ['fetchingResource', reference];
@@ -61,7 +61,7 @@ class FetchCache {
    * @param {string} reference
    * @return {bool}
    */
-  async set(reference) {
+  set(reference) {
     logger.info('cache/fetchCache|exists', { reference });
 
     const key = ['fetchingResource', reference];
@@ -73,7 +73,7 @@ class FetchCache {
    *
    * @return {void}
    */
-  async deleteAll() {
+  deleteAll() {
     logger.info('cache/fetchCache|deleteAll');
 
     const key = ['fetchingResource'];

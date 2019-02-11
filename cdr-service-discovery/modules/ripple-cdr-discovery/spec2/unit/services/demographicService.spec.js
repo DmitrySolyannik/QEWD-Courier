@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  11 February 2019
+  12 February 2019
 
 */
 
@@ -33,29 +33,55 @@
 const { ExecutionContextMock } = require('../../mocks');
 const DemographicService = require('../../../lib2/services/demographicService');
 
-describe('ripple-cdr-discovery/lib2/services/demographicService', () => {
+describe('ripple-cdr-discovery/lib/services/demographicService', () => {
   let ctx;
   let nhsNumber;
 
   let demographicService;
-  let resourceService;
 
   let demographicCache;
   let discoveryCache;
   let resourceCache;
   let patientCache;
 
+  function configureMocks() {
+    patientCache.byNhsNumber.getPatientUuid.and.returnValue('7bb44952-60dd-4ce8-9bbd-f0b56c80a260');
+    patientCache.byPatientUuid.get.and.returnValue({
+      name: [
+        { text: 'John Doe' }
+      ],
+      gender: 'male',
+      telecom : '+44 58584 5475477',
+      birthDate: '1990-01-01T12:00:00Z'
+    });
+    patientCache.byPatientUuid.getPractitionerUuid.and.returnValue('3f2a728b-eda5-4c16-b67d-afeacaacbb1c');
+    resourceCache.byUuid.get.and.returnValue({
+      name: {
+        text: 'Jane Doe'
+      },
+      practitionerRole: [
+        {
+          managingOrganisation: {
+            reference: 'Organization/1a30d00b-7fe5-44d5-bf18-9909e6fdacd2'
+          }
+        }
+      ]
+    });
+    resourceCache.getOrganisationLocation.and.returnValue({});
+  }
+
   beforeEach(() => {
     ctx = new ExecutionContextMock();
-    nhsNumber = 5558526784;
+    nhsNumber = 9999999000;
 
     demographicService = new DemographicService(ctx);
-    resourceService = ctx.services.resourceService;
 
     demographicCache = ctx.cache.demographicCache;
     discoveryCache = ctx.cache.discoveryCache;
     resourceCache = ctx.cache.resourceCache;
     patientCache = ctx.cache.patientCache;
+
+    configureMocks();
 
     ctx.cache.freeze();
     ctx.services.freeze();
@@ -70,110 +96,47 @@ describe('ripple-cdr-discovery/lib2/services/demographicService', () => {
     });
   });
 
-  it('should call getByPatientId and return demographics', async () => {
-    const practitioneer = {
-      practitionerRole: [
-        {
-          managingOrganisation: {
-            reference : 'practitioneerData'
-          }
+  describe('#getByPatientId', () => {
+    it('should return demographics', async () => {
+      const expected = {
+        demographics: {
+          id: 9999999000,
+          nhsNumber: 9999999000,
+          gender: 'male',
+          phone: '+44 58584 5475477',
+          name: 'John Doe',
+          dateOfBirth: 631195200000,
+          gpName: 'Jane Doe',
+          gpAddress: 'Not known',
+          address: 'Not known'
         }
-      ],
-      name: 'John Snow'
-    };
+      };
 
-    const address = {
-      address : {
-        text: 'California'
-      }
-    };
+      const actual = await demographicService.getByPatientId(nhsNumber);
 
-    const patient = {
-      id: 5558526784,
-      nhsNumber: nhsNumber,
-      gender: 'female',
-      telecom : '+44 58584 5475477',
-      name: [
-        {
-          text: 'Megan'
+      expect(patientCache.byNhsNumber.getPatientUuid).toHaveBeenCalledWith(9999999000);
+      expect(patientCache.byPatientUuid.get).toHaveBeenCalledWith('7bb44952-60dd-4ce8-9bbd-f0b56c80a260');
+      expect(patientCache.byPatientUuid.getPractitionerUuid).toHaveBeenCalledWith('7bb44952-60dd-4ce8-9bbd-f0b56c80a260');
+      expect(resourceCache.byUuid.get).toHaveBeenCalledWith('Practitioner', '3f2a728b-eda5-4c16-b67d-afeacaacbb1c');
+      expect(resourceCache.getOrganisationLocation).toHaveBeenCalledWith('Organization/1a30d00b-7fe5-44d5-bf18-9909e6fdacd2');
+
+      expect(discoveryCache.deleteAll).toHaveBeenCalled();
+      expect(demographicCache.byNhsNumber.set).toHaveBeenCalledWith(9999999000, {
+        demographics: {
+          id: 9999999000,
+          nhsNumber: 9999999000,
+          gender: 'male',
+          phone: '+44 58584 5475477',
+          name: 'John Doe',
+          dateOfBirth: 631195200000,
+          gpName: 'Jane Doe',
+          gpAddress: 'Not known',
+          address: 'Not known'
         }
-      ],
-      dateOfBirth: '1991-01-01',
-      gpName: 'Fox',
-      gpAddress: 'California',
-      address: 'London'
-    };
+      });
 
-    patientCache.byNhsNumber.getPatientUuid.and.resolveValue();
-    patientCache.byPatientUuid.get.and.resolveValue(patient);
-    patientCache.byPatientUuid.getPractitionerUuid.and.resolveValue(5558526785);
-    resourceCache.byUuid.get.and.resolveValue(practitioneer);
-
-    resourceService.getOrganisationLocation.and.resolveValue(address);
-
-    await demographicService.getByPatientId(nhsNumber);
-
-    expect(patientCache.byNhsNumber.getPatientUuid).toHaveBeenCalled();
-    expect(patientCache.byPatientUuid.get).toHaveBeenCalled();
-    expect(patientCache.byPatientUuid.getPractitionerUuid).toHaveBeenCalled();
-    expect(resourceCache.byUuid.get).toHaveBeenCalled();
-    expect(resourceService.getOrganisationLocation).toHaveBeenCalled();
-    expect(discoveryCache.deleteAll).toHaveBeenCalled();
-    expect(demographicCache.byNhsNumber.set).toHaveBeenCalled();
+      expect(actual).toEqual(expected);
+    });
   });
 
-  it('should call getByPatientId with array of patient data', async () => {
-    const practitioneer = {
-      practitionerRole: [
-        {
-          managingOrganisation: {
-            reference : 'practitioneerData'
-          }
-        }
-      ],
-      name: 'John Snow'
-    };
-
-    const address = {
-      address : {
-        text: null
-      }
-    };
-
-    const patient = {
-      id: 5558526784,
-      nhsNumber: nhsNumber,
-      gender: ['M', 'ale'],
-      telecom : [
-        {
-          value: '+44 58584 5475477'
-        }
-      ],
-      name: [
-        {
-          text: 'Megan'
-        }
-      ],
-      dateOfBirth: '1991-01-01',
-      gpName: 'Fox',
-      address: 'London'
-    };
-
-    patientCache.byNhsNumber.getPatientUuid.and.resolveValue();
-    patientCache.byPatientUuid.get.and.resolveValue(patient);
-    patientCache.byPatientUuid.getPractitionerUuid.and.resolveValue(5558526785);
-    resourceCache.byUuid.get.and.resolveValue(practitioneer);
-
-    resourceService.getOrganisationLocation.and.resolveValue(address);
-
-    await demographicService.getByPatientId(nhsNumber);
-
-    expect(patientCache.byNhsNumber.getPatientUuid).toHaveBeenCalled();
-    expect(patientCache.byPatientUuid.get).toHaveBeenCalled();
-    expect(patientCache.byPatientUuid.getPractitionerUuid).toHaveBeenCalled();
-    expect(resourceCache.byUuid.get).toHaveBeenCalled();
-    expect(resourceService.getOrganisationLocation).toHaveBeenCalled();
-    expect(discoveryCache.deleteAll).toHaveBeenCalled();
-    expect(demographicCache.byNhsNumber.set).toHaveBeenCalled();
-  });
 });

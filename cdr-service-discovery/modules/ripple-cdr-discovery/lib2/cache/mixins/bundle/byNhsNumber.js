@@ -41,7 +41,7 @@ module.exports = (adapter) => {
      * @param  {int|string} nhsNumber
      * @return {string[]|}
      */
-    getAllPatientUuids: async (nhsNumber) => {
+    getAllPatientUuids: (nhsNumber) => {
       logger.info('mixins/bundle|byNhsNumber|getAllPatientUuids', { nhsNumber });
 
       const patientUuids = [];

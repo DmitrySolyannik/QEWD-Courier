@@ -54,22 +54,14 @@ class DemographicService {
     logger.info('services/demographicService|getByPatientId', { nhsNumber });
 
     const { patientCache, resourceCache, demographicCache, discoveryCache } = this.ctx.cache;
-    const { resourceService } = this.ctx.services;
 
-    //@TODO talk regarding this functionality
-    // var saved = this.db.use('SavedDiscovery');
-    // if (patientId !== 5558526785) {
-    //   saved.delete();
-    //   saved.setDocument(await patientCache.get());
-    // }
-
-    const patientUuid = await patientCache.byNhsNumber.getPatientUuid(nhsNumber);
-    const patient = await patientCache.byPatientUuid.get(patientUuid);
-    const practitionerUuid = await patientCache.byPatientUuid.getPractitionerUuid(patientUuid);
-    const practitioner = await resourceCache.byUuid.get(ResourceName.PRACTITIONER, practitionerUuid);
+    const patientUuid = patientCache.byNhsNumber.getPatientUuid(nhsNumber);
+    const patient = patientCache.byPatientUuid.get(patientUuid);
+    const practitionerUuid = patientCache.byPatientUuid.getPractitionerUuid(patientUuid);
+    const practitioner = resourceCache.byUuid.get(ResourceName.PRACTITIONER, practitionerUuid);
 
     const organisationRef = getOrganisationRef(practitioner);
-    const location = await resourceService.getOrganisationLocation(organisationRef);
+    const location = resourceCache.getOrganisationLocation(organisationRef);
     if (location.address && location.address.text) {
       practitioner.address = location.address.text;
     }
@@ -87,6 +79,7 @@ class DemographicService {
     demographics.name = parseName(patient.name[0]);
     demographics.dateOfBirth = new Date(patient.birthDate).getTime();
     demographics.gpName = parseName(practitioner.name);
+    //@TODO should address be parsed too?
     demographics.gpAddress = practitioner.address || 'Not known';
     demographics.address = parseAddress(patient.address);
 
@@ -96,8 +89,9 @@ class DemographicService {
       demographics
     };
 
-    await discoveryCache.deleteAll(); //@TODO Talk regarding this functionality
-    await demographicCache.byNhsNumber.set(nhsNumber, resultObj);
+    //@TODO Talk regarding this functionality
+    discoveryCache.deleteAll();
+    demographicCache.byNhsNumber.set(nhsNumber, resultObj);
 
     return resultObj;
   }

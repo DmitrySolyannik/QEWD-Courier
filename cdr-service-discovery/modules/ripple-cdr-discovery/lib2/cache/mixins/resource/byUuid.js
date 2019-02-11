@@ -42,7 +42,7 @@ module.exports = (adapter) => {
      * @param  {string} uuid
      * @return {bool}
      */
-    exists: async (resourceName, uuid) => {
+    exists: (resourceName, uuid) => {
       logger.info('mixins/resource|byUuid|exists', { resourceName, uuid });
 
       const key = ['Discovery', resourceName, 'by_uuid', uuid];
@@ -58,7 +58,7 @@ module.exports = (adapter) => {
      * @param  {Object} resource
      * @return {void}
      */
-    set: async (resourceName, uuid, resource) => {
+    set: (resourceName, uuid, resource) => {
       logger.info('mixins/resource|byUuid|set', { resourceName, uuid, resource });
 
       const key = ['Discovery', resourceName, 'by_uuid', uuid];
@@ -76,7 +76,7 @@ module.exports = (adapter) => {
      * @param  {string} uuid
      * @return {Object}
      */
-    get: async (resourceName, uuid) => {
+    get: (resourceName, uuid) => {
       logger.info('mixins/resource|byUuid|get', { uuid });
 
       const key = ['Discovery', resourceName, 'by_uuid', uuid, 'data'];
@@ -92,7 +92,7 @@ module.exports = (adapter) => {
      * @param  {string} practitionerUuid
      * @return {void}
      */
-    setPractitionerUuid: async (resourceName, uuid, practitionerUuid) => {
+    setPractitionerUuid: (resourceName, uuid, practitionerUuid) => {
       logger.info('mixins/resource|byUuid|setPractitionerUuid', { resourceName, uuid, practitionerUuid });
 
       const key = ['Discovery', resourceName, 'by_uuid', uuid, 'practitioner', practitionerUuid];
@@ -107,7 +107,7 @@ module.exports = (adapter) => {
      * @param  {string} uuid
      * @return {string}
      */
-    getPractitionerUuid: async (resourceName, uuid) => {
+    getPractitionerUuid: (resourceName, uuid) => {
       logger.info('mixins/resource|byUuid|getPractitionerUuid', { resourceName, uuid });
 
       const key = ['Discovery', resourceName, 'by_uuid', uuid, 'practitioner'];

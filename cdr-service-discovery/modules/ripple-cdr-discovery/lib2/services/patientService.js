@@ -52,13 +52,12 @@ class PatientService {
 
     const { patientCache, bundleCache } = this.ctx.cache;
 
-    const exists = await bundleCache.exists();
-    const targetCache = exists
+    const targetCache = bundleCache.exists()
       ? bundleCache
       : patientCache;
 
-    const patientUuids = await targetCache.byNhsNumber.getAllPatientUuids(nhsNumber);
-    const patients = await targetCache.byPatientUuid.getByPatientUuids(patientUuids);
+    const patientUuids = targetCache.byNhsNumber.getAllPatientUuids(nhsNumber);
+    const patients = targetCache.byPatientUuid.getByPatientUuids(patientUuids);
 
     return {
       resourceType: 'Bundle',
@@ -75,8 +74,9 @@ class PatientService {
     logger.info('services/patientService|updateBundle');
 
     const { patientCache, bundleCache } = this.ctx.cache;
-    const data = await patientCache.export();
-    await bundleCache.import(data);
+    const data = patientCache.export();
+
+    bundleCache.import(data);
   }
 }
 

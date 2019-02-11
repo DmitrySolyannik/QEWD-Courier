@@ -42,7 +42,7 @@ module.exports = (adapter, ) => {
      * @param  {int|string} nhsNumber
      * @return {bool}
      */
-    exists: async (nhsNumber) => {
+    exists: (nhsNumber) => {
       logger.info('mixins/patient/byNhsNumber|exists', { nhsNumber });
 
       const key = ['Discovery', ResourceName.PATIENT, 'by_nhsNumber', nhsNumber];
@@ -56,7 +56,7 @@ module.exports = (adapter, ) => {
      * @param  {int|string} nhsNumber
      * @return {string}
      */
-    getPatientUuid: async (nhsNumber) => {
+    getPatientUuid: (nhsNumber) => {
       logger.info('mixins/patient/byNhsNumber|getPatientUuid', { nhsNumber });
 
       const key = ['Discovery', ResourceName.PATIENT, 'by_nhsNumber', nhsNumber, 'Patient'];
@@ -70,7 +70,7 @@ module.exports = (adapter, ) => {
      * @param  {int|string} nhsNumber
      * @return {string[]}
      */
-    getAllPatientUuids: async (nhsNumber) => {
+    getAllPatientUuids: (nhsNumber) => {
       logger.info('mixins/patient|byNhsNumber|getAllPatientUuids', { nhsNumber });
 
       const patientUuids = [];
@@ -90,7 +90,7 @@ module.exports = (adapter, ) => {
      * @param  {string} patientUuid
      * @return {void}
      */
-    setPatientUuid: async (nhsNumber, patientUuid) => {
+    setPatientUuid: (nhsNumber, patientUuid) => {
       logger.info('mixins/patient|byNhsNumber|setPatientUuid', { nhsNumber, patientUuid });
 
       const key = ['Discovery', ResourceName.PATIENT, 'by_nhsNumber', nhsNumber, 'Patient', patientUuid];
@@ -105,7 +105,7 @@ module.exports = (adapter, ) => {
      * @param  {string} uuid
      * @return {void}
      */
-    setResourceUuid: async (nhsNumber, resourceName, uuid) => {
+    setResourceUuid: (nhsNumber, resourceName, uuid) => {
       logger.info('mixins/patient|byResource|setResourceUuid', { nhsNumber, resourceName, uuid });
 
       const key = ['Discovery', ResourceName.PATIENT, 'by_nhsNumber', nhsNumber, 'resources', resourceName, uuid];

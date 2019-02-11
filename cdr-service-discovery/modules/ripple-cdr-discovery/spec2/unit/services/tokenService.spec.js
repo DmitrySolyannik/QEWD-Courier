@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 January 2018
+  12 February 2019
 
 */
 
@@ -32,11 +32,10 @@
 
 const { ExecutionContextMock } = require('../../mocks');
 const TokenService = require('../../../lib2/services/tokenService');
-const { BadRequestError } = require('../../../lib2/errors');
 
-describe('ripple-cdr-discovery/lib2/services/tokenService', () => {
+describe('ripple-cdr-discovery/lib/services/tokenService', () => {
   let ctx;
-
+  let nowTime;
 
   let authRestService;
   let tokenService;
@@ -50,6 +49,14 @@ describe('ripple-cdr-discovery/lib2/services/tokenService', () => {
     authRestService = ctx.services.authRestService;
 
     ctx.services.freeze();
+
+    nowTime = Date.UTC(2018, 0, 1); // 1514764800000, now
+    jasmine.clock().install();
+    jasmine.clock().mockDate(new Date(nowTime));
+  });
+
+  afterEach(() => {
+    jasmine.clock().uninstall();
   });
 
   describe('#create (static)', () => {
@@ -61,73 +68,77 @@ describe('ripple-cdr-discovery/lib2/services/tokenService', () => {
     });
   });
 
+  describe('#authenticate', () => {
+    it('should return cached token', async () => {
+      const expected = 'foo.bar.baz';
 
-  it('should call get token if already exists in cache', async () => {
-    const now = Date.now();
-    const expected = {
-      createdAt: now,
-      jwt: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.'
-      + 'eyJpc3MiOiJ0b3B0YWwuY29tIiwiZXhwIjoxNDI2NDIwODAwLCJodHRwOi8vdG9wdGFsLmNvbS9qd3RfY2xhaW1zL2lzX2FkbWluIjp0cnVlLCJjb21wYW55IjoiVG9wdGFsIiwiYXdlc29tZSI6dHJ1ZX0.'
-      + 'yRQYnWzskCZUxPwaQupWkiUzKELZ49eM7oWxAQK_ZXw'
-    };
-    tokenCache.get.and.resolveValue(expected);
-    const actual = await tokenService.get();
-    expect(actual).toEqual(expected.jwt);
-  });
+      const token = {
+        jwt: 'foo.bar.baz',
+        createdAt: nowTime - 30 * 1000 // 30 seconds ago
+      };
+      tokenCache.get.and.returnValue(token);
 
-  it('should call authRestService.authenticate', async () => {
-    const expected = {
-      createdAt: Date.now(),
-      access_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.'
-      + 'eyJpc3MiOiJ0b3B0YWwuY29tIiwiZXhwIjoxNDI2NDIwODAwLCJodHRwOi8vdG9wdGFsLmNvbS9qd3RfY2xhaW1zL2lzX2FkbWluIjp0cnVlLCJjb21wYW55IjoiVG9wdGFsIiwiYXdlc29tZSI6dHJ1ZX0.'
-      + 'yRQYnWzskCZUxPwaQupWkiUzKELZ49eM7oWxAQK_ZXw'
-    };
+      const actual = await tokenService.get();
 
-    tokenCache.get.and.resolveValue(null);
-    authRestService.authenticate.and.resolveValue(expected);
-    const actual = await tokenService.get();
-    expect(actual).toEqual(expected.access_token);
-  });
+      expect(tokenCache.get).toHaveBeenCalled();
+      expect(actual).toEqual(expected);
+    });
 
-  it('should call get token with error', async () => {
-    tokenCache.get.and.resolveValue(null);
-    authRestService.authenticate.and.resolveValue(undefined);
-    const actual = tokenService.get();
-    await expectAsync(actual).toBeRejectedWith(new BadRequestError('Cannot read property \'access_token\' of undefined'));
-  });
+    it('should return a new token when cached token expired', async () => {
+      const expected = 'quux.foo.quux';
 
-  it('should call authenticate with already valid token and date', async () => {
-    const expected = {
-      createdAt: Date.now() - 51000,
-      jwt: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.'
-      + 'eyJpc3MiOiJ0b3B0YWwuY29tIiwiZXhwIjoxNDI2NDIwODAwLCJodHRwOi8vdG9wdGFsLmNvbS9qd3RfY2xhaW1zL2lzX2FkbWluIjp0cnVlLCJjb21wYW55IjoiVG9wdGFsIiwiYXdlc29tZSI6dHJ1ZX0.'
-      + 'yRQYnWzskCZUxPwaQupWkiUzKELZ49eM7oWxAQK_ZXw'
-    };
+      const token = {
+        jwt: 'foo.bar.baz',
+        createdAt: nowTime - 2 * 60 * 1000 // 2 minutes ago
+      };
+      tokenCache.get.and.returnValue(token);
+      const data = {
+        access_token: 'quux.foo.quux'
+      };
+      authRestService.authenticate.and.resolveValue(data);
 
-    tokenCache.get.and.resolveValue(expected);
-    authRestService.authenticate.and.resolveValue(expected);
-    const actual = await tokenService.get();
-    expect(actual).toEqual(expected.jwt);
-  });
+      const actual = await tokenService.get();
 
-  it('should call authenticate with already valid token', async () => {
-    const jwt = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.'
-      + 'eyJpc3MiOiJ0b3B0YWwuY29tIiwiZXhwIjoxNDI2NDIwODAwLCJodHRwOi8vdG9wdGFsLmNvbS9qd3RfY2xhaW1zL2lzX2FkbWluIjp0cnVlLCJjb21wYW55IjoiVG9wdGFsIiwiYXdlc29tZSI6dHJ1ZX0.'
-      + 'yRQYnWzskCZUxPwaQupWkiUzKELZ49eM7oWxAQK_ZXw';
+      expect(tokenCache.get).toHaveBeenCalled();
+      expect(authRestService.authenticate).toHaveBeenCalled();
+      expect(tokenCache.set).toHaveBeenCalledWith({
+        jwt: 'quux.foo.quux',
+        createdAt: 1514764800000
+      });
+      expect(actual).toEqual(expected);
+    });
 
-    const expectedToken = {
-      createdAt: 5500,
-      jwt: jwt
-    };
+    it('should return a new token', async () => {
+      const expected = 'foo.bar.baz';
 
-    const expected = {
-      createdAt: 5500,
-      access_token: jwt
-    };
+      const data = {
+        access_token: 'foo.bar.baz'
+      };
+      authRestService.authenticate.and.resolveValue(data);
 
-    tokenCache.get.and.resolveValue(expectedToken);
-    authRestService.authenticate.and.resolveValue(expected);
-    const actual = await tokenService.get();
-    expect(actual).toEqual(jwt);
+      const actual = await tokenService.get();
+
+      expect(tokenCache.get).toHaveBeenCalled();
+      expect(authRestService.authenticate).toHaveBeenCalled();
+      expect(tokenCache.set).toHaveBeenCalledWith({
+        jwt: 'foo.bar.baz',
+        createdAt: 1514764800000
+      });
+      expect(actual).toEqual(expected);
+    });
+
+    it('should delete existing token when error occurred', async () => {
+      const expected = new Error('Some unknown error');
+
+      authRestService.authenticate.and.rejectValue(new Error('Some unknown error'));
+
+      const actual = tokenService.get();
+
+      await expectAsync(actual).toBeRejectedWith(expected);
+
+      expect(tokenCache.get).toHaveBeenCalled();
+      expect(authRestService.authenticate).toHaveBeenCalled();
+      expect(tokenCache.delete).toHaveBeenCalled();
+    });
   });
 });

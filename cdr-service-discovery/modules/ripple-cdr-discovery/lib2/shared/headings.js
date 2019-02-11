@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  11 February 2019
+  12 February 2019
 
 */
 
@@ -36,6 +36,9 @@ function getHeadingTemplate(headingName, source, destination) {
 
 function headingHelpers() {
   const helpers = {
+    getUid: function(uid, host) {
+      return host + '-' + uid.split('::')[0];
+    },
     fhirDateTime: (d) => {
       return new Date(d).toISOString();
     },

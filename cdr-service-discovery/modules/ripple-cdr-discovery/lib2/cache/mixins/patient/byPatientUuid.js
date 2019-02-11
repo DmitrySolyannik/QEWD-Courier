@@ -42,7 +42,7 @@ module.exports = (adapter) => {
      * @param  {string} patientUuid
      * @return {bool}
      */
-    exists: async (patientUuid) => {
+    exists: (patientUuid) => {
       logger.info('mixins/patient|byPatientUuid|exists', { patientUuid });
 
       const key = ['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid];
@@ -57,7 +57,7 @@ module.exports = (adapter) => {
      * @param  {Object} patient
      * @return {void}
      */
-    set: async (patientUuid, patient) => {
+    set: (patientUuid, patient) => {
       logger.info('mixins/patient|byPatientUuid|exists', { patientUuid, patient });
 
       const key = ['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid];
@@ -70,7 +70,7 @@ module.exports = (adapter) => {
      * @param  {string} patientUuid
      * @return {Object}
      */
-    get: async (patientUuid) => {
+    get: (patientUuid) => {
       logger.info('mixins/patient|byPatientUuid|get', { patientUuid });
 
       const key = ['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid];
@@ -85,7 +85,7 @@ module.exports = (adapter) => {
      * @param  {int|string} nhsNumber
      * @return {void}
      */
-    setNhsNumber: async (patientUuid, nhsNumber) => {
+    setNhsNumber: (patientUuid, nhsNumber) => {
       logger.info('mixins/patient|byPatientUuid|setNhsNumber', { patientUuid, nhsNumber });
 
       const key = ['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid, 'nhsNumber', nhsNumber];
@@ -97,7 +97,7 @@ module.exports = (adapter) => {
      *
      * @return {[type]} [description]
      */
-    deleteAll: async () => {
+    deleteAll: () => {
       logger.info('mixins/patient|byPatientUuid|deleteAll');
 
       const key = ['Discovery', ResourceName.PATIENT, 'by_uuid'];
@@ -110,7 +110,7 @@ module.exports = (adapter) => {
      * @param  string} patientUuid
      * @return {string}
      */
-    getPractitionerUuid: async (patientUuid) => {
+    getPractitionerUuid: (patientUuid) => {
       logger.info('mixins/patient|byPatientUuid|getPractitionerUuid', { patientUuid });
 
       const key = ['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid, 'practitioner'];
@@ -124,7 +124,7 @@ module.exports = (adapter) => {
      * @param  {string[]} patientUuids
      * @return {Object[]}
      */
-    getByPatientUuids: async (patientUuids) => {
+    getByPatientUuids: (patientUuids) => {
       logger.info('mixins/patient|byPatientUuid|getByPatientUuids', { patientUuids });
 
       const uuids = patientUuids.map((patientUuid) => {

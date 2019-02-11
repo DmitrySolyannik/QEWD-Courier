@@ -61,8 +61,12 @@ describe('ripple-cdr-discovery/lib/cache/resourceCache', () => {
     ctx.cache.freeze();
   });
 
+  afterEach(() => {
+    ctx.worker.db.reset();
+  });
+
   describe('#create (static)', () => {
-    it('should initialize a new instance', async () => {
+    it('should initialize a new instance', () => {
       const actual = ResourceCache.create(ctx.adapter);
 
       expect(actual).toEqual(jasmine.any(ResourceCache));
@@ -81,26 +85,26 @@ describe('ripple-cdr-discovery/lib/cache/resourceCache', () => {
     });
 
     describe('#exists', () => {
-      it('should return false', async () => {
+      it('should return false', () => {
         const expected = false;
 
-        const actual = await resourceCache.byUuid.exists(resourceName, uuid);
+        const actual = resourceCache.byUuid.exists(resourceName, uuid);
 
         expect(actual).toEqual(expected);
       });
 
-      it('should return true', async () => {
+      it('should return true', () => {
         const expected = true;
 
         seeds();
-        const actual = await resourceCache.byUuid.exists(resourceName, uuid);
+        const actual = resourceCache.byUuid.exists(resourceName, uuid);
 
         expect(actual).toEqual(expected);
       });
     });
 
     describe('#set', () => {
-      it('should set resource data', async () => {
+      it('should set resource data', () => {
         const expected = {
           quux: 'quuz'
         };
@@ -108,13 +112,13 @@ describe('ripple-cdr-discovery/lib/cache/resourceCache', () => {
         const resource = {
           quux: 'quuz'
         };
-        await resourceCache.byUuid.set(resourceName, uuid, resource);
+        resourceCache.byUuid.set(resourceName, uuid, resource);
 
         const actual = qewdSession.data.$(['Discovery', resourceName, 'by_uuid', uuid, 'data']).getDocument();
         expect(actual).toEqual(expected);
       });
 
-      it('should ignore settings resource data', async () => {
+      it('should ignore settings resource data', () => {
         const expected = {
           foo: 'bar'
         };
@@ -124,7 +128,7 @@ describe('ripple-cdr-discovery/lib/cache/resourceCache', () => {
         const resource = {
           quux: 'quuz'
         };
-        await resourceCache.byUuid.set(resourceName, uuid, resource);
+        resourceCache.byUuid.set(resourceName, uuid, resource);
 
         const actual = qewdSession.data.$(['Discovery', resourceName, 'by_uuid', uuid, 'data']).getDocument();
         expect(actual).toEqual(expected);
@@ -132,20 +136,20 @@ describe('ripple-cdr-discovery/lib/cache/resourceCache', () => {
     });
 
     describe('#get', () => {
-      it('should get resource data', async () => {
+      it('should get resource data', () => {
         const expected = {
           foo: 'bar'
         };
 
         seeds();
-        const actual = await resourceCache.byUuid.get(resourceName, uuid);
+        const actual = resourceCache.byUuid.get(resourceName, uuid);
 
         expect(actual).toEqual(expected);
       });
     });
 
     describe('#setPractitionerUuid', () => {
-      it('should set practitioner uuid', async () => {
+      it('should set practitioner uuid', () => {
         const expected = {
           'practitioner': {
             'bb64855d-e99d-403c-9e8a-b4c8ce30c345': 'bb64855d-e99d-403c-9e8a-b4c8ce30c345'
@@ -153,7 +157,7 @@ describe('ripple-cdr-discovery/lib/cache/resourceCache', () => {
         };
 
         const practitionerUuid = 'bb64855d-e99d-403c-9e8a-b4c8ce30c345';
-        await resourceCache.byUuid.setPractitionerUuid(resourceName, uuid, practitionerUuid);
+        resourceCache.byUuid.setPractitionerUuid(resourceName, uuid, practitionerUuid);
 
         const actual = qewdSession.data.$(['Discovery', resourceName, 'by_uuid', uuid]).getDocument();
 
@@ -162,12 +166,12 @@ describe('ripple-cdr-discovery/lib/cache/resourceCache', () => {
     });
 
     describe('#getPractitionerUuid', () => {
-      it('should get practitioner uuid', async () => {
+      it('should get practitioner uuid', () => {
         const expected = 'bb64855d-e99d-403c-9e8a-b4c8ce30c345';
 
         seeds();
 
-        const actual = await resourceCache.byUuid.getPractitionerUuid(resourceName, uuid);
+        const actual = resourceCache.byUuid.getPractitionerUuid(resourceName, uuid);
 
         expect(actual).toEqual(expected);
       });

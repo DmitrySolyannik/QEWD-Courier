@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 January 2018
+  12 February 2019
 
 */
 
@@ -33,18 +33,16 @@
 const { ExecutionContextMock } = require('../../mocks');
 const CacheService = require('../../../lib2/services/cacheService');
 
-describe('ripple-cdr-discovery/lib2/services/cacheService', () => {
+describe('ripple-cdr-discovery/lib/services/cacheService', () => {
   let ctx;
   let nhsNumber;
-  let patientId;
 
   let cacheService;
   let demographicCache;
 
   beforeEach(() => {
     ctx = new ExecutionContextMock();
-    nhsNumber = 5558526784;
-    patientId = 5558526784;
+    nhsNumber = 9999999000;
 
     cacheService = new CacheService(ctx);
     demographicCache = ctx.cache.demographicCache;
@@ -61,27 +59,46 @@ describe('ripple-cdr-discovery/lib2/services/cacheService', () => {
     });
   });
 
-  it('should call getDemographics and return data', async () => {
-    const expected = {
-      id: patientId,
-      nhsNumber: nhsNumber,
-      gender: 'female',
-      phone : '+44 58584 5475477',
-      name: 'Megan',
-      dateOfBirth: Date.now(),
-      gpName: 'Fox',
-      gpAddress: 'California',
-      address: 'London'
-    };
+  describe('#getDemographics', () => {
+    it('should return null when error occurred', async () => {
+      const expected = null;
 
-    demographicCache.byNhsNumber.get.and.resolveValue(expected);
-    const actual = await cacheService.getDemographics(nhsNumber);
-    expect(actual).toEqual(expected);
-  });
+      demographicCache.byNhsNumber.get.and.throwError(new Error('some custom error'));
 
-  it('should call getDemographics and returns error', async () => {
-    ctx.cache.demographicCache = undefined;
-    const actual = await cacheService.getDemographics(nhsNumber);
-    expect(actual).toEqual(null);
+      const actual = await cacheService.getDemographics(nhsNumber);
+
+      expect(actual).toEqual(expected);
+    });
+
+    it('should return cached demographics', async () => {
+      const expected = {
+        id: 9999999000,
+        nhsNumber: 9999999000,
+        gender: 'female',
+        phone : '+44 58584 5475477',
+        name: 'Megan',
+        dateOfBirth: 1546400900000,
+        gpName: 'Fox',
+        gpAddress: 'California',
+        address: 'London'
+      };
+
+      const data = {
+        id: 9999999000,
+        nhsNumber: 9999999000,
+        gender: 'female',
+        phone : '+44 58584 5475477',
+        name: 'Megan',
+        dateOfBirth: 1546400900000,
+        gpName: 'Fox',
+        gpAddress: 'California',
+        address: 'London'
+      };
+      demographicCache.byNhsNumber.get.and.returnValue(data);
+
+      const actual = await cacheService.getDemographics(nhsNumber);
+
+      expect(actual).toEqual(expected);
+    });
   });
 });

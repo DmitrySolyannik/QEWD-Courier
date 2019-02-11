@@ -42,7 +42,7 @@ module.exports = (adapter) => {
      * @param  {string} patientUuid
      * @return {bool}
      */
-    exists: async (nhsNumber, resourceName) => {
+    exists: (nhsNumber, resourceName) => {
       logger.info('mixins/patient|byResource|exists', { nhsNumber, resourceName });
 
       const key = ['Discovery', ResourceName.PATIENT, 'by_nhsNumber', nhsNumber, 'resources', resourceName];
@@ -59,7 +59,7 @@ module.exports = (adapter) => {
      * @param  {string} uuid
      * @return {void}
      */
-    set: async (nhsNumber, patientUuid, resourceName, uuid) => {
+    set: (nhsNumber, patientUuid, resourceName, uuid) => {
       logger.info('mixins/patient|byResource|setResourceUuid', { nhsNumber, patientUuid, resourceName, uuid });
 
       const byNhsNumberKey = ['Discovery', ResourceName.PATIENT, 'by_nhsNumber', nhsNumber, 'resources', resourceName, uuid];
@@ -76,7 +76,7 @@ module.exports = (adapter) => {
      * @param  {string} resourceName
      * @return {string[]}
      */
-    getUuidsByResourceName: async (nhsNumber, resourceName) => {
+    getUuidsByResourceName: (nhsNumber, resourceName) => {
       logger.info('mixins/patient|byResource|getUuidsByResourceName', { nhsNumber, resourceName });
 
       const uuids = [];

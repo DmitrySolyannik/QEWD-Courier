@@ -46,7 +46,7 @@ class TokenCache {
    *
    * @return {Object|null}
    */
-  async get() {
+  get() {
     logger.info('cache/tokenCache|get');
 
     const key = ['discoveryToken'];
@@ -60,7 +60,7 @@ class TokenCache {
    * @param  {Object} data
    * @return {void}
    */
-  async set(data) {
+  set(data) {
     logger.info('cache/tokenCache|set', { data });
 
     const key = ['discoveryToken'];
@@ -73,7 +73,7 @@ class TokenCache {
    * @param  {string} host
    * @return {void}
    */
-  async delete() {
+  delete() {
     logger.info('cache/tokenCache|delete');
 
     const key = ['discoveryToken'];

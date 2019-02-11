@@ -46,7 +46,7 @@ class DiscoveryCache {
    *
    * @return {void}
    */
-  async deleteAll() {
+  deleteAll() {
     logger.info('cache/discoveryCache|deleteAll');
 
     const key = ['Discovery'];

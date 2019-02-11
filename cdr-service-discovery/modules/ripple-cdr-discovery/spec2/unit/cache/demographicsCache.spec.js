@@ -65,8 +65,12 @@ describe('ripple-cdr-discovery/lib/cache/demographicsCache', () => {
     ctx.cache.freeze();
   });
 
+  afterEach(() => {
+    ctx.worker.db.reset();
+  });
+
   describe('#create (static)', () => {
-    it('should initialize a new instance', async () => {
+    it('should initialize a new instance', () => {
       const actual = DemographicCache.create(ctx.adapter);
 
       expect(actual).toEqual(jasmine.any(DemographicCache));
@@ -77,7 +81,7 @@ describe('ripple-cdr-discovery/lib/cache/demographicsCache', () => {
 
   describe('byNhsNumber', () => {
     describe('#get', () => {
-      it('should get demographics cache', async () => {
+      it('should get demographics cache', () => {
         const expected = {
           id: 9999999000,
           nhsNumber: 9999999000,
@@ -92,7 +96,7 @@ describe('ripple-cdr-discovery/lib/cache/demographicsCache', () => {
 
         seeds();
 
-        await demographicsCache.byNhsNumber.get(nhsNumber);
+        demographicsCache.byNhsNumber.get(nhsNumber);
 
         const actual = qewdSession.data.$(['Demographics', 'by_nhsNumber', 9999999000]).getDocument(true);
 
@@ -101,7 +105,7 @@ describe('ripple-cdr-discovery/lib/cache/demographicsCache', () => {
     });
 
     describe('#set', () => {
-      it('should set demographics cache', async () => {
+      it('should set demographics cache', () => {
         const expected = {
           id: 9999999000,
           nhsNumber: 9999999000,
@@ -125,7 +129,7 @@ describe('ripple-cdr-discovery/lib/cache/demographicsCache', () => {
           gpAddress: 'California',
           address: '90210 Beverly Hills'
         };
-        await demographicsCache.byNhsNumber.set(nhsNumber, data);
+        demographicsCache.byNhsNumber.set(nhsNumber, data);
 
         const actual = qewdSession.data.$(['Demographics', 'by_nhsNumber', nhsNumber]).getDocument(true);
 

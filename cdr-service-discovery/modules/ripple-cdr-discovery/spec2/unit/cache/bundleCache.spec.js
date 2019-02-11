@@ -76,8 +76,12 @@ describe('ripple-cdr-discovery/lib/cache/bundleCache', () => {
     ctx.cache.freeze();
   });
 
+  afterEach(() => {
+    ctx.worker.db.reset();
+  });
+
   describe('#create (static)', () => {
-    it('should initialize a new instance', async () => {
+    it('should initialize a new instance', () => {
       const actual = BundleCache.create(ctx.adapter);
 
       expect(actual).toEqual(jasmine.any(BundleCache));
@@ -88,27 +92,27 @@ describe('ripple-cdr-discovery/lib/cache/bundleCache', () => {
   });
 
   describe('#exists', () => {
-    it('should return false', async () => {
+    it('should return false', () => {
       const expected = false;
 
-      const actual = await bundleCache.exists();
+      const actual = bundleCache.exists();
 
       expect(actual).toEqual(expected);
     });
 
-    it('should return true when bundle cache exists', async () => {
+    it('should return true when bundle cache exists', () => {
       const expected = true;
 
       seeds();
 
-      const actual = await bundleCache.exists();
+      const actual = bundleCache.exists();
 
       expect(actual).toEqual(expected);
     });
   });
 
   describe('#import', () => {
-    it('should set data to bundle cache', async () => {
+    it('should set data to bundle cache', () => {
       const expected = {
         foo: 'bar'
       };
@@ -116,7 +120,7 @@ describe('ripple-cdr-discovery/lib/cache/bundleCache', () => {
       const data = {
         foo: 'bar'
       };
-      await bundleCache.import(data);
+      bundleCache.import(data);
 
       const actual = qewdSession.data.$(['Discovery', 'PatientBundle']).getDocument(true);
       expect(actual).toEqual(expected);
@@ -124,7 +128,7 @@ describe('ripple-cdr-discovery/lib/cache/bundleCache', () => {
   });
 
   describe('byNhsNumber', () => {
-    it('should return all patient uuids', async () => {
+    it('should return all patient uuids', () => {
       const expected = [
         '4ae63d75-b4bc-45ff-8233-8c8f04ddeca5',
         'be7b03df-2c9a-4afd-8bc5-6065d0688f15',
@@ -133,14 +137,14 @@ describe('ripple-cdr-discovery/lib/cache/bundleCache', () => {
 
       seeds();
 
-      const actual = await bundleCache.byNhsNumber.getAllPatientUuids(nhsNumber);
+      const actual = bundleCache.byNhsNumber.getAllPatientUuids(nhsNumber);
 
       expect(actual).toEqual(expected);
     });
   });
 
   describe('byPatientUuid', () => {
-    it('should return patients by patient uuids', async () => {
+    it('should return patients by patient uuids', () => {
       const expected = [
         {
           resource: {
@@ -166,7 +170,7 @@ describe('ripple-cdr-discovery/lib/cache/bundleCache', () => {
         'be7b03df-2c9a-4afd-8bc5-6065d0688f15',
         'c57c65f2-1ca8-46df-9a29-09373dcff552'
       ];
-      const actual = await bundleCache.byPatientUuid.getByPatientUuids(patientUiids);
+      const actual = bundleCache.byPatientUuid.getByPatientUuids(patientUiids);
 
       expect(actual).toEqual(expected);
     });

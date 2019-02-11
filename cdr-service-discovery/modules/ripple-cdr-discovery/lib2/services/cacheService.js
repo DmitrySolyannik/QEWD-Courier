@@ -52,7 +52,7 @@ class CacheService {
 
     try {
       const { demographicCache } = this.ctx.cache;
-      const cachedObj = await demographicCache.byNhsNumber.get(nhsNumber);
+      const cachedObj = demographicCache.byNhsNumber.get(nhsNumber);
 
       return cachedObj;
     } catch(err) {

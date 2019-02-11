@@ -49,7 +49,7 @@ class BundleCache {
    *
    * @return {bool}
    */
-  async exists() {
+  exists() {
     logger.info('cache/bundleCache|exists');
 
     const key = ['Discovery', 'PatientBundle'];
@@ -63,7 +63,7 @@ class BundleCache {
    * @param  {Object} data
    * @return {void}
    */
-  async import(data) {
+  import(data) {
     logger.info('cache/bundleCache|import', data);
 
     const key = ['Discovery', 'PatientBundle'];

@@ -63,8 +63,12 @@ describe('ripple-cdr-discovery/lib/cache/discoveryCache', () => {
     ctx.cache.freeze();
   });
 
+  afterEach(() => {
+    ctx.worker.db.reset();
+  });
+
   describe('#create (static)', () => {
-    it('should initialize a new instance', async () => {
+    it('should initialize a new instance', () => {
       const actual = DiscoveryCache.create(ctx.adapter);
 
       expect(actual).toEqual(jasmine.any(DiscoveryCache));
@@ -73,12 +77,12 @@ describe('ripple-cdr-discovery/lib/cache/discoveryCache', () => {
   });
 
   describe('#deleteAll', () => {
-    it('should delete all discovery cache', async () => {
+    it('should delete all discovery cache', () => {
       const excepted = {};
 
       seeds();
 
-      await discoveryCache.deleteAll();
+      discoveryCache.deleteAll();
 
       const actual = qewdSession.data.$(['Discovery']).getDocument();
 

@@ -55,8 +55,12 @@ describe('ripple-cdr-discovery/lib/cache/tokenCache', () => {
     ctx.cache.freeze();
   });
 
+  afterEach(() => {
+    ctx.worker.db.reset();
+  });
+
   describe('#create (static)', () => {
-    it('should initialize a new instance', async () => {
+    it('should initialize a new instance', () => {
       const actual = TokenCache.create(ctx.adapter);
 
       expect(actual).toEqual(jasmine.any(TokenCache));
@@ -65,27 +69,27 @@ describe('ripple-cdr-discovery/lib/cache/tokenCache', () => {
   });
 
   describe('#get', () => {
-    it('should get token from cache', async () => {
+    it('should get token from cache', () => {
       const expected = {
         token: 'foo.bar.baz',
         createdAt: 1546300800000
       };
 
       seeds();
-      const actual = await tokenCache.get();
+      const actual = tokenCache.get();
 
       expect(actual).toEqual(expected);
     });
   });
 
   describe('#set', () => {
-    it('should set token to cache', async () => {
+    it('should set token to cache', () => {
       const token = {
         token: 'quuz.quux.quuy',
         createdAt: 1546300800000
       };
 
-      await tokenCache.set(token);
+      tokenCache.set(token);
 
       const actual = qewdSession.data.$(['discoveryToken']).getDocument();
       expect(actual).toEqual(token);
@@ -93,11 +97,11 @@ describe('ripple-cdr-discovery/lib/cache/tokenCache', () => {
   });
 
   describe('#delete', () => {
-    it('should delete token from cache', async () => {
+    it('should delete token from cache', () => {
       const expected = {};
 
       seeds();
-      await tokenCache.delete();
+      tokenCache.delete();
 
       const actual = qewdSession.data.$(['discoveryToken']).getDocument();
       expect(actual).toEqual(expected);

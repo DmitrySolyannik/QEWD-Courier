@@ -87,8 +87,12 @@ describe('ripple-cdr-discovery/lib/cache/patientCache', () => {
     ctx.cache.freeze();
   });
 
+  afterEach(() => {
+    ctx.worker.db.reset();
+  });
+
   describe('#create (static)', () => {
-    it('should initialize a new instance', async () => {
+    it('should initialize a new instance', () => {
       const actual = PatientCache.create(ctx.adapter);
 
       expect(actual).toEqual(jasmine.any(PatientCache));
@@ -100,7 +104,7 @@ describe('ripple-cdr-discovery/lib/cache/patientCache', () => {
   });
 
   describe('#export', () => {
-    it('should export patient data', async () => {
+    it('should export patient data', () => {
       const expected = {
         by_nhsNumber: {
           '9999999000': {
@@ -140,7 +144,7 @@ describe('ripple-cdr-discovery/lib/cache/patientCache', () => {
 
       seeds();
 
-      const actual = await patientCache.export();
+      const actual = patientCache.export();
 
       expect(actual).toEqual(expected);
     });
@@ -154,57 +158,57 @@ describe('ripple-cdr-discovery/lib/cache/patientCache', () => {
     });
 
     describe('#exists', () => {
-      it('should return false', async () => {
+      it('should return false', () => {
         const expected = false;
 
-        const actual = await patientCache.byNhsNumber.exists(nhsNumber);
+        const actual = patientCache.byNhsNumber.exists(nhsNumber);
 
         expect(actual).toEqual(expected);
       });
 
-      it('should return true', async () => {
+      it('should return true', () => {
         const expected = true;
 
         seeds();
-        const actual = await patientCache.byNhsNumber.exists(nhsNumber);
+        const actual = patientCache.byNhsNumber.exists(nhsNumber);
 
         expect(actual).toEqual(expected);
       });
     });
 
     describe('#getPatientUuid', () => {
-      it('should get patient uuid', async () => {
+      it('should get patient uuid', () => {
         const expected = '888c1383-c07c-400d-99aa-f30350bdb984';
 
         seeds();
-        const actual = await patientCache.byNhsNumber.getPatientUuid(nhsNumber);
+        const actual = patientCache.byNhsNumber.getPatientUuid(nhsNumber);
 
         expect(actual).toEqual(expected);
       });
     });
 
     describe('#getAllPatientUuids', () => {
-      it('should get all patients uuid', async () => {
+      it('should get all patients uuid', () => {
         const expected = [
           '888c1383-c07c-400d-99aa-f30350bdb984',
           'ce437b97-4f6e-4c96-89bb-0b58b29a79cb'
         ];
 
         seeds();
-        const actual = await patientCache.byNhsNumber.getAllPatientUuids(nhsNumber);
+        const actual = patientCache.byNhsNumber.getAllPatientUuids(nhsNumber);
 
         expect(actual).toEqual(expected);
       });
     });
 
     describe('#setPatientUuid', () => {
-      it('should set all patient uuid', async () => {
+      it('should set all patient uuid', () => {
         const expected = {
           '9455268f-ee5b-481b-8dbc-a156897cf055': '9455268f-ee5b-481b-8dbc-a156897cf055'
         };
 
         const patientUuid = '9455268f-ee5b-481b-8dbc-a156897cf055';
-        await patientCache.byNhsNumber.setPatientUuid(nhsNumber, patientUuid);
+        patientCache.byNhsNumber.setPatientUuid(nhsNumber, patientUuid);
 
         const actual = qewdSession.data.$(['Discovery', 'Patient', 'by_nhsNumber', nhsNumber, 'Patient']).getDocument();
         expect(actual).toEqual(expected);
@@ -212,7 +216,7 @@ describe('ripple-cdr-discovery/lib/cache/patientCache', () => {
     });
 
     describe('#setResourceUuid', () => {
-      it('should set all patient uuid', async () => {
+      it('should set all patient uuid', () => {
         const expected = {
           AllergyIntolerance: {
             '9853d2e5-f706-4b59-af0b-c4bca3106a53': '9853d2e5-f706-4b59-af0b-c4bca3106a53'
@@ -221,7 +225,7 @@ describe('ripple-cdr-discovery/lib/cache/patientCache', () => {
 
         const resourceName = 'AllergyIntolerance';
         const uuid = '9853d2e5-f706-4b59-af0b-c4bca3106a53';
-        await patientCache.byNhsNumber.setResourceUuid(nhsNumber, resourceName, uuid);
+        patientCache.byNhsNumber.setResourceUuid(nhsNumber, resourceName, uuid);
 
         const actual = qewdSession.data.$(['Discovery', 'Patient', 'by_nhsNumber', nhsNumber, 'resources']).getDocument();
         expect(actual).toEqual(expected);
@@ -237,26 +241,26 @@ describe('ripple-cdr-discovery/lib/cache/patientCache', () => {
     });
 
     describe('#exists', () => {
-      it('should return false', async () => {
+      it('should return false', () => {
         const expected = false;
 
-        const actual = await patientCache.byPatientUuid.exists(patientUuid);
+        const actual = patientCache.byPatientUuid.exists(patientUuid);
 
         expect(actual).toEqual(expected);
       });
 
-      it('should return true', async () => {
+      it('should return true', () => {
         const expected = true;
 
         seeds();
-        const actual = await patientCache.byPatientUuid.exists(patientUuid);
+        const actual = patientCache.byPatientUuid.exists(patientUuid);
 
         expect(actual).toEqual(expected);
       });
     });
 
     describe('#set', () => {
-      it('should set patient data', async () => {
+      it('should set patient data', () => {
         const expected = {
           quux: 'quuz'
         };
@@ -264,7 +268,7 @@ describe('ripple-cdr-discovery/lib/cache/patientCache', () => {
         const data = {
           quux: 'quuz'
         };
-        await patientCache.byPatientUuid.set(patientUuid, data);
+        patientCache.byPatientUuid.set(patientUuid, data);
 
         const actual = qewdSession.data.$(['Discovery', 'Patient', 'by_uuid', patientUuid]).getDocument();
 
@@ -273,21 +277,21 @@ describe('ripple-cdr-discovery/lib/cache/patientCache', () => {
     });
 
     describe('#get', () => {
-      it('should get patient data', async () => {
+      it('should get patient data', () => {
         const expected = {
           foo: 'bar',
           practitioner: 'ed8489c4-ca57-4c8c-8349-d96ada1da244'
         };
 
         seeds();
-        const actual = await patientCache.byPatientUuid.get(patientUuid);
+        const actual = patientCache.byPatientUuid.get(patientUuid);
 
         expect(actual).toEqual(expected);
       });
     });
 
     describe('#setNhsNumber', () => {
-      it('should set nhs number', async () => {
+      it('should set nhs number', () => {
         const expected = {
           nhsNumber: {
             '9999999000': 9999999000
@@ -295,7 +299,7 @@ describe('ripple-cdr-discovery/lib/cache/patientCache', () => {
         };
 
         const nhsNumber = 9999999000;
-        await patientCache.byPatientUuid.setNhsNumber(patientUuid, nhsNumber);
+        patientCache.byPatientUuid.setNhsNumber(patientUuid, nhsNumber);
 
         const actual = qewdSession.data.$(['Discovery', 'Patient', 'by_uuid', patientUuid]).getDocument();
 
@@ -304,11 +308,11 @@ describe('ripple-cdr-discovery/lib/cache/patientCache', () => {
     });
 
     describe('#deleteAll', () => {
-      it('should delete all data', async () => {
+      it('should delete all data', () => {
         const expected = {};
 
         seeds();
-        await patientCache.byPatientUuid.deleteAll();
+        patientCache.byPatientUuid.deleteAll();
 
         const actual = qewdSession.data.$(['Discovery', 'Patient', 'by_uuid']).getDocument();
         expect(actual).toEqual(expected);
@@ -316,18 +320,18 @@ describe('ripple-cdr-discovery/lib/cache/patientCache', () => {
     });
 
     describe('#getPractitionerUuid', () => {
-      it('should get practitioner uuid by patient uuid', async () => {
+      it('should get practitioner uuid by patient uuid', () => {
         const expected = 'ed8489c4-ca57-4c8c-8349-d96ada1da244';
 
         seeds();
-        const actual = await patientCache.byPatientUuid.getPractitionerUuid(patientUuid);
+        const actual = patientCache.byPatientUuid.getPractitionerUuid(patientUuid);
 
         expect(actual).toEqual(expected);
       });
     });
 
     describe('#getByPatientUuids', () => {
-      it('should return data by patient uuids', async () => {
+      it('should return data by patient uuids', () => {
         const expected = [
           {
             resource: {
@@ -342,7 +346,7 @@ describe('ripple-cdr-discovery/lib/cache/patientCache', () => {
         const patientUuids = [
           'ce437b97-4f6e-4c96-89bb-0b58b29a79cb'
         ];
-        const actual = await patientCache.byPatientUuid.getByPatientUuids(patientUuids);
+        const actual = patientCache.byPatientUuid.getByPatientUuids(patientUuids);
 
         expect(actual).toEqual(expected);
       });
@@ -363,27 +367,27 @@ describe('ripple-cdr-discovery/lib/cache/patientCache', () => {
     });
 
     describe('#exists', () => {
-      it('should return false', async () => {
+      it('should return false', () => {
         const expected = false;
 
-        const actual = await patientCache.byResource.exists(nhsNumber, resourceName);
+        const actual = patientCache.byResource.exists(nhsNumber, resourceName);
 
         expect(actual).toEqual(expected);
       });
 
-      it('should return true', async () => {
+      it('should return true', () => {
         const expected = true;
 
         seeds();
-        const actual = await patientCache.byResource.exists(nhsNumber, resourceName);
+        const actual = patientCache.byResource.exists(nhsNumber, resourceName);
 
         expect(actual).toEqual(expected);
       });
     });
 
     describe('#set', () => {
-      it('should set resource uuid', async () => {
-        await patientCache.byResource.set(nhsNumber, patientUuid, resourceName, uuid);
+      it('should set resource uuid', () => {
+        patientCache.byResource.set(nhsNumber, patientUuid, resourceName, uuid);
 
         const byNhsNumber = qewdSession.data.$(['Discovery', 'Patient', 'by_nhsNumber', nhsNumber]).getDocument();
         expect(byNhsNumber).toEqual({
@@ -406,13 +410,13 @@ describe('ripple-cdr-discovery/lib/cache/patientCache', () => {
     });
 
     describe('#getUuidsByResourceName', () => {
-      it('should get uuids by resource name', async () => {
+      it('should get uuids by resource name', () => {
         const expected = [
           'ce437b97-4f6e-4c96-89bb-0b58b29a79cb'
         ];
 
         seeds();
-        const actual = await patientCache.byResource.getUuidsByResourceName(nhsNumber, resourceName);
+        const actual = patientCache.byResource.getUuidsByResourceName(nhsNumber, resourceName);
 
         expect(actual).toEqual(expected);
       });

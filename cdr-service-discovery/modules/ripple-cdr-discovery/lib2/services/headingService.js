@@ -24,13 +24,12 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  11 February 2018
+  12 February 2018
 
 */
 
 'use strict';
 
-const P = require('bluebird');
 const transform = require('qewd-transform-json').transform;
 const { logger } = require('../core');
 const { ResourceFormat } = require('../shared/enums');
@@ -63,10 +62,9 @@ class HeadingService {
     const { resourceName, uuid } = parseRef(headingRef, { separator: '_' });
 
     const { resourceCache } = this.ctx.cache;
-    const { resourceService } = this.ctx.services;
 
-    const resource = await resourceCache.byUuid.get(resourceName, uuid);
-    const practitioner = await resourceService.getPractitioner(resourceName, uuid);
+    const resource = resourceCache.byUuid.get(resourceName, uuid);
+    const practitioner = resourceCache.getPractitioner(resourceName, uuid);
     resource.nhsNumber = nhsNumber;
     resource.practitionerName = practitioner
       ? practitioner.name.text
@@ -100,25 +98,23 @@ class HeadingService {
     const helpers = headingHelpers();
 
     const { patientCache, resourceCache } = this.ctx.cache;
-    const { resourceService } = this.ctx.services;
 
     const results = [];
-    const uuids = await patientCache.byResource.getUuidsByResourceName(nhsNumber, resourceName);
+    const uuids = patientCache.byResource.getUuidsByResourceName(nhsNumber, resourceName);
 
-    await P.each(uuids, async (uuid) => {
-      const resource = await resourceCache.byUuid.get(resourceName, uuid);
-      const practitioner = await resourceService.getPractitioner(resourceName, uuid);
+    uuids.forEach((uuid) => {
+      const resource = resourceCache.byUuid.get(resourceName, uuid);
+      const practitioner = resourceCache.getPractitioner(resourceName, uuid);
 
       resource.nhsNumber = nhsNumber;
       resource.practitionerName = practitioner
         ? practitioner.name.text
         : 'Not known';
 
-      const transformResult = transform(template, resource, helpers);
+      const result = transform(template, resource, helpers);
+      debug('uuid: %s, result: %j', uuid, result);
 
-      debug('uuid: %s, result: %j', uuid, transformResult);
-
-      results.push(transformResult);
+      results.push(result);
     });
 
     return results;

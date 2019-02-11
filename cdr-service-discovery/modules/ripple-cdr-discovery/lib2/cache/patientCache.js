@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 January 2019
+  12 February 2019
 
 */
 
@@ -51,7 +51,7 @@ class PatientCache {
    *
    * @return {Object}
    */
-  async export() {
+  export() {
     logger.info('cache/patientCache|export');
 
     const key = ['Discovery', ResourceName.PATIENT];

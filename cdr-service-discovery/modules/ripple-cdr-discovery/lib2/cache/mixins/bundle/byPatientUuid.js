@@ -41,7 +41,7 @@ module.exports = (adapter) => {
      * @param  {string[]} patientUuids
      * @return {Object[]}
      */
-    getByPatientUuids: async (patientUuids) => {
+    getByPatientUuids: (patientUuids) => {
       logger.info('mixins/bundle|byPatientUuid|getByPatientUuids', { patientUuids });
 
       const uuids = patientUuids.map(patientUuid => {

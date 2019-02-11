@@ -41,7 +41,7 @@ module.exports = (adapter) => {
      * @param  {int|string} nhsNumber
      * @return {Object}
      */
-    get: async (nhsNumber) => {
+    get: (nhsNumber) => {
       logger.info('mixins/demographic/byNhsNumber|get', { nhsNumber });
 
       const key = ['Demographics', 'by_nhsNumber', nhsNumber];
@@ -56,7 +56,7 @@ module.exports = (adapter) => {
      * @param  {Object} data
      * @return {void}
      */
-    set: async (nhsNumber, data) => {
+    set: (nhsNumber, data) => {
       logger.info('mixins/demographic/byNhsNumber|set', { nhsNumber, data });
 
       const key = ['Demographics', 'by_nhsNumber', nhsNumber];
