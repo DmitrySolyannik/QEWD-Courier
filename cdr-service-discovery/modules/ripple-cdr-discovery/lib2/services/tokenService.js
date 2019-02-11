@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  2 January 2019
+  11 February 2019
 
 */
 
@@ -55,9 +55,6 @@ class TokenService {
     const now = Date.now();
 
     const token = await tokenCache.get();
-
-    logger.info('/tokenService1|get', { token });
-
     if (token && token.jwt) {
       if ((now - token.createdAt) < config.auth.tokenTimeout) {
         return token.jwt;

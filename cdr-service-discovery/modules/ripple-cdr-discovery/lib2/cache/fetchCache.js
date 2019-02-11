@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  2 January 2019
+  11 February 2019
 
 */
 
@@ -41,6 +41,12 @@ class FetchCache {
     return new FetchCache(adapter);
   }
 
+  /**
+   * Checks if fetching cache exists for reference or not
+   *
+   * @param {string} reference
+   * @return {bool}
+   */
   async exists(reference) {
     logger.info('cache/fetchCache|exists', { reference });
 
@@ -49,13 +55,29 @@ class FetchCache {
     return this.adapter.exists(key);
   }
 
+  /**
+   * Sets fetching status for a reference
+   *
+   * @param {string} reference
+   * @return {bool}
+   */
+  async set(reference) {
+    logger.info('cache/fetchCache|exists', { reference });
 
+    const key = ['fetchingResource', reference];
+    this.adapter.put(key, true);
+  }
+
+  /**
+   * Deletes all fetching cache
+   *
+   * @return {void}
+   */
   async deleteAll() {
     logger.info('cache/fetchCache|deleteAll');
 
     const key = ['fetchingResource'];
-
-    return this.adapter.delete(key);
+    this.adapter.delete(key);
   }
 }
 

@@ -24,13 +24,14 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 January 2019
+  11 February 2019
 
 */
 
 'use strict';
 
 const request = require('request');
+const { logger } = require('../core');
 const debug = require('debug')('ripple-cdr-discovery:services:resource-rest');
 
 function requestAsync(options) {
@@ -38,11 +39,16 @@ function requestAsync(options) {
     request(options, (err, response, body) => {
       if (err) return reject(err);
 
+      debug('body: %j', body);
+
       return resolve(body);
     });
   });
 }
 
+/**
+ * Discovery API Auth REST service
+ */
 class AuthRestService {
   constructor(ctx, hostConfig) {
     this.ctx = ctx;
@@ -53,8 +59,13 @@ class AuthRestService {
     return new AuthRestService(ctx, ctx.serversConfig.auth);
   }
 
+  /**
+   * Sends a request to get token
+   *
+   * @return {Promise.<Object>}
+   */
   async authenticate() {
-    debug('authenticate');
+    logger.info('services/authRestService|authenticate');
 
     const options = {
       url: `${this.hostConfig.host + this.hostConfig.path}`,
@@ -67,6 +78,8 @@ class AuthRestService {
       },
       json: true
     };
+
+    debug('options: %j', options);
 
     return requestAsync(options);
   }

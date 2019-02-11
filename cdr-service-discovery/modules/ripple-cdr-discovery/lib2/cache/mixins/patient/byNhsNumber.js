@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 January 2019
+  11 February 2019
 
 */
 
@@ -35,6 +35,13 @@ const { ResourceName } = require('../../../shared/enums');
 
 module.exports = (adapter, ) => {
   return {
+
+    /**
+     * Checks if data exists by NHS number or not
+     *
+     * @param  {int|string} nhsNumber
+     * @return {bool}
+     */
     exists: async (nhsNumber) => {
       logger.info('mixins/patient/byNhsNumber|exists', { nhsNumber });
 
@@ -43,6 +50,12 @@ module.exports = (adapter, ) => {
       return adapter.exists(key);
     },
 
+    /**
+     * Gets patient uuid by NHS number
+     *
+     * @param  {int|string} nhsNumber
+     * @return {string}
+     */
     getPatientUuid: async (nhsNumber) => {
       logger.info('mixins/patient/byNhsNumber|getPatientUuid', { nhsNumber });
 
@@ -51,6 +64,12 @@ module.exports = (adapter, ) => {
       return adapter.qewdSession.data.$(key).firstChild.value;
     },
 
+    /**
+     * Gets all patient uuids by NHS number
+     *
+     * @param  {int|string} nhsNumber
+     * @return {string[]}
+     */
     getAllPatientUuids: async (nhsNumber) => {
       logger.info('mixins/patient|byNhsNumber|getAllPatientUuids', { nhsNumber });
 
@@ -64,17 +83,32 @@ module.exports = (adapter, ) => {
       return patientUuids;
     },
 
+    /**
+     * Sets patient uuid
+     *
+     * @param  {int|string} nhsNumber
+     * @param  {string} patientUuid
+     * @return {void}
+     */
     setPatientUuid: async (nhsNumber, patientUuid) => {
       logger.info('mixins/patient|byNhsNumber|setPatientUuid', { nhsNumber, patientUuid });
 
       const key = ['Discovery', ResourceName.PATIENT, 'by_nhsNumber', nhsNumber, 'Patient', patientUuid];
-
       adapter.put(key, patientUuid);
     },
+
+    /**
+     * Sets resource uuid
+     *
+     * @param  {int|string} nhsNumber
+     * @param  {string} resourceName
+     * @param  {string} uuid
+     * @return {void}
+     */
     setResourceUuid: async (nhsNumber, resourceName, uuid) => {
       logger.info('mixins/patient|byResource|setResourceUuid', { nhsNumber, resourceName, uuid });
 
-      const key = ['Discovery', 'Patient','by_nhsNumber', nhsNumber, 'resources', resourceName, uuid];
+      const key = ['Discovery', ResourceName.PATIENT, 'by_nhsNumber', nhsNumber, 'resources', resourceName, uuid];
       adapter.put(key, uuid);
     }
   };

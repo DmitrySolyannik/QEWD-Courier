@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 January 2019
+  11 February 2019
 
 */
 
@@ -32,6 +32,7 @@
 
 const BundleCache = require('./bundleCache');
 const DemographicCache = require('./demographicCache');
+const DiscoveryCache = require('./discoveryCache');
 const FetchCache = require('./fetchCache');
 const PatientCache = require('./patientCache');
 const ResourceCache = require('./resourceCache');
@@ -41,6 +42,7 @@ const TokenCache = require('./tokenCache');
 module.exports = {
   BundleCache,
   DemographicCache,
+  DiscoveryCache,
   FetchCache,
   PatientCache,
   ResourceCache,

@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  31 December 2018
+  11 February 2019
 
 */
 
@@ -33,8 +33,7 @@
 const { ExecutionContextMock } = require('../../mocks');
 const { BundleCache } = require('../../../lib2/cache');
 
-
-describe('ripple-cdr-discovery/lib2/cache/bundleCache', () => {
+describe('ripple-cdr-discovery/lib/cache/bundleCache', () => {
   let ctx;
   let nhsNumber;
 
@@ -42,19 +41,33 @@ describe('ripple-cdr-discovery/lib2/cache/bundleCache', () => {
   let qewdSession;
 
   function seeds() {
-    qewdSession.data.$(['Discovery', 'PatientBundle']).setDocument({
-      foo: 'bar'
+    qewdSession.data.$(['Discovery', 'PatientBundle', 'by_nhsNumber', nhsNumber, 'Patient']).setDocument({
+      'c57c65f2-1ca8-46df-9a29-09373dcff552': {
+        value: 'foo'
+      },
+      'be7b03df-2c9a-4afd-8bc5-6065d0688f15': {
+        value: 'bar'
+      },
+      '4ae63d75-b4bc-45ff-8233-8c8f04ddeca5': {
+        value: 'baz'
+      }
     });
-    qewdSession.data.$(['Discovery', 'PatientBundle', 'by_nhsNumber', nhsNumber, 'Patient']).setDocument([
-      { uuid: 1, data: 'some-data-foo' },
-      { uuid: 2, data: 'some-data-bar' },
-      { uuid: 3, data: 'some-data-foo-bar' },
-    ]);
-
+    qewdSession.data.$(['Discovery', 'PatientBundle', 'by_uuid']).setDocument({
+      'c57c65f2-1ca8-46df-9a29-09373dcff552': {
+        value: 'foo'
+      },
+      'be7b03df-2c9a-4afd-8bc5-6065d0688f15': {
+        value: 'bar'
+      },
+      '4ae63d75-b4bc-45ff-8233-8c8f04ddeca5': {
+        value: 'baz'
+      }
+    });
   }
 
   beforeEach(() => {
     ctx = new ExecutionContextMock();
+
     bundleCache = new BundleCache(ctx.adapter);
     qewdSession = ctx.adapter.qewdSession;
 
@@ -62,7 +75,6 @@ describe('ripple-cdr-discovery/lib2/cache/bundleCache', () => {
 
     ctx.cache.freeze();
   });
-
 
   describe('#create (static)', () => {
     it('should initialize a new instance', async () => {
@@ -75,64 +87,88 @@ describe('ripple-cdr-discovery/lib2/cache/bundleCache', () => {
     });
   });
 
-  it('should check if bundle cache exists', async () => {
-    seeds();
-    const actual = await bundleCache.exists();
+  describe('#exists', () => {
+    it('should return false', async () => {
+      const expected = false;
 
-    expect(actual).toEqual(true);
+      const actual = await bundleCache.exists();
+
+      expect(actual).toEqual(expected);
+    });
+
+    it('should return true when bundle cache exists', async () => {
+      const expected = true;
+
+      seeds();
+
+      const actual = await bundleCache.exists();
+
+      expect(actual).toEqual(expected);
+    });
   });
 
-  it('should set data to bundle cache', async () => {
-    const expected = {
-      foo: 'bar'
-    };
-    await bundleCache.import(expected);
-    const actual = qewdSession.data.$(['Discovery', 'PatientBundle']).getDocument(true);
-    expect(actual).toEqual({
-      foo: 'bar'
+  describe('#import', () => {
+    it('should set data to bundle cache', async () => {
+      const expected = {
+        foo: 'bar'
+      };
+
+      const data = {
+        foo: 'bar'
+      };
+      await bundleCache.import(data);
+
+      const actual = qewdSession.data.$(['Discovery', 'PatientBundle']).getDocument(true);
+      expect(actual).toEqual(expected);
     });
   });
 
   describe('byNhsNumber', () => {
-    it('should return all source ids', async () => {
+    it('should return all patient uuids', async () => {
       const expected = [
-        5558526785,
-        8111144490,
-        8111133448,
-        8111162618,
+        '4ae63d75-b4bc-45ff-8233-8c8f04ddeca5',
+        'be7b03df-2c9a-4afd-8bc5-6065d0688f15',
+        'c57c65f2-1ca8-46df-9a29-09373dcff552'
       ];
 
       seeds();
 
-     await bundleCache.byNhsNumber.getAllPatientUuids(nhsNumber);
+      const actual = await bundleCache.byNhsNumber.getAllPatientUuids(nhsNumber);
 
-      // expect(actual).toEqual(expected); @TODO Add expected values !!!
+      expect(actual).toEqual(expected);
     });
   });
-  describe('byPatientUuid', () => {
-    const uuids = [
-      5558526785,
-      8111144490,
-      8111133448,
-    ];
-    function seeds() {
-      uuids.forEach(val => qewdSession.data.$(['Discovery', 'PatientBundle', 'by_uuid', val]).setDocument({
-        name: 'Test',
-        id: val
-      }));
-    }
 
-    it('should return all patients', async () => {
+  describe('byPatientUuid', () => {
+    it('should return patients by patient uuids', async () => {
+      const expected = [
+        {
+          resource: {
+            value: 'baz'
+          }
+        },
+        {
+          resource: {
+            value: 'bar'
+          }
+        },
+        {
+          resource: {
+            value: 'foo'
+          }
+        }
+      ];
 
       seeds();
 
-      const actual = await bundleCache.byPatientUuid.getByPatientUuids(uuids);
+      const patientUiids = [
+        '4ae63d75-b4bc-45ff-8233-8c8f04ddeca5',
+        'be7b03df-2c9a-4afd-8bc5-6065d0688f15',
+        'c57c65f2-1ca8-46df-9a29-09373dcff552'
+      ];
+      const actual = await bundleCache.byPatientUuid.getByPatientUuids(patientUiids);
 
-      expect(actual).toEqual([
-        { id: 5558526785, name: 'Test' },
-        { id: 8111144490, name: 'Test' },
-        { id: 8111133448, name: 'Test' },
-      ]);
+      expect(actual).toEqual(expected);
     });
   });
 });

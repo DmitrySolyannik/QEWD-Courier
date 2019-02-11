@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 January 2019
+  11 February 2019
 
 */
 
@@ -44,6 +44,11 @@ class BundleCache {
     return new BundleCache(adapter);
   }
 
+  /**
+   * Checks if bundle exists or not
+   *
+   * @return {bool}
+   */
   async exists() {
     logger.info('cache/bundleCache|exists');
 
@@ -52,6 +57,12 @@ class BundleCache {
     return this.adapter.exists(key);
   }
 
+  /**
+   * Imports data to bundle
+   *
+   * @param  {Object} data
+   * @return {void}
+   */
   async import(data) {
     logger.info('cache/bundleCache|import', data);
 

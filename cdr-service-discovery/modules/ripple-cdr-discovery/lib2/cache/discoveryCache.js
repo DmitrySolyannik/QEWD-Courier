@@ -30,39 +30,29 @@
 
 'use strict';
 
-function getHeadingTemplate(headingName, source, destination) {
-  return require(`../../templates/${headingName}/${source}_to_${destination}.json`);
+const { logger } = require('../core');
+
+class DiscoveryCache {
+  constructor(adapter) {
+    this.adapter = adapter;
+  }
+
+  static create(adapter) {
+    return new DiscoveryCache(adapter);
+  }
+
+  /**
+   * Deletes all cache in discovery
+   *
+   * @return {void}
+   */
+  async deleteAll() {
+    logger.info('cache/discoveryCache|deleteAll');
+
+    const key = ['Discovery'];
+    this.adapter.delete(key);
+  }
+
 }
 
-function headingHelpers() {
-  const helpers = {
-    fhirDateTime: (d) => {
-      return new Date(d).toISOString();
-    },
-    convertToString: (input) => {
-      return input.toString();
-    },
-    useSnomed: function(arr, property) {
-      var obj;
-      var value = '';
-      for (var i = 0; i < arr.length; i++) {
-        obj = arr[i];
-        if (obj.system && obj.system.indexOf('snomed') !== -1) {
-          if (obj[property]) {
-            value = obj[property];
-            break;
-          }
-        }
-      }
-
-      return value.toString();
-    }
-  };
-
-  return helpers;
-}
-
-module.exports = {
-  getHeadingTemplate,
-  headingHelpers
-};
+module.exports = DiscoveryCache;

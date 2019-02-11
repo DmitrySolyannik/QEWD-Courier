@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  31 December 2018
+  11 February 2019
 
 */
 
@@ -33,59 +33,59 @@
 const { ExecutionContextMock } = require('../../mocks');
 const { PatientCache } = require('../../../lib2/cache');
 
-
-describe('ripple-cdr-discovery/lib2/cache/bundleCache', () => {
+describe('ripple-cdr-discovery/lib/cache/patientCache', () => {
   let ctx;
 
-  let patientUuid;
-  let uuid;
-  let patientUuids;
   let patientCache;
   let qewdSession;
-  let nhsNumber;
-  let resourceName;
-  let patient;
 
   function seeds() {
     qewdSession.data.$(['Discovery', 'Patient']).setDocument({
-      id: 9999990000,
-      name: 'Patient#1',
-      foo: [
-        {
-          bar: 'foo-bar'
+      'by_nhsNumber': {
+        '9999999000': {
+          'Patient': {
+            '888c1383-c07c-400d-99aa-f30350bdb984': '888c1383-c07c-400d-99aa-f30350bdb984',
+            'ce437b97-4f6e-4c96-89bb-0b58b29a79cb': 'ce437b97-4f6e-4c96-89bb-0b58b29a79cb'
+          },
+          resources: {
+            AllergyIntolerance: {
+              '888c1383-c07c-400d-99aa-f30350bdb984': '888c1383-c07c-400d-99aa-f30350bdb984'
+            },
+            Immunization: {
+              'ce437b97-4f6e-4c96-89bb-0b58b29a79cb': 'ce437b97-4f6e-4c96-89bb-0b58b29a79cb'
+            }
+          }
         }
-      ]
+      },
+      'by_uuid': {
+        '888c1383-c07c-400d-99aa-f30350bdb984': {
+          foo: 'bar',
+          practitioner: 'ed8489c4-ca57-4c8c-8349-d96ada1da244'
+        },
+        'ce437b97-4f6e-4c96-89bb-0b58b29a79cb': {
+          bar: 'quux',
+          practitioner: 'f24bb154-2155-4cfd-b3bf-af1c3fa95c3b'
+        }
+      },
+      resources: {
+        AllergyIntolerance: {
+          '888c1383-c07c-400d-99aa-f30350bdb984': '888c1383-c07c-400d-99aa-f30350bdb984'
+        },
+        Immunization: {
+          'ce437b97-4f6e-4c96-89bb-0b58b29a79cb': 'ce437b97-4f6e-4c96-89bb-0b58b29a79cb'
+        }
+      }
     });
   }
 
   beforeEach(() => {
     ctx = new ExecutionContextMock();
+
     patientCache = new PatientCache(ctx.adapter);
     qewdSession = ctx.adapter.qewdSession;
 
-    nhsNumber = 999999000;
-    patientUuid = 5558526785;
-    patientUuids = [
-      5558526785,
-      8111144490,
-    ];
-    patient = {
-      id: nhsNumber,
-      nhsNumber: nhsNumber,
-      gender: 'female',
-      phone : '+44 58584 5475477',
-      name: 'Megan',
-      dateOfBirth: 1546300800000,
-      gpName: 'Fox',
-      gpAddress: 'California',
-      address: 'London'
-    };
-    resourceName = 'Patient';
-    uuid = 'ce437b97-4f6e-4c96-89bb-0b58b29a79cb';
-
     ctx.cache.freeze();
   });
-
 
   describe('#create (static)', () => {
     it('should initialize a new instance', async () => {
@@ -99,131 +99,323 @@ describe('ripple-cdr-discovery/lib2/cache/bundleCache', () => {
     });
   });
 
-  it('should check if bundle cache exists', async () => {
-    seeds();
-    const actual = await patientCache.export();
-
-    expect(actual).toEqual({
-      id: 9999990000,
-      name: 'Patient#1',
-      foo: [
-        {
-          bar: 'foo-bar'
+  describe('#export', () => {
+    it('should export patient data', async () => {
+      const expected = {
+        by_nhsNumber: {
+          '9999999000': {
+            Patient: {
+              '888c1383-c07c-400d-99aa-f30350bdb984': '888c1383-c07c-400d-99aa-f30350bdb984',
+              'ce437b97-4f6e-4c96-89bb-0b58b29a79cb': 'ce437b97-4f6e-4c96-89bb-0b58b29a79cb'
+            },
+            resources: {
+              AllergyIntolerance: {
+                '888c1383-c07c-400d-99aa-f30350bdb984': '888c1383-c07c-400d-99aa-f30350bdb984'
+              },
+              Immunization: {
+                'ce437b97-4f6e-4c96-89bb-0b58b29a79cb': 'ce437b97-4f6e-4c96-89bb-0b58b29a79cb'
+              }
+            }
+          }
+        },
+        by_uuid: {
+          '888c1383-c07c-400d-99aa-f30350bdb984': {
+            foo: 'bar',
+            practitioner: 'ed8489c4-ca57-4c8c-8349-d96ada1da244'
+          },
+          'ce437b97-4f6e-4c96-89bb-0b58b29a79cb': {
+            bar: 'quux',
+            practitioner: 'f24bb154-2155-4cfd-b3bf-af1c3fa95c3b'
+          }
+        },
+        resources: {
+          AllergyIntolerance: {
+            '888c1383-c07c-400d-99aa-f30350bdb984': '888c1383-c07c-400d-99aa-f30350bdb984'
+          },
+          Immunization: {
+            'ce437b97-4f6e-4c96-89bb-0b58b29a79cb': 'ce437b97-4f6e-4c96-89bb-0b58b29a79cb'
+          }
         }
-      ]
+      };
+
+      seeds();
+
+      const actual = await patientCache.export();
+
+      expect(actual).toEqual(expected);
     });
   });
-  describe('byResource', () => {
-    function seedsByResource() {
-      qewdSession.data.$(['Discovery', 'Patient', 'by_nhsNumber', nhsNumber, 'resources', resourceName]).setDocument(patientUuids);
-    }
 
-    it('should check if cache exists', async () => {
-      seedsByResource();
-      const actual = await patientCache.byResource.exists(nhsNumber, resourceName);
-      expect(actual).toEqual(true);
-    });
-
-    it('should set cache ', async () => {
-      await patientCache.byResource.set(nhsNumber, patientUuid, resourceName, uuid);
-      const actualByNhsNumber = qewdSession.data.$(['Discovery', 'Patient', 'by_nhsNumber', nhsNumber, 'resources', resourceName, uuid]).value;
-      const actualByUuidKey = qewdSession.data.$(['Discovery', 'Patient', 'by_uuid', patientUuid, 'resources', resourceName, uuid]).value;
-
-      expect(actualByNhsNumber).toEqual(uuid);
-      expect(actualByUuidKey).toEqual(uuid);
-    });
-
-    it('should get all resource uuids', async () => {
-      seedsByResource();
-      await patientCache.byResource.getAllResourceUuids(nhsNumber, resourceName); //@TODO add expect for array of ids
-    });
-  });
   describe('byNhsNumber', () => {
-    function seedsByNhsNumber() {
-      qewdSession.data.$(['Discovery', 'Patient', 'by_nhsNumber', nhsNumber, 'resources', 'Patient']).setDocument(patientUuids);
-    }
+    let nhsNumber;
 
-    it('should check if cache exists', async () => {
-      seedsByNhsNumber();
-      const actual = await patientCache.byNhsNumber.exists(nhsNumber, resourceName);
-      expect(actual).toEqual(true);
+    beforeEach(() => {
+      nhsNumber = 9999999000;
     });
 
-    it('should get first patient uuid', async () => {
-      qewdSession.data.$(['Discovery', 'Patient', 'by_nhsNumber', nhsNumber, 'Patient']).setDocument(patientUuids);
-      const actual = await patientCache.byNhsNumber.getPatientUuid(nhsNumber);
-      expect(actual).toEqual(5558526785);
+    describe('#exists', () => {
+      it('should return false', async () => {
+        const expected = false;
+
+        const actual = await patientCache.byNhsNumber.exists(nhsNumber);
+
+        expect(actual).toEqual(expected);
+      });
+
+      it('should return true', async () => {
+        const expected = true;
+
+        seeds();
+        const actual = await patientCache.byNhsNumber.exists(nhsNumber);
+
+        expect(actual).toEqual(expected);
+      });
     });
 
-    it('should get all patients uuid', async () => {
-      qewdSession.data.$(['Discovery', 'Patient', 'by_nhsNumber', nhsNumber, 'Patient']).setDocument(patientUuids);
-      const actual = await patientCache.byNhsNumber.getAllPatientUuids(nhsNumber); //@TODO add valid expect
+    describe('#getPatientUuid', () => {
+      it('should get patient uuid', async () => {
+        const expected = '888c1383-c07c-400d-99aa-f30350bdb984';
 
+        seeds();
+        const actual = await patientCache.byNhsNumber.getPatientUuid(nhsNumber);
+
+        expect(actual).toEqual(expected);
+      });
     });
 
-    it('should set patient uuid', async () => {
-      await patientCache.byNhsNumber.setPatientUuid(nhsNumber, patientUuid);
-      const actual = qewdSession.data.$(['Discovery', 'Patient', 'by_nhsNumber', nhsNumber, 'Patient', patientUuid]).value;
-      expect(actual).toEqual(patientUuid);
+    describe('#getAllPatientUuids', () => {
+      it('should get all patients uuid', async () => {
+        const expected = [
+          '888c1383-c07c-400d-99aa-f30350bdb984',
+          'ce437b97-4f6e-4c96-89bb-0b58b29a79cb'
+        ];
+
+        seeds();
+        const actual = await patientCache.byNhsNumber.getAllPatientUuids(nhsNumber);
+
+        expect(actual).toEqual(expected);
+      });
     });
 
-    it('should set resource uuid', async () => {
-      await patientCache.byNhsNumber.setResourceUuid(nhsNumber, resourceName, uuid);
-      const actual = qewdSession.data.$(['Discovery', 'Patient','by_nhsNumber', nhsNumber, 'resources', resourceName, uuid]).value;
-      expect(actual).toEqual(uuid);
+    describe('#setPatientUuid', () => {
+      it('should set all patient uuid', async () => {
+        const expected = {
+          '9455268f-ee5b-481b-8dbc-a156897cf055': '9455268f-ee5b-481b-8dbc-a156897cf055'
+        };
+
+        const patientUuid = '9455268f-ee5b-481b-8dbc-a156897cf055';
+        await patientCache.byNhsNumber.setPatientUuid(nhsNumber, patientUuid);
+
+        const actual = qewdSession.data.$(['Discovery', 'Patient', 'by_nhsNumber', nhsNumber, 'Patient']).getDocument();
+        expect(actual).toEqual(expected);
+      });
+    });
+
+    describe('#setResourceUuid', () => {
+      it('should set all patient uuid', async () => {
+        const expected = {
+          AllergyIntolerance: {
+            '9853d2e5-f706-4b59-af0b-c4bca3106a53': '9853d2e5-f706-4b59-af0b-c4bca3106a53'
+          }
+        };
+
+        const resourceName = 'AllergyIntolerance';
+        const uuid = '9853d2e5-f706-4b59-af0b-c4bca3106a53';
+        await patientCache.byNhsNumber.setResourceUuid(nhsNumber, resourceName, uuid);
+
+        const actual = qewdSession.data.$(['Discovery', 'Patient', 'by_nhsNumber', nhsNumber, 'resources']).getDocument();
+        expect(actual).toEqual(expected);
+      });
     });
   });
+
   describe('byPatientUuid', () => {
-    function seedsByPatientUuid() {
-      qewdSession.data.$(['Discovery', 'Patient', 'by_uuid', patientUuid]).setDocument(patient);
-    }
+    let patientUuid;
 
-    it('should check it cache exists', async () => {
-      seedsByPatientUuid();
-      const actual =  await patientCache.byPatientUuid.exists(patientUuid);
-      expect(actual).toEqual(true);
+    beforeEach(() => {
+      patientUuid = '888c1383-c07c-400d-99aa-f30350bdb984';
     });
 
-    it('should set patient to cache', async () => {
-      await patientCache.byPatientUuid.set(patientUuid, patient);
-      const actual = qewdSession.data.$(['Discovery', 'Patient', 'by_uuid', patientUuid]).getDocument();
-      expect(actual).toEqual(patient);
+    describe('#exists', () => {
+      it('should return false', async () => {
+        const expected = false;
+
+        const actual = await patientCache.byPatientUuid.exists(patientUuid);
+
+        expect(actual).toEqual(expected);
+      });
+
+      it('should return true', async () => {
+        const expected = true;
+
+        seeds();
+        const actual = await patientCache.byPatientUuid.exists(patientUuid);
+
+        expect(actual).toEqual(expected);
+      });
     });
 
-    it('should get person from cache', async () => {
-      seedsByPatientUuid();
-      const actual = await patientCache.byPatientUuid.get(patientUuid);
-      expect(actual).toEqual(patient);
+    describe('#set', () => {
+      it('should set patient data', async () => {
+        const expected = {
+          quux: 'quuz'
+        };
+
+        const data = {
+          quux: 'quuz'
+        };
+        await patientCache.byPatientUuid.set(patientUuid, data);
+
+        const actual = qewdSession.data.$(['Discovery', 'Patient', 'by_uuid', patientUuid]).getDocument();
+
+        expect(actual).toEqual(expected);
+      });
     });
 
-    it('should set nhsNumber to cache', async () => {
-      await patientCache.byPatientUuid.setNhsNumber(patientUuid, nhsNumber);
-      const actual = qewdSession.data.$(['Discovery', 'Patient', 'by_uuid', patientUuid, 'nhsNumber', nhsNumber]).value;
-      expect(actual).toEqual(nhsNumber);
+    describe('#get', () => {
+      it('should get patient data', async () => {
+        const expected = {
+          foo: 'bar',
+          practitioner: 'ed8489c4-ca57-4c8c-8349-d96ada1da244'
+        };
+
+        seeds();
+        const actual = await patientCache.byPatientUuid.get(patientUuid);
+
+        expect(actual).toEqual(expected);
+      });
     });
 
-    it('should delete all cache data', async () => {
-      seedsByPatientUuid();
-      await patientCache.byPatientUuid.deleteAll();
-      const actual = qewdSession.data.$(['Discovery', 'Patient', 'by_uuid']).getDocument();
-      expect(actual).toEqual({});
+    describe('#setNhsNumber', () => {
+      it('should set nhs number', async () => {
+        const expected = {
+          nhsNumber: {
+            '9999999000': 9999999000
+          }
+        };
+
+        const nhsNumber = 9999999000;
+        await patientCache.byPatientUuid.setNhsNumber(patientUuid, nhsNumber);
+
+        const actual = qewdSession.data.$(['Discovery', 'Patient', 'by_uuid', patientUuid]).getDocument();
+
+        expect(actual).toEqual(expected);
+      });
     });
 
-    it('should get practitioner uuid', async () => {
-      qewdSession.data.$(['Discovery', 'Patient', 'by_uuid', patientUuid, 'practitioner']).value = 'foo-bar';
-      const actual = await patientCache.byPatientUuid.getPractitionerUuid(patientUuid);
-      expect(actual).toEqual('foo-bar');
+    describe('#deleteAll', () => {
+      it('should delete all data', async () => {
+        const expected = {};
+
+        seeds();
+        await patientCache.byPatientUuid.deleteAll();
+
+        const actual = qewdSession.data.$(['Discovery', 'Patient', 'by_uuid']).getDocument();
+        expect(actual).toEqual(expected);
+      });
     });
 
-    it('should get all patients', async () => {
-      qewdSession.data.$(['Discovery', 'Patient', 'by_uuid', 5558526785]).setDocument(patient);
-      qewdSession.data.$(['Discovery', 'Patient', 'by_uuid', 8111144490]).setDocument(patient);
-      const actual = await patientCache.byPatientUuid.getByPatientUuids(patientUuids);
-      expect(actual).toEqual([
-        patient,
-        patient
-      ]);
+    describe('#getPractitionerUuid', () => {
+      it('should get practitioner uuid by patient uuid', async () => {
+        const expected = 'ed8489c4-ca57-4c8c-8349-d96ada1da244';
+
+        seeds();
+        const actual = await patientCache.byPatientUuid.getPractitionerUuid(patientUuid);
+
+        expect(actual).toEqual(expected);
+      });
     });
 
+    describe('#getByPatientUuids', () => {
+      it('should return data by patient uuids', async () => {
+        const expected = [
+          {
+            resource: {
+              bar: 'quux',
+              practitioner: 'f24bb154-2155-4cfd-b3bf-af1c3fa95c3b'
+            }
+          }
+        ];
+
+        seeds();
+
+        const patientUuids = [
+          'ce437b97-4f6e-4c96-89bb-0b58b29a79cb'
+        ];
+        const actual = await patientCache.byPatientUuid.getByPatientUuids(patientUuids);
+
+        expect(actual).toEqual(expected);
+      });
+    });
+  });
+
+  describe('byResource', () => {
+    let nhsNumber;
+    let patientUuid;
+    let resourceName;
+    let uuid;
+
+    beforeEach(() => {
+      nhsNumber = 9999999000;
+      patientUuid = '888c1383-c07c-400d-99aa-f30350bdb984';
+      resourceName = 'Immunization';
+      uuid = 'ce437b97-4f6e-4c96-89bb-0b58b29a79cb';
+    });
+
+    describe('#exists', () => {
+      it('should return false', async () => {
+        const expected = false;
+
+        const actual = await patientCache.byResource.exists(nhsNumber, resourceName);
+
+        expect(actual).toEqual(expected);
+      });
+
+      it('should return true', async () => {
+        const expected = true;
+
+        seeds();
+        const actual = await patientCache.byResource.exists(nhsNumber, resourceName);
+
+        expect(actual).toEqual(expected);
+      });
+    });
+
+    describe('#set', () => {
+      it('should set resource uuid', async () => {
+        await patientCache.byResource.set(nhsNumber, patientUuid, resourceName, uuid);
+
+        const byNhsNumber = qewdSession.data.$(['Discovery', 'Patient', 'by_nhsNumber', nhsNumber]).getDocument();
+        expect(byNhsNumber).toEqual({
+          resources: {
+            Immunization: {
+              'ce437b97-4f6e-4c96-89bb-0b58b29a79cb': 'ce437b97-4f6e-4c96-89bb-0b58b29a79cb'
+            }
+          }
+        });
+
+        const byPatientUuid = qewdSession.data.$(['Discovery', 'Patient', 'by_uuid', patientUuid]).getDocument();
+        expect(byPatientUuid).toEqual({
+          resources: {
+            Immunization: {
+              'ce437b97-4f6e-4c96-89bb-0b58b29a79cb': 'ce437b97-4f6e-4c96-89bb-0b58b29a79cb'
+            }
+          }
+        });
+      });
+    });
+
+    describe('#getUuidsByResourceName', () => {
+      it('should get uuids by resource name', async () => {
+        const expected = [
+          'ce437b97-4f6e-4c96-89bb-0b58b29a79cb'
+        ];
+
+        seeds();
+        const actual = await patientCache.byResource.getUuidsByResourceName(nhsNumber, resourceName);
+
+        expect(actual).toEqual(expected);
+      });
+    });
   });
 });

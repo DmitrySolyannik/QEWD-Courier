@@ -47,9 +47,9 @@ class PatientCache {
   }
 
   /**
-   * Exports data
+   * Exports all patient cache data
    *
-   * @return {Promise.<Object>}
+   * @return {Object}
    */
   async export() {
     logger.info('cache/patientCache|export');

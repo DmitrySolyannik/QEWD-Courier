@@ -24,13 +24,14 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 January 2018
+  12 February 2018
 
 */
 
 'use strict';
 
 const { BadRequestError } = require('../errors');
+const { logger } = require('../core');
 const { isHeadingValid, isPatientIdValid } = require('../shared/validation');
 const { Role } = require('../shared/enums');
 const BaseCommand = require('./baseCommand');
@@ -50,7 +51,8 @@ class GetHeadingSummaryCommand extends BaseCommand {
    * @return {Object}
    */
   async execute(patientId, heading) {
-    debug('patientId: %s, heading: %s', patientId, heading);
+    logger.info('commands/getHeadingSummary|execute', { patientId, heading });
+
     debug('role: %s', this.session.role);
 
     // override patientId for PHR Users - only allowed to see their own data

@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 January 2019
+  11 February 2019
 
 */
 
@@ -34,6 +34,13 @@ const { logger } = require('../../../core');
 
 module.exports = (adapter) => {
   return {
+
+    /**
+     * Gets all patients uuids by NHS number
+     *
+     * @param  {int|string} nhsNumber
+     * @return {string[]|}
+     */
     getAllPatientUuids: async (nhsNumber) => {
       logger.info('mixins/bundle|byNhsNumber|getAllPatientUuids', { nhsNumber });
 

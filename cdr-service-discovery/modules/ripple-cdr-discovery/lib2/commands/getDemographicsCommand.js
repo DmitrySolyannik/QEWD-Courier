@@ -24,13 +24,14 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 January 2018
+  11 February 2018
 
 */
 
 'use strict';
 
 const { BadRequestError } = require('../errors');
+const { logger } = require('../core');
 const { isPatientIdValid } = require('../shared/validation');
 const { Role, ResourceName } = require('../shared/enums');
 const BaseCommand = require('./baseCommand');
@@ -49,7 +50,8 @@ class GetDemographicsCommand extends BaseCommand {
    * @return {Object}
    */
   async execute(patientId) {
-    debug('patientId: %s', patientId);
+    logger.info('commands/getDemographics|execute', { patientId });
+
     debug('role: %s', this.session.role);
 
     if (this.session.role === Role.PHR_USER) {

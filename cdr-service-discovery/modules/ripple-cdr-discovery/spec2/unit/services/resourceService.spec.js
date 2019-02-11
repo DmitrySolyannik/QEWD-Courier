@@ -33,7 +33,7 @@
 const { ExecutionContextMock } = require('../../mocks');
 const ResourceService = require('../../../lib2/services/resourceService');
 
-describe('ripple-cdr-discovery/lib2/services/resourceService', () => {
+describe('ripple-cdr-discovery/lib/services/resourceService', () => {
   let ctx;
   let nhsNumber;
   let resourceName;
@@ -215,7 +215,8 @@ describe('ripple-cdr-discovery/lib2/services/resourceService', () => {
 
     expect(patientCache.byNhsNumber.exists).toHaveBeenCalledWith(nhsNumber);
     expect(actual).toEqual({
-      ok: false
+      ok: false,
+      cached: true
     });
   });
 
@@ -236,7 +237,6 @@ describe('ripple-cdr-discovery/lib2/services/resourceService', () => {
     expect(patientCache.byPatientUuid.exists).toHaveBeenCalledTimes(2);
     expect(patientCache.byPatientUuid.exists.calls.argsFor(0)).toEqual([8111143494]);
     expect(patientCache.byPatientUuid.exists.calls.argsFor(1)).toEqual([8111123469]);
-
   });
 
   it('should call fetchPatient without patients from resource service', async () => {
@@ -269,7 +269,6 @@ describe('ripple-cdr-discovery/lib2/services/resourceService', () => {
 
   it('should call fetchPatientResources with success response and one of cases without practitioner ref', async () => {
     const { patientBundle, patientResource, token } = seeds();
-
 
     patientCache.byResource.exists.and.resolveValue(false);
     patientService.getPatientBundle.and.resolveValue(patientBundle.patients);
@@ -332,8 +331,8 @@ describe('ripple-cdr-discovery/lib2/services/resourceService', () => {
 
 
     expect(resourceService.fetchPractitioner).toHaveBeenCalledTimes(2);
-    expect(resourceService.fetchPractitioner.calls.argsFor(0)).toEqual(['foo/5900049117', 'Patient']);
-    expect(resourceService.fetchPractitioner.calls.argsFor(1)).toEqual(['bar/5900049118', 'Patient']);
+    expect(resourceService.fetchPractitioner.calls.argsFor(0)).toEqual(['Patient', 'foo/5900049117']);
+    expect(resourceService.fetchPractitioner.calls.argsFor(1)).toEqual(['Patient', 'bar/5900049118']);
   });
 
   it('should try to fetch practitioner without patient resource', async () => {
@@ -403,7 +402,7 @@ describe('ripple-cdr-discovery/lib2/services/resourceService', () => {
       resource : resource
     });
 
-    await resourceService.fetchPractitioner(reference, resourceName);
+    await resourceService.fetchPractitioner(resourceName, reference);
     expect(resourceService.fetchResource).toHaveBeenCalledTimes(5);
     expect(resourceService.fetchResource.calls.argsFor(0)).toEqual(['bar/58583011345']);
     expect(resourceService.fetchResource.calls.argsFor(1)).toEqual(['foo/5900049117']);
@@ -416,7 +415,7 @@ describe('ripple-cdr-discovery/lib2/services/resourceService', () => {
     spyOn(resourceService, 'fetchResource').and.resolveValue({
       resource: null
     });
-    await resourceService.fetchPractitioner(reference, resourceName);
+    await resourceService.fetchPractitioner(resourceName, reference);
     expect(resourceService.fetchResource).toHaveBeenCalledWith(reference);
   });
 
@@ -450,7 +449,7 @@ describe('ripple-cdr-discovery/lib2/services/resourceService', () => {
         resource: null
       }
     );
-    await resourceService.fetchPractitioner(reference, 'resourceName');
+    await resourceService.fetchPractitioner('resourceName', reference);
     expect(resourceService.fetchResource).toHaveBeenCalledTimes(3);
     expect(resourceService.fetchResource.calls.argsFor(0)).toEqual([reference]);
     expect(resourceService.fetchResource.calls.argsFor(1)).toEqual(['foo/5900049117']);

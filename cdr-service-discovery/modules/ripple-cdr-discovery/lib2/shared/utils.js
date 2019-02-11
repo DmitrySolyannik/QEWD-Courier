@@ -24,14 +24,14 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 January 2019
+  11 February 2019
 
 */
 
 'use strict';
 
-const { ResourceName } = require('./enums');
 const traverse = require('traverse');
+const { ResourceName } = require('./enums');
 const { isNumeric } = require('./validation');
 
 function flatten(obj) {

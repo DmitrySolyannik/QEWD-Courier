@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 January 2018
+  11 February 2019
 
 */
 
@@ -33,7 +33,7 @@
 const { ExecutionContextMock } = require('../../mocks');
 const DemographicService = require('../../../lib2/services/demographicService');
 
-describe('ripple-cdr-discovery/lib2/services/cacheService', () => {
+describe('ripple-cdr-discovery/lib2/services/demographicService', () => {
   let ctx;
   let nhsNumber;
 
@@ -41,6 +41,7 @@ describe('ripple-cdr-discovery/lib2/services/cacheService', () => {
   let resourceService;
 
   let demographicCache;
+  let discoveryCache;
   let resourceCache;
   let patientCache;
 
@@ -51,8 +52,8 @@ describe('ripple-cdr-discovery/lib2/services/cacheService', () => {
     demographicService = new DemographicService(ctx);
     resourceService = ctx.services.resourceService;
 
-
     demographicCache = ctx.cache.demographicCache;
+    discoveryCache = ctx.cache.discoveryCache;
     resourceCache = ctx.cache.resourceCache;
     patientCache = ctx.cache.patientCache;
 
@@ -110,9 +111,6 @@ describe('ripple-cdr-discovery/lib2/services/cacheService', () => {
 
     resourceService.getOrganisationLocation.and.resolveValue(address);
 
-    demographicCache.byNhsNumber.delete.and.resolveValue();
-    demographicCache.byNhsNumber.set.and.resolveValue();
-
     await demographicService.getByPatientId(nhsNumber);
 
     expect(patientCache.byNhsNumber.getPatientUuid).toHaveBeenCalled();
@@ -120,7 +118,7 @@ describe('ripple-cdr-discovery/lib2/services/cacheService', () => {
     expect(patientCache.byPatientUuid.getPractitionerUuid).toHaveBeenCalled();
     expect(resourceCache.byUuid.get).toHaveBeenCalled();
     expect(resourceService.getOrganisationLocation).toHaveBeenCalled();
-    expect(demographicCache.byNhsNumber.delete).toHaveBeenCalled();
+    expect(discoveryCache.deleteAll).toHaveBeenCalled();
     expect(demographicCache.byNhsNumber.set).toHaveBeenCalled();
   });
 
@@ -146,9 +144,11 @@ describe('ripple-cdr-discovery/lib2/services/cacheService', () => {
       id: 5558526784,
       nhsNumber: nhsNumber,
       gender: ['M', 'ale'],
-      telecom : [{
-        value: '+44 58584 5475477'
-      }],
+      telecom : [
+        {
+          value: '+44 58584 5475477'
+        }
+      ],
       name: [
         {
           text: 'Megan'
@@ -166,9 +166,6 @@ describe('ripple-cdr-discovery/lib2/services/cacheService', () => {
 
     resourceService.getOrganisationLocation.and.resolveValue(address);
 
-    demographicCache.byNhsNumber.delete.and.resolveValue();
-    demographicCache.byNhsNumber.set.and.resolveValue();
-
     await demographicService.getByPatientId(nhsNumber);
 
     expect(patientCache.byNhsNumber.getPatientUuid).toHaveBeenCalled();
@@ -176,8 +173,7 @@ describe('ripple-cdr-discovery/lib2/services/cacheService', () => {
     expect(patientCache.byPatientUuid.getPractitionerUuid).toHaveBeenCalled();
     expect(resourceCache.byUuid.get).toHaveBeenCalled();
     expect(resourceService.getOrganisationLocation).toHaveBeenCalled();
-    expect(demographicCache.byNhsNumber.delete).toHaveBeenCalled();
+    expect(discoveryCache.deleteAll).toHaveBeenCalled();
     expect(demographicCache.byNhsNumber.set).toHaveBeenCalled();
   });
-
 });

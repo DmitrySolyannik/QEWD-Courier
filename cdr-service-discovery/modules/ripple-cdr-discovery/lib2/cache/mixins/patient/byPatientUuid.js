@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 January 2019
+  11 February 2019
 
 */
 
@@ -35,6 +35,13 @@ const { ResourceName } = require('../../../shared/enums');
 
 module.exports = (adapter) => {
   return {
+
+    /**
+     * Checks if data exists by patient uuid or not
+     *
+     * @param  {string} patientUuid
+     * @return {bool}
+     */
     exists: async (patientUuid) => {
       logger.info('mixins/patient|byPatientUuid|exists', { patientUuid });
 
@@ -43,6 +50,13 @@ module.exports = (adapter) => {
       return adapter.exists(key);
     },
 
+    /**
+     * Sets patient data
+     *
+     * @param  {string} patientUuid
+     * @param  {Object} patient
+     * @return {void}
+     */
     set: async (patientUuid, patient) => {
       logger.info('mixins/patient|byPatientUuid|exists', { patientUuid, patient });
 
@@ -50,7 +64,13 @@ module.exports = (adapter) => {
       adapter.putObject(key, patient);
     },
 
-    get: async(patientUuid) => {
+    /**
+     * Gets patient by patient uuid
+     *
+     * @param  {string} patientUuid
+     * @return {Object}
+     */
+    get: async (patientUuid) => {
       logger.info('mixins/patient|byPatientUuid|get', { patientUuid });
 
       const key = ['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid];
@@ -58,6 +78,13 @@ module.exports = (adapter) => {
       return adapter.getObject(key);
     },
 
+    /**
+     * Sets NHS number for patient
+     *
+     * @param  {string} patientUuid
+     * @param  {int|string} nhsNumber
+     * @return {void}
+     */
     setNhsNumber: async (patientUuid, nhsNumber) => {
       logger.info('mixins/patient|byPatientUuid|setNhsNumber', { patientUuid, nhsNumber });
 
@@ -65,6 +92,11 @@ module.exports = (adapter) => {
       adapter.put(key, nhsNumber);
     },
 
+    /**
+     * Deletes all patients data
+     *
+     * @return {[type]} [description]
+     */
     deleteAll: async () => {
       logger.info('mixins/patient|byPatientUuid|deleteAll');
 
@@ -72,6 +104,12 @@ module.exports = (adapter) => {
       adapter.delete(key);
     },
 
+    /**
+     * Gets practitioner uuid for patient
+     *
+     * @param  string} patientUuid
+     * @return {string}
+     */
     getPractitionerUuid: async (patientUuid) => {
       logger.info('mixins/patient|byPatientUuid|getPractitionerUuid', { patientUuid });
 
@@ -80,15 +118,20 @@ module.exports = (adapter) => {
       return adapter.get(key);
     },
 
+    /**
+     * Gets patients data by patient uuids
+     *
+     * @param  {string[]} patientUuids
+     * @return {Object[]}
+     */
     getByPatientUuids: async (patientUuids) => {
       logger.info('mixins/patient|byPatientUuid|getByPatientUuids', { patientUuids });
-      const uuids = patientUuids.map(
-        (patientUuid) => {
-          return {
-            resource: adapter.getObject(['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid])
-          }
-        }
-      );
+
+      const uuids = patientUuids.map((patientUuid) => {
+        return {
+          resource: adapter.getObject(['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid])
+        };
+      });
 
      return uuids;
     }

@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 January 2019
+  11 February 2019
 
 */
 
@@ -34,6 +34,14 @@ const { logger } = require('../../../core');
 
 module.exports = (adapter) => {
   return {
+
+    /**
+     * Checks if data resource by patient uuid or not
+     *
+     * @param  {string} resourceName
+     * @param  {string} uuid
+     * @return {bool}
+     */
     exists: async (resourceName, uuid) => {
       logger.info('mixins/resource|byUuid|exists', { resourceName, uuid });
 
@@ -42,8 +50,16 @@ module.exports = (adapter) => {
       return adapter.exists(key);
     },
 
+    /**
+     * Sets resource data
+     *
+     * @param  {string} resourceName
+     * @param  {string} uuid
+     * @param  {Object} resource
+     * @return {void}
+     */
     set: async (resourceName, uuid, resource) => {
-      logger.info('mixins/resource|byUuid|setIfNotExists', { resourceName, uuid, resource });
+      logger.info('mixins/resource|byUuid|set', { resourceName, uuid, resource });
 
       const key = ['Discovery', resourceName, 'by_uuid', uuid];
       const dataKey = ['Discovery', resourceName, 'by_uuid', uuid, 'data'];
@@ -53,6 +69,13 @@ module.exports = (adapter) => {
       }
     },
 
+    /**
+     * Gets resource data
+     *
+     * @param  {string} resourceName
+     * @param  {string} uuid
+     * @return {Object}
+     */
     get: async (resourceName, uuid) => {
       logger.info('mixins/resource|byUuid|get', { uuid });
 
@@ -61,6 +84,14 @@ module.exports = (adapter) => {
       return adapter.getObjectWithArrays(key);
     },
 
+    /**
+     * Sets practitioner uuid for resource
+     *
+     * @param  {string} resourceName
+     * @param  {string} uuid
+     * @param  {string} practitionerUuid
+     * @return {void}
+     */
     setPractitionerUuid: async (resourceName, uuid, practitionerUuid) => {
       logger.info('mixins/resource|byUuid|setPractitionerUuid', { resourceName, uuid, practitionerUuid });
 
@@ -69,6 +100,13 @@ module.exports = (adapter) => {
       adapter.put(key, practitionerUuid);
     },
 
+    /**
+     * Gets practitioner uuid for resource
+     *
+     * @param  {string} resourceName
+     * @param  {string} uuid
+     * @return {string}
+     */
     getPractitionerUuid: async (resourceName, uuid) => {
       logger.info('mixins/resource|byUuid|getPractitionerUuid', { resourceName, uuid });
 

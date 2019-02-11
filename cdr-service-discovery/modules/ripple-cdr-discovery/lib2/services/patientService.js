@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 January 2018
+  11 February 2018
 
 */
 
@@ -41,6 +41,12 @@ class PatientService {
     return new PatientService(ctx);
   }
 
+  /**
+   * Gets patient bundle by NHS number
+   *
+   * @param  {int|string} nhsNumber
+   * @return {Object}
+   */
   async getPatientBundle(nhsNumber) {
     logger.info('services/patientService|getPatientBundle', { nhsNumber });
 
@@ -60,6 +66,11 @@ class PatientService {
     };
   }
 
+  /**
+   * Updates patient bundle
+   *
+   * @return {void}
+   */
   async updateBundle() {
     logger.info('services/patientService|updateBundle');
 

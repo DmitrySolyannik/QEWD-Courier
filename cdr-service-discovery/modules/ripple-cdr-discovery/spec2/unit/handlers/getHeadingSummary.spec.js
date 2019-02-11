@@ -3,7 +3,7 @@
  ----------------------------------------------------------------------------
  | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
  |                                                                          |
- | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
+ | Copyright (c) 2018-19 Ripple Foundation Community Interest Company       |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  18 December 2018
+  11 February 2019
 
 */
 
@@ -33,7 +33,7 @@
 const mockery = require('mockery');
 const { ExecutionContextMock, CommandMock } = require('../../mocks');
 
-describe('ripple-cdr-discovery/lib2/handlers/getHeadingSummary', () => {
+describe('ripple-cdr-discovery/lib/handlers/getHeadingSummary', () => {
   let args;
   let finished;
   let command;
@@ -67,7 +67,7 @@ describe('ripple-cdr-discovery/lib2/handlers/getHeadingSummary', () => {
 
     command = new CommandMock();
     GetHeadingSummaryCommand = jasmine.createSpy().and.returnValue(command);
-    mockery.registerMock('../commands/getHeadingSummaryCommand', GetHeadingSummaryCommand );
+    mockery.registerMock('../commands', { GetHeadingSummaryCommand });
 
     delete require.cache[require.resolve('../../../lib2/handlers/getHeadingSummary')];
     handler = require('../../../lib2/handlers/getHeadingSummary');
@@ -84,6 +84,7 @@ describe('ripple-cdr-discovery/lib2/handlers/getHeadingSummary', () => {
       results: false
     };
     command.execute.and.resolveValue(responseObj);
+
     await handler(args, finished);
 
     expect(GetHeadingSummaryCommand).toHaveBeenCalledWith(args.req.ctx, args.session);
@@ -103,5 +104,4 @@ describe('ripple-cdr-discovery/lib2/handlers/getHeadingSummary', () => {
       error: 'Some unknown error'
     });
   });
-
 });

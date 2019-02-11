@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 January 2018
+  11 February 2019
 
 */
 
@@ -33,7 +33,7 @@
 const { ExecutionContextMock } = require('../../mocks');
 const HeadingService = require('../../../lib2/services/headingService');
 
-describe('ripple-cdr-discovery/lib2/services/headingService', () => {
+describe('ripple-cdr-discovery/lib/services/headingService', () => {
   let ctx;
 
   let nhsNumber;
@@ -69,7 +69,6 @@ describe('ripple-cdr-discovery/lib2/services/headingService', () => {
       expect(actual.ctx).toBe(ctx);
     });
   });
-
 
   it('should call getBySourceId and returns transformed values', async () => {
     const practitioner = {
@@ -140,13 +139,13 @@ describe('ripple-cdr-discovery/lib2/services/headingService', () => {
       }
     };
 
-    patientCache.byResource.getAllResourceUuids.and.resolveValues(uuids);
+    patientCache.byResource.getUuidsByResourceName.and.resolveValues(uuids);
     resourceCache.byUuid.get.and.resolveValue(resource);
     resourceService.getPractitioner.and.resolveValue(practitioner);
 
     await headingService.getSummary(nhsNumber, heading);
 
-    expect(patientCache.byResource.getAllResourceUuids).toHaveBeenCalled();
+    expect(patientCache.byResource.getUuidsByResourceName).toHaveBeenCalled();
     expect(resourceCache.byUuid.get).toHaveBeenCalled();
     expect(resourceService.getPractitioner).toHaveBeenCalled();
 
@@ -169,18 +168,16 @@ describe('ripple-cdr-discovery/lib2/services/headingService', () => {
       }
     };
 
-    patientCache.byResource.getAllResourceUuids.and.resolveValues(uuids);
+    patientCache.byResource.getUuidsByResourceName.and.resolveValues(uuids);
     resourceCache.byUuid.get.and.resolveValue(resource);
     resourceService.getPractitioner.and.resolveValue();
 
     await headingService.getSummary(nhsNumber, heading);
 
-    expect(patientCache.byResource.getAllResourceUuids).toHaveBeenCalled();
+    expect(patientCache.byResource.getUuidsByResourceName).toHaveBeenCalled();
     expect(resourceCache.byUuid.get).toHaveBeenCalled();
     expect(resourceService.getPractitioner).toHaveBeenCalled();
 
     //@todo add correct response for headingService.getSummary and check how transform works.
   });
-
-
 });

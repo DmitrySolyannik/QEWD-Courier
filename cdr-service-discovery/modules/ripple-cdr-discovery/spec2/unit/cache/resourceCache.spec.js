@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  31 December 2018
+  11 February 2019
 
 */
 
@@ -33,27 +33,33 @@
 const { ExecutionContextMock } = require('../../mocks');
 const { ResourceCache } = require('../../../lib2/cache');
 
-
-describe('ripple-cdr-discovery/lib2/cache/resourceCache', () => {
+describe('ripple-cdr-discovery/lib/cache/resourceCache', () => {
   let ctx;
-  let resourceName;
-  let uuid;
-  let practitionerUuid;
+
   let qewdSession;
   let resourceCache;
 
+  function seeds() {
+    qewdSession.data.$(['Discovery', 'MedicationStatement']).setDocument({
+      'by_uuid': {
+        '550b6681-9160-4543-9d1e-46f220a6cd79': {
+          data: {
+            foo: 'bar'
+          },
+          'practitioner': 'bb64855d-e99d-403c-9e8a-b4c8ce30c345'
+        }
+      }
+    });
+  }
 
   beforeEach(() => {
     ctx = new ExecutionContextMock();
+
     resourceCache = new ResourceCache(ctx.adapter);
     qewdSession = ctx.adapter.qewdSession;
-    resourceName = 'Patient';
-    uuid = 'ce437b97-4f6e-4c96-89bb-0b58b29a79cb';
-    practitionerUuid = 'lr422b91-4f6e-4c36-79bb-0b58z79a79wv';
 
     ctx.cache.freeze();
   });
-
 
   describe('#create (static)', () => {
     it('should initialize a new instance', async () => {
@@ -64,81 +70,107 @@ describe('ripple-cdr-discovery/lib2/cache/resourceCache', () => {
       expect(actual.byUuid).toEqual(jasmine.any(Object));
     });
   });
-  describe('byUuid',  () => {
-    function seeds() {
-      qewdSession.data.$(['Discovery', resourceName, 'by_uuid', uuid]).setDocument({
-        id: 44444455555,
-        uuid: 8111160534,
-        resourceType: 'Patient',
-        informationSource: {
-          reference: 'foo/5900049117',
-          foo: [
-            {
-              bar: 'foo-bar'
-            }
-          ]
-        }
+
+  describe('byUuid', () => {
+    let resourceName;
+    let uuid;
+
+    beforeEach(() => {
+      resourceName = 'MedicationStatement';
+      uuid = '550b6681-9160-4543-9d1e-46f220a6cd79';
+    });
+
+    describe('#exists', () => {
+      it('should return false', async () => {
+        const expected = false;
+
+        const actual = await resourceCache.byUuid.exists(resourceName, uuid);
+
+        expect(actual).toEqual(expected);
       });
-    }
 
-    function seedsPractitioner() {
-      qewdSession.data.$(['Discovery', resourceName, 'by_uuid', uuid, 'practitioner']).value = practitionerUuid;
-    }
+      it('should return true', async () => {
+        const expected = true;
 
-    it('should check if resource exists', async () => {
-      seeds();
-      const actual = await resourceCache.byUuid.exists(resourceName, uuid);
-      expect(actual).toEqual(true);
-    });
+        seeds();
+        const actual = await resourceCache.byUuid.exists(resourceName, uuid);
 
-    it('should try set cache with already existing cache', async () => {
-
-    });
-
-    it('should set cache resource without existing', async () => {
-      const expected = {
-        id: 44444455555,
-        uuid: 8111160534,
-        resourceType: 'Patient',
-        informationSource: {
-          reference: 'foo/5900049117'
-        }
-      };
-      await resourceCache.byUuid.set(resourceName, uuid, expected);
-      const actual = qewdSession.data.$(['Discovery', resourceName, 'by_uuid', uuid, 'data']).getDocument(true);
-      expect(actual).toEqual(expected);
-    });
-
-    it('should get cache from resource ', async () => {
-      seeds();
-      await resourceCache.byUuid.get(resourceName, uuid);
-      const actual = qewdSession.data.$(['Discovery', resourceName, 'by_uuid', uuid]).getDocument(true);
-      expect(actual).toEqual({
-        id: 44444455555,
-        uuid: 8111160534,
-        resourceType: 'Patient',
-        informationSource: {
-          reference: 'foo/5900049117',
-          foo: [
-            {
-              bar: 'foo-bar'
-            }
-          ]
-        }
+        expect(actual).toEqual(expected);
       });
     });
 
-    it('should set practitioner in resource', async () => {
-      seedsPractitioner();
-      await resourceCache.byUuid.setPractitionerUuid(resourceName, uuid, practitionerUuid);
-      const actual = qewdSession.data.$(['Discovery', resourceName, 'by_uuid', uuid, 'practitioner', practitionerUuid]).value;
-      expect(actual).toEqual(practitionerUuid);
+    describe('#set', () => {
+      it('should set resource data', async () => {
+        const expected = {
+          quux: 'quuz'
+        };
+
+        const resource = {
+          quux: 'quuz'
+        };
+        await resourceCache.byUuid.set(resourceName, uuid, resource);
+
+        const actual = qewdSession.data.$(['Discovery', resourceName, 'by_uuid', uuid, 'data']).getDocument();
+        expect(actual).toEqual(expected);
+      });
+
+      it('should ignore settings resource data', async () => {
+        const expected = {
+          foo: 'bar'
+        };
+
+        seeds();
+
+        const resource = {
+          quux: 'quuz'
+        };
+        await resourceCache.byUuid.set(resourceName, uuid, resource);
+
+        const actual = qewdSession.data.$(['Discovery', resourceName, 'by_uuid', uuid, 'data']).getDocument();
+        expect(actual).toEqual(expected);
+      });
     });
 
-    it('should get practitioner uuid from resource', async () => {
-      seedsPractitioner();
-      const actual = await resourceCache.byUuid.getPractitionerUuid(resourceName, uuid);
-      expect(actual).toEqual(practitionerUuid);
+    describe('#get', () => {
+      it('should get resource data', async () => {
+        const expected = {
+          foo: 'bar'
+        };
+
+        seeds();
+        const actual = await resourceCache.byUuid.get(resourceName, uuid);
+
+        expect(actual).toEqual(expected);
+      });
+    });
+
+    describe('#setPractitionerUuid', () => {
+      it('should set practitioner uuid', async () => {
+        const expected = {
+          'practitioner': {
+            'bb64855d-e99d-403c-9e8a-b4c8ce30c345': 'bb64855d-e99d-403c-9e8a-b4c8ce30c345'
+          }
+        };
+
+        const practitionerUuid = 'bb64855d-e99d-403c-9e8a-b4c8ce30c345';
+        await resourceCache.byUuid.setPractitionerUuid(resourceName, uuid, practitionerUuid);
+
+        const actual = qewdSession.data.$(['Discovery', resourceName, 'by_uuid', uuid]).getDocument();
+
+        expect(actual).toEqual(expected);
+      });
+    });
+
+    describe('#getPractitionerUuid', () => {
+      it('should get practitioner uuid', async () => {
+        const expected = 'bb64855d-e99d-403c-9e8a-b4c8ce30c345';
+
+        seeds();
+
+        const actual = await resourceCache.byUuid.getPractitionerUuid(resourceName, uuid);
+
+        expect(actual).toEqual(expected);
+      });
     });
   });
 });

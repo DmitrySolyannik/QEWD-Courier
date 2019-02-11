@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 January 2018
+  11 February 2018
 
 */
 
@@ -88,7 +88,7 @@ class HeadingService {
    * @param {string|number} nhsNumber
    * @param {string} heading
    * @param {string|null} format
-   * @returns {Promise<[]>}
+   * @returns {Promise.<Object[]>}
    */
   async getSummary(nhsNumber, heading, format = ResourceFormat.PULSETILE) {
     logger.info('services/headingService|getSummary', { nhsNumber, heading, format });
@@ -103,7 +103,7 @@ class HeadingService {
     const { resourceService } = this.ctx.services;
 
     const results = [];
-    const uuids = await patientCache.byResource.getAllResourceUuids(nhsNumber, resourceName);
+    const uuids = await patientCache.byResource.getUuidsByResourceName(nhsNumber, resourceName);
 
     await P.each(uuids, async (uuid) => {
       const resource = await resourceCache.byUuid.get(resourceName, uuid);

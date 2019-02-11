@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 January 2018
+  11 February 2019
 
 */
 
@@ -44,10 +44,16 @@ class DemographicService {
     return new DemographicService(ctx);
   }
 
+  /**
+   * Gets demographic data by NHS number
+   *
+   * @param  {int|string} nhsNumber
+   * @return {Promise.<Object>}
+   */
   async getByPatientId(nhsNumber) {
     logger.info('services/demographicService|getByPatientId', { nhsNumber });
 
-    const { patientCache, resourceCache, demographicCache } = this.ctx.cache;
+    const { patientCache, resourceCache, demographicCache, discoveryCache } = this.ctx.cache;
     const { resourceService } = this.ctx.services;
 
     //@TODO talk regarding this functionality
@@ -90,7 +96,7 @@ class DemographicService {
       demographics
     };
 
-    await demographicCache.byNhsNumber.delete(nhsNumber); //@TODO Talk regarding this functionality
+    await discoveryCache.deleteAll(); //@TODO Talk regarding this functionality
     await demographicCache.byNhsNumber.set(nhsNumber, resultObj);
 
     return resultObj;

@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 January 2019
+  11 February 2019
 
 */
 
@@ -35,6 +35,13 @@ const { ResourceName } = require('../../../shared/enums');
 
 module.exports = (adapter) => {
   return {
+
+    /**
+     * Checks if data exists by resource name or not
+     *
+     * @param  {string} patientUuid
+     * @return {bool}
+     */
     exists: async (nhsNumber, resourceName) => {
       logger.info('mixins/patient|byResource|exists', { nhsNumber, resourceName });
 
@@ -43,6 +50,15 @@ module.exports = (adapter) => {
       return adapter.exists(key);
     },
 
+    /**
+     * Sets resource uuid
+     *
+     * @param  {int|string} nhsNumber
+     * @param  {string} patientUuid
+     * @param  {string} resourceName
+     * @param  {string} uuid
+     * @return {void}
+     */
     set: async (nhsNumber, patientUuid, resourceName, uuid) => {
       logger.info('mixins/patient|byResource|setResourceUuid', { nhsNumber, patientUuid, resourceName, uuid });
 
@@ -53,8 +69,15 @@ module.exports = (adapter) => {
       adapter.put(byUuidKey, uuid);
     },
 
-    getAllResourceUuids: async (nhsNumber, resourceName) => {
-      logger.info('mixins/patient|byResource|getAllResourceUuids', { nhsNumber, resourceName });
+    /**
+     * Gets resource uuids by resource name
+     *
+     * @param  {int|string} nhsNumber
+     * @param  {string} resourceName
+     * @return {string[]}
+     */
+    getUuidsByResourceName: async (nhsNumber, resourceName) => {
+      logger.info('mixins/patient|byResource|getUuidsByResourceName', { nhsNumber, resourceName });
 
       const uuids = [];
       const key = ['Discovery', ResourceName.PATIENT, 'by_nhsNumber', nhsNumber, 'resources', resourceName];
