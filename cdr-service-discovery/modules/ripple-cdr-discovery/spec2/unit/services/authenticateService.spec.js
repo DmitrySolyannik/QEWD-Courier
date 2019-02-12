@@ -75,11 +75,6 @@ describe('ripple-cdr-discovery/lib/services/authRestService', () => {
   });
 
   it('should throw error', async () => {
-    const expected = {
-      message: 'Error while trying to get auth token',
-      code: 401
-    };
-
     nock('https://devauth.endeavourhealth.net')
       .post('/auth/realms/endeavour/protocol/openid-connect/token', [
         'username=xxxxxxx',
@@ -92,7 +87,7 @@ describe('ripple-cdr-discovery/lib/services/authRestService', () => {
         code: 401
       });
 
-    const actual = authService.authenticate()
+    const actual = authService.authenticate();
 
     await expectAsync(actual).toBeRejectedWith({
       message: 'Error while trying to get auth token',

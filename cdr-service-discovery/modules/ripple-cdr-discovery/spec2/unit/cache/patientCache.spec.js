@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  11 February 2019
+  12 February 2019
 
 */
 
@@ -334,10 +334,8 @@ describe('ripple-cdr-discovery/lib/cache/patientCache', () => {
       it('should return data by patient uuids', () => {
         const expected = [
           {
-            resource: {
-              bar: 'quux',
-              practitioner: 'f24bb154-2155-4cfd-b3bf-af1c3fa95c3b'
-            }
+            bar: 'quux',
+            practitioner: 'f24bb154-2155-4cfd-b3bf-af1c3fa95c3b'
           }
         ];
 

@@ -128,9 +128,7 @@ module.exports = (adapter) => {
       logger.info('mixins/patient|byPatientUuid|getByPatientUuids', { patientUuids });
 
       const uuids = patientUuids.map((patientUuid) => {
-        return {
-          resource: adapter.getObject(['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid])
-        };
+        return adapter.getObject(['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid]);
       });
 
      return uuids;

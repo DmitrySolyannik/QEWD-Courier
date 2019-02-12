@@ -33,48 +33,20 @@
 const { ExecutionContextMock } = require('../../mocks');
 const PatientService = require('../../../lib2/services/patientService');
 
-xdescribe('ripple-cdr-discovery/lib2/services/patientService', () => {
+describe('ripple-cdr-discovery/lib/services/patientService', () => {
   let ctx;
-  let nhsNumber;
-
-  let patientUuids;
-  let resultObj;
 
   let patientService;
+  let patientBundleCache;
   let patientCache;
-  let bundleCache;
-
-  function seeds() {
-    patientUuids = [
-      5558526785,
-      8111144490,
-    ];
-    resultObj = {
-      resourceType: 'Bundle',
-      entry: [
-        {
-          patientId: 5558526785,
-          name: 'Patient#1'
-        },
-        {
-          patientId: 8111144490,
-          name: 'Patient#2'
-        }
-      ]
-    };
-
-  }
 
   beforeEach(() => {
     ctx = new ExecutionContextMock();
-    nhsNumber = 5558526784;
 
     patientService = new PatientService(ctx);
-
+    patientBundleCache = ctx.cache.patientBundleCache;
     patientCache = ctx.cache.patientCache;
-    bundleCache = ctx.cache.bundleCache;
 
-    ctx.cache.freeze();
     ctx.cache.freeze();
   });
 
@@ -87,47 +59,165 @@ xdescribe('ripple-cdr-discovery/lib2/services/patientService', () => {
     });
   });
 
-  it('should call getPatientBundle if target cache is bundleCache', async () => {
-    seeds();
+  describe('#getPatientBundle', () => {
+    let nhsNumber;
 
-    bundleCache.exists.and.resolveValue(true);
-    bundleCache.byNhsNumber.getAllPatientUuids.and.resolveValue(patientUuids);
-    bundleCache.byPatientUuid.getByPatientUuids.and.resolveValue(resultObj.entry);
+    beforeEach(() => {
+      nhsNumber = 9999999000;
+    });
 
-    const actual = await patientService.getPatientBundle(nhsNumber);
+    it('should return patient bundle (patient bundle cache)', async () => {
+      const expected = {
+        resourceType: 'Bundle',
+        entry: [
+          {
+            resource: {
+              resourceType: 'Patient',
+              id: '9999999111',
+              name: [
+                {
+                  text: 'John Doe'
+                }
+              ]
+            }
+          },
+          {
+            resource: {
+              resourceType: 'Patient',
+              id: '9999999222',
+              name: [
+                {
+                  text: 'Jane Doe'
+                }
+              ]
+            }
+          }
+        ]
+      };
 
-    expect(bundleCache.exists).toHaveBeenCalled();
-    expect(bundleCache.byNhsNumber.getAllPatientUuids).toHaveBeenCalled();
-    expect(bundleCache.byPatientUuid.getByPatientUuids).toHaveBeenCalled();
-    expect(actual).toEqual(resultObj);
+      const patientUuids = [
+        '48f8c9e3-7bae-4418-b896-2423957f3c33',
+        '62656761-27c8-45ba-8f7c-67aa9eeb5a02',
+      ];
+      const patients = [
+        {
+          resourceType: 'Patient',
+          id: '9999999111',
+          name: [
+            {
+              text: 'John Doe'
+            }
+          ]
+        },
+        {
+          resourceType: 'Patient',
+          id: '9999999222',
+          name: [
+            {
+              text: 'Jane Doe'
+            }
+          ]
+        }
+      ];
+
+      patientBundleCache.exists.and.returnValue(true);
+      patientBundleCache.byNhsNumber.getAllPatientUuids.and.returnValue(patientUuids);
+      patientBundleCache.byPatientUuid.getByPatientUuids.and.returnValue(patients);
+
+      const actual = await patientService.getPatientBundle(nhsNumber);
+
+      expect(patientBundleCache.exists).toHaveBeenCalled();
+      expect(patientBundleCache.byNhsNumber.getAllPatientUuids).toHaveBeenCalledWith(9999999000);
+      expect(patientBundleCache.byPatientUuid.getByPatientUuids).toHaveBeenCalledWith([
+        '48f8c9e3-7bae-4418-b896-2423957f3c33',
+        '62656761-27c8-45ba-8f7c-67aa9eeb5a02'
+      ]);
+
+      expect(actual).toEqual(expected);
+    });
+
+    it('should return patient bundle (patient cache)', async () => {
+      const expected = {
+        resourceType: 'Bundle',
+        entry: [
+          {
+            resource: {
+              resourceType: 'Patient',
+              id: '9999999111',
+              name: [
+                {
+                  text: 'John Doe'
+                }
+              ]
+            }
+          },
+          {
+            resource: {
+              resourceType: 'Patient',
+              id: '9999999222',
+              name: [
+                {
+                  text: 'Jane Doe'
+                }
+              ]
+            }
+          }
+        ]
+      };
+
+      const patientUuids = [
+        '48f8c9e3-7bae-4418-b896-2423957f3c33',
+        '62656761-27c8-45ba-8f7c-67aa9eeb5a02',
+      ];
+      const patients = [
+        {
+          resourceType: 'Patient',
+          id: '9999999111',
+          name: [
+            {
+              text: 'John Doe'
+            }
+          ]
+        },
+        {
+          resourceType: 'Patient',
+          id: '9999999222',
+          name: [
+            {
+              text: 'Jane Doe'
+            }
+          ]
+        }
+      ];
+
+      patientBundleCache.exists.and.returnValue(false);
+      patientCache.byNhsNumber.getAllPatientUuids.and.returnValue(patientUuids);
+      patientCache.byPatientUuid.getByPatientUuids.and.returnValue(patients);
+
+      const actual = await patientService.getPatientBundle(nhsNumber);
+
+      expect(patientBundleCache.exists).toHaveBeenCalled();
+      expect(patientCache.byNhsNumber.getAllPatientUuids).toHaveBeenCalledWith(9999999000);
+      expect(patientCache.byPatientUuid.getByPatientUuids).toHaveBeenCalledWith([
+        '48f8c9e3-7bae-4418-b896-2423957f3c33',
+        '62656761-27c8-45ba-8f7c-67aa9eeb5a02'
+      ]);
+
+      expect(actual).toEqual(expected);
+    });
   });
 
-  it('should call getPatientBundle if target cache is bundleCache', async () => {
-    seeds();
+  describe('#updateBundle', () => {
+    it('should import data to patient bundle cache', async () => {
+      const data = {
+        foo: 'bar'
+      };
+      patientCache.export.and.returnValue(data);
 
-    bundleCache.exists.and.resolveValue(false);
-    patientCache.byNhsNumber.getAllPatientUuids.and.resolveValue(patientUuids);
-    patientCache.byPatientUuid.getByPatientUuids.and.resolveValue(resultObj.entry);
+      await patientService.updateBundle();
 
-    const actual = await patientService.getPatientBundle(nhsNumber);
-
-    expect(bundleCache.exists).toHaveBeenCalled();
-    expect(patientCache.byNhsNumber.getAllPatientUuids).toHaveBeenCalled();
-    expect(patientCache.byPatientUuid.getByPatientUuids).toHaveBeenCalled();
-    expect(actual).toEqual(resultObj);
-  });
-
-  //@TODO Talk regarding this test !!!
-  it('should call updateBundle', async () => {
-    const d = {
-      data: 'foo'
-    };
-    patientCache.export.and.resolveValue(d);
-    bundleCache.import.and.resolveValue();
-
-    await patientService.updateBundle();
-
-    expect(patientCache.export).toHaveBeenCalled();
-    expect(bundleCache.import).toHaveBeenCalled();
+      expect(patientCache.export).toHaveBeenCalled();
+      expect(patientBundleCache.import).toHaveBeenCalledWith(data);
+    });
   });
 });

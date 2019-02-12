@@ -24,20 +24,20 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  11 February 2019
+  12 February 2019
 
 */
 
 'use strict';
 
 const { ExecutionContextMock } = require('../../mocks');
-const { BundleCache } = require('../../../lib2/cache');
+const { PatientBundleCache } = require('../../../lib2/cache');
 
-describe('ripple-cdr-discovery/lib/cache/bundleCache', () => {
+describe('ripple-cdr-discovery/lib/cache/patientBundleCache', () => {
   let ctx;
   let nhsNumber;
 
-  let bundleCache;
+  let patientBundleCache;
   let qewdSession;
 
   function seeds() {
@@ -68,7 +68,7 @@ describe('ripple-cdr-discovery/lib/cache/bundleCache', () => {
   beforeEach(() => {
     ctx = new ExecutionContextMock();
 
-    bundleCache = new BundleCache(ctx.adapter);
+    patientBundleCache = new PatientBundleCache(ctx.adapter);
     qewdSession = ctx.adapter.qewdSession;
 
     nhsNumber = 9999999000;
@@ -82,9 +82,9 @@ describe('ripple-cdr-discovery/lib/cache/bundleCache', () => {
 
   describe('#create (static)', () => {
     it('should initialize a new instance', () => {
-      const actual = BundleCache.create(ctx.adapter);
+      const actual = PatientBundleCache.create(ctx.adapter);
 
-      expect(actual).toEqual(jasmine.any(BundleCache));
+      expect(actual).toEqual(jasmine.any(PatientBundleCache));
       expect(actual.adapter).toBe(ctx.adapter);
       expect(actual.byNhsNumber).toEqual(jasmine.any(Object));
       expect(actual.byPatientUuid).toEqual(jasmine.any(Object));
@@ -95,7 +95,7 @@ describe('ripple-cdr-discovery/lib/cache/bundleCache', () => {
     it('should return false', () => {
       const expected = false;
 
-      const actual = bundleCache.exists();
+      const actual = patientBundleCache.exists();
 
       expect(actual).toEqual(expected);
     });
@@ -105,7 +105,7 @@ describe('ripple-cdr-discovery/lib/cache/bundleCache', () => {
 
       seeds();
 
-      const actual = bundleCache.exists();
+      const actual = patientBundleCache.exists();
 
       expect(actual).toEqual(expected);
     });
@@ -120,7 +120,7 @@ describe('ripple-cdr-discovery/lib/cache/bundleCache', () => {
       const data = {
         foo: 'bar'
       };
-      bundleCache.import(data);
+      patientBundleCache.import(data);
 
       const actual = qewdSession.data.$(['Discovery', 'PatientBundle']).getDocument(true);
       expect(actual).toEqual(expected);
@@ -137,7 +137,7 @@ describe('ripple-cdr-discovery/lib/cache/bundleCache', () => {
 
       seeds();
 
-      const actual = bundleCache.byNhsNumber.getAllPatientUuids(nhsNumber);
+      const actual = patientBundleCache.byNhsNumber.getAllPatientUuids(nhsNumber);
 
       expect(actual).toEqual(expected);
     });
@@ -170,7 +170,7 @@ describe('ripple-cdr-discovery/lib/cache/bundleCache', () => {
         'be7b03df-2c9a-4afd-8bc5-6065d0688f15',
         'c57c65f2-1ca8-46df-9a29-09373dcff552'
       ];
-      const actual = bundleCache.byPatientUuid.getByPatientUuids(patientUiids);
+      const actual = patientBundleCache.byPatientUuid.getByPatientUuids(patientUiids);
 
       expect(actual).toEqual(expected);
     });

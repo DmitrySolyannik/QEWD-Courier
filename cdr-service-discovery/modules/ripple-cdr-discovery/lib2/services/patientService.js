@@ -50,18 +50,20 @@ class PatientService {
   async getPatientBundle(nhsNumber) {
     logger.info('services/patientService|getPatientBundle', { nhsNumber });
 
-    const { patientCache, bundleCache } = this.ctx.cache;
+    const { patientCache, patientBundleCache } = this.ctx.cache;
 
-    const targetCache = bundleCache.exists()
-      ? bundleCache
+    const bundleCache = patientBundleCache.exists()
+      ? patientBundleCache
       : patientCache;
 
-    const patientUuids = targetCache.byNhsNumber.getAllPatientUuids(nhsNumber);
-    const patients = targetCache.byPatientUuid.getByPatientUuids(patientUuids);
+    const patientUuids = bundleCache.byNhsNumber.getAllPatientUuids(nhsNumber);
+    const patients = bundleCache.byPatientUuid.getByPatientUuids(patientUuids);
 
     return {
       resourceType: 'Bundle',
-      entry: patients
+      entry: patients.map(x => ({
+        resource: x
+      }))
     };
   }
 
@@ -73,10 +75,10 @@ class PatientService {
   async updateBundle() {
     logger.info('services/patientService|updateBundle');
 
-    const { patientCache, bundleCache } = this.ctx.cache;
+    const { patientCache, patientBundleCache } = this.ctx.cache;
     const data = patientCache.export();
 
-    bundleCache.import(data);
+    patientBundleCache.import(data);
   }
 }
 

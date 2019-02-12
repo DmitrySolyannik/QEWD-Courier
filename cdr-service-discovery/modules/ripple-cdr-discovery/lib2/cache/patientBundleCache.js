@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  11 February 2019
+  12 February 2019
 
 */
 
@@ -33,7 +33,7 @@
 const { logger } = require('../core');
 const { byNhsNumber, byPatientUuid } = require('./mixins/bundle');
 
-class BundleCache {
+class PatientBundleCache {
   constructor(adapter) {
     this.adapter = adapter;
     this.byNhsNumber = byNhsNumber(adapter, 'PatientBundle');
@@ -41,7 +41,7 @@ class BundleCache {
   }
 
   static create(adapter) {
-    return new BundleCache(adapter);
+    return new PatientBundleCache(adapter);
   }
 
   /**
@@ -50,7 +50,7 @@ class BundleCache {
    * @return {bool}
    */
   exists() {
-    logger.info('cache/bundleCache|exists');
+    logger.info('cache/patientBundleCache|exists');
 
     const key = ['Discovery', 'PatientBundle'];
 
@@ -64,11 +64,11 @@ class BundleCache {
    * @return {void}
    */
   import(data) {
-    logger.info('cache/bundleCache|import', data);
+    logger.info('cache/patientBundleCache|import', data);
 
     const key = ['Discovery', 'PatientBundle'];
     this.adapter.putObject(key, data);
   }
 }
 
-module.exports = BundleCache;
+module.exports = PatientBundleCache;
