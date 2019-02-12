@@ -72,8 +72,8 @@ class PatientService {
    *
    * @return {void}
    */
-  async updateBundle() {
-    logger.info('services/patientService|updateBundle');
+  async updatePatientBundle() {
+    logger.info('services/patientService|updatePatientBundle');
 
     const { patientCache, patientBundleCache } = this.ctx.cache;
     const data = patientCache.export();

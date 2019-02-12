@@ -8,6 +8,7 @@
     "lint": "jshint lib spec2 index.js",
     "lint2": "eslint lib2 spec2 --fix",
     "test": "jasmine --config=spec2/support/jasmine.json",
+    "test:debug": "DEBUG=ripple-cdr-discovery* jasmine --config=spec2/support/jasmine.json",
     "coverage": "nyc --reporter=html --reporter=text jasmine --config=spec2/support/jasmine.json",
     "coveralls": "nyc report --reporter=text-lcov | coveralls"
   },

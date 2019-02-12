@@ -207,14 +207,14 @@ describe('ripple-cdr-discovery/lib/services/patientService', () => {
     });
   });
 
-  describe('#updateBundle', () => {
+  describe('#updatePatientBundle', () => {
     it('should import data to patient bundle cache', async () => {
       const data = {
         foo: 'bar'
       };
       patientCache.export.and.returnValue(data);
 
-      await patientService.updateBundle();
+      await patientService.updatePatientBundle();
 
       expect(patientCache.export).toHaveBeenCalled();
       expect(patientBundleCache.import).toHaveBeenCalledWith(data);

@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  11 February 2019
+  13 February 2019
 
 */
 
@@ -87,6 +87,9 @@ module.exports = (adapter) => {
      */
     setNhsNumber: (patientUuid, nhsNumber) => {
       logger.info('mixins/patient|byPatientUuid|setNhsNumber', { patientUuid, nhsNumber });
+
+      //@TODO: remove this method because I think it's not needed
+      //See reference in resourceService.getPatients
 
       const key = ['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid, 'nhsNumber', nhsNumber];
       adapter.put(key, nhsNumber);
