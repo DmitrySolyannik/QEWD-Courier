@@ -55,7 +55,7 @@ module.exports = (adapter) => {
 
       const key = ['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid];
 
-      return adapter.getObject(key);
+      return adapter.getObjectWithArrays(key);
     },
 
     setNhsNumber: async (patientUuid, nhsNumber) => {
@@ -82,15 +82,15 @@ module.exports = (adapter) => {
 
     getByPatientUuids: async (patientUuids) => {
       logger.info('mixins/patient|byPatientUuid|getByPatientUuids', { patientUuids });
-      const uuids = patientUuids.map(
+      const patients = patientUuids.map(
         (patientUuid) => {
           return {
-            resource: adapter.getObject(['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid])
+            resource: adapter.getObjectWithArrays(['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid])
           }
         }
       );
 
-     return uuids;
+     return patients;
     }
   };
 };

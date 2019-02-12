@@ -110,7 +110,9 @@ class ResourceService {
     };
     const token = await tokenService.get();
 
-    const response = await resourceRestService.getPatientResources(data, token);
+    let response = await resourceRestService.getPatientResources(data, token);
+    response = JSON.parse(response);
+
     debug('response: %j', response);
     if (!response || !response.entry) return false;
 
@@ -125,7 +127,7 @@ class ResourceService {
       if (x.resource.resourceType !== resourceName) return;
 
       const resource = x.resource;
-      const uuid = resource.uuid;
+      const uuid = resource.id;
       const patientUuid = getPatientUuid(resource);
 
       await resourceCache.byUuid.set(resourceName, uuid, resource);
@@ -183,7 +185,9 @@ class ResourceService {
 
     const { tokenService, resourceRestService } = this.ctx.services;
     const token = await tokenService.get();
-    const resource = await resourceRestService.getResource(reference, token);
+    let resource = await resourceRestService.getResource(reference, token);
+    resource = JSON.parse(resource);
+
     debug('resource: %j', resource);
 
     await resourceCache.byUuid.set(resourceName, uuid, resource, {});

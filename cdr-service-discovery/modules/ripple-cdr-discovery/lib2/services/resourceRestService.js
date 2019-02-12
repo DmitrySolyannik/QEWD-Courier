@@ -106,8 +106,7 @@ class ResourceRestService {
       },
       qs: {
         reference: reference
-      },
-      json: true
+      }
     };
 
     // @TODO: AK make sure that body === '' handled in getResource

@@ -37,10 +37,10 @@ module.exports = (adapter) => {
     getByPatientUuids: async (patientUuids) => {
       logger.info('mixins/bundle|byPatientUuid|getByPatientUuids', { patientUuids });
 
-      const uuids = patientUuids.map(pid => {
-        return { resource: adapter.getObject(['Discovery', 'PatientBundle', 'by_uuid', pid])
+      const patients = patientUuids.map(pid => {
+        return { resource: adapter.getObjectWithArrays(['Discovery', 'PatientBundle', 'by_uuid', pid])
         }});
-      return uuids;
+      return patients;
     }
   };
 };
