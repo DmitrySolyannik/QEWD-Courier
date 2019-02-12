@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  11 February 2019
+  13 February 2019
 
 */
 
@@ -44,13 +44,11 @@ module.exports = (adapter) => {
     getByPatientUuids: (patientUuids) => {
       logger.info('mixins/bundle|byPatientUuid|getByPatientUuids', { patientUuids });
 
-      const uuids = patientUuids.map(patientUuid => {
-        return {
-          resource: adapter.getObject(['Discovery', 'PatientBundle', 'by_uuid', patientUuid])
-        };
+      const patients = patientUuids.map(patientUuid => {
+        return adapter.getObjectWithArrays(['Discovery', 'PatientBundle', 'by_uuid', patientUuid]);
       });
 
-      return uuids;
+      return patients;
     }
   };
 };

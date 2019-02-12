@@ -64,7 +64,8 @@ describe('ripple-cdr-discovery/lib/cache/patientCache', () => {
         },
         'ce437b97-4f6e-4c96-89bb-0b58b29a79cb': {
           bar: 'quux',
-          practitioner: 'f24bb154-2155-4cfd-b3bf-af1c3fa95c3b'
+          practitioner: 'f24bb154-2155-4cfd-b3bf-af1c3fa95c3b',
+          testArray: [1, 2]
         }
       },
       resources: {
@@ -129,7 +130,8 @@ describe('ripple-cdr-discovery/lib/cache/patientCache', () => {
           },
           'ce437b97-4f6e-4c96-89bb-0b58b29a79cb': {
             bar: 'quux',
-            practitioner: 'f24bb154-2155-4cfd-b3bf-af1c3fa95c3b'
+            practitioner: 'f24bb154-2155-4cfd-b3bf-af1c3fa95c3b',
+            testArray: [1, 2]
           }
         },
         resources: {
@@ -335,7 +337,8 @@ describe('ripple-cdr-discovery/lib/cache/patientCache', () => {
         const expected = [
           {
             bar: 'quux',
-            practitioner: 'f24bb154-2155-4cfd-b3bf-af1c3fa95c3b'
+            practitioner: 'f24bb154-2155-4cfd-b3bf-af1c3fa95c3b',
+            testArray: [1, 2]
           }
         ];
 

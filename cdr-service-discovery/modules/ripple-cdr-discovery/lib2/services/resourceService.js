@@ -161,7 +161,7 @@ class ResourceService {
       if (x.resource.resourceType !== resourceName) return;
 
       const resource = x.resource;
-      const uuid = resource.uuid;
+      const uuid = resource.id;
       const patientUuid = getPatientUuid(resource);
 
       resourceCache.byUuid.set(resourceName, uuid, resource);
@@ -245,6 +245,7 @@ class ResourceService {
 
     fetchCache.set(reference);
     const resource = await resourceRestService.getResource(reference, token);
+
     debug('resource: %j', resource);
 
     resourceCache.byUuid.set(resourceName, uuid, resource);

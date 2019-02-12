@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 February 2019
+  13 February 2019
 
 */
 
@@ -54,13 +54,16 @@ describe('ripple-cdr-discovery/lib/cache/patientBundleCache', () => {
     });
     qewdSession.data.$(['Discovery', 'PatientBundle', 'by_uuid']).setDocument({
       'c57c65f2-1ca8-46df-9a29-09373dcff552': {
-        value: 'foo'
+        value: 'foo',
+        testArray: [1, 2]
       },
       'be7b03df-2c9a-4afd-8bc5-6065d0688f15': {
-        value: 'bar'
+        value: 'bar',
+        testArray: [3, 4]
       },
       '4ae63d75-b4bc-45ff-8233-8c8f04ddeca5': {
-        value: 'baz'
+        value: 'baz',
+        testArray: [5, 6]
       }
     });
   }
@@ -147,19 +150,16 @@ describe('ripple-cdr-discovery/lib/cache/patientBundleCache', () => {
     it('should return patients by patient uuids', () => {
       const expected = [
         {
-          resource: {
-            value: 'baz'
-          }
+          value: 'baz',
+          testArray: [5, 6]
         },
         {
-          resource: {
-            value: 'bar'
-          }
+          value: 'bar',
+          testArray: [3, 4]
         },
         {
-          resource: {
-            value: 'foo'
-          }
+          value: 'foo',
+          testArray: [1, 2]
         }
       ];
 

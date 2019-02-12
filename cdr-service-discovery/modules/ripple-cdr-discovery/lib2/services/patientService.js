@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  11 February 2018
+  13 February 2018
 
 */
 
@@ -58,12 +58,13 @@ class PatientService {
 
     const patientUuids = bundleCache.byNhsNumber.getAllPatientUuids(nhsNumber);
     const patients = bundleCache.byPatientUuid.getByPatientUuids(patientUuids);
+    const entry = patients.map(x => ({
+      resource: x
+    }));
 
     return {
       resourceType: 'Bundle',
-      entry: patients.map(x => ({
-        resource: x
-      }))
+      entry,
     };
   }
 
