@@ -126,7 +126,7 @@ class ResourceService {
     const { resourceCache, fetchCache } = this.ctx.cache;
     const { resourceRestService, patientService, tokenService } = this.ctx.services;
 
-    const patientBundle = await patientService.getPatientBundle(nhsNumber);
+    const patientBundle = patientService.getPatientBundle(nhsNumber);
     const postData = {
       resources: [resourceName],
       patients: patientBundle
@@ -145,7 +145,7 @@ class ResourceService {
     }
 
     if (resourceName === ResourceName.PATIENT) {
-      await patientService.updatePatientBundle();
+      patientService.updatePatientBundle();
       patientCache.byPatientUuid.deleteAll();
     }
 

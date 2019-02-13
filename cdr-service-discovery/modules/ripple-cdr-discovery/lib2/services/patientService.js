@@ -47,7 +47,7 @@ class PatientService {
    * @param  {int|string} nhsNumber
    * @return {Object}
    */
-  async getPatientBundle(nhsNumber) {
+  getPatientBundle(nhsNumber) {
     logger.info('services/patientService|getPatientBundle', { nhsNumber });
 
     const { patientCache, patientBundleCache } = this.ctx.cache;
@@ -73,7 +73,7 @@ class PatientService {
    *
    * @return {void}
    */
-  async updatePatientBundle() {
+  updatePatientBundle() {
     logger.info('services/patientService|updatePatientBundle');
 
     const { patientCache, patientBundleCache } = this.ctx.cache;

@@ -53,9 +53,9 @@ class HeadingService {
    * @param {string} heading
    * @param {string} sourceId
    * @param {string|null} format
-   * @returns {Promise.<Object>}
+   * @returns {Object}
    */
-  async getBySourceId(nhsNumber, heading, sourceId, format = ResourceFormat.PULSETILE) {
+  getBySourceId(nhsNumber, heading, sourceId, format = ResourceFormat.PULSETILE) {
     logger.info('services/headingService|getBySourceId', { nhsNumber, heading, sourceId, format });
 
     const reference = sourceId.split('Discovery-')[1];
@@ -87,9 +87,9 @@ class HeadingService {
    * @param {string|number} nhsNumber
    * @param {string} heading
    * @param {string|null} format
-   * @returns {Promise.<Object[]>}
+   * @returns {Object[]}
    */
-  async getSummary(nhsNumber, heading, format = ResourceFormat.PULSETILE) {
+  getSummary(nhsNumber, heading, format = ResourceFormat.PULSETILE) {
     logger.info('services/headingService|getSummary', { nhsNumber, heading, format });
 
     const resourceName = this.ctx.headingsConfig[heading];

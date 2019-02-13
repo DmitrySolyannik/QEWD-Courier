@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  11 February 2018
+  13 February 2018
 
 */
 
@@ -45,9 +45,9 @@ class CacheService {
    * Gets cached demographics
    *
    * @param  {int|string} nhsNumber
-   * @return {Promise.<Object>}
+   * @return {Object}
    */
-  async getDemographics(nhsNumber) {
+  getDemographics(nhsNumber) {
     logger.info('services/cacheService|getDemographics', { nhsNumber });
 
     try {

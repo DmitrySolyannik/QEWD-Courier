@@ -58,7 +58,7 @@ describe('ripple-cdr-discovery/lib/commands/getHeadingDetailCommand', () => {
       sourceId: 'eaf394a9-5e05-49c0-9c69-c710c77eda76',
       patientId: patientId
     };
-    headingService.getBySourceId.and.resolveValue(responseObj);
+    headingService.getBySourceId.and.returnValue(responseObj);
   }
 
   beforeEach(() => {

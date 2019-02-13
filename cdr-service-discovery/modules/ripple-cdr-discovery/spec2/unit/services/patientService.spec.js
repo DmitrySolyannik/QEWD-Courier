@@ -51,7 +51,7 @@ describe('ripple-cdr-discovery/lib/services/patientService', () => {
   });
 
   describe('#create (static)', () => {
-    it('should initialize a new instance', async () => {
+    it('should initialize a new instance', () => {
       const actual = PatientService.create(ctx);
 
       expect(actual).toEqual(jasmine.any(PatientService));
@@ -66,7 +66,7 @@ describe('ripple-cdr-discovery/lib/services/patientService', () => {
       nhsNumber = 9999999000;
     });
 
-    it('should return patient bundle (patient bundle cache)', async () => {
+    it('should return patient bundle (patient bundle cache)', () => {
       const expected = {
         resourceType: 'Bundle',
         entry: [
@@ -124,7 +124,7 @@ describe('ripple-cdr-discovery/lib/services/patientService', () => {
       patientBundleCache.byNhsNumber.getAllPatientUuids.and.returnValue(patientUuids);
       patientBundleCache.byPatientUuid.getByPatientUuids.and.returnValue(patients);
 
-      const actual = await patientService.getPatientBundle(nhsNumber);
+      const actual = patientService.getPatientBundle(nhsNumber);
 
       expect(patientBundleCache.exists).toHaveBeenCalled();
       expect(patientBundleCache.byNhsNumber.getAllPatientUuids).toHaveBeenCalledWith(9999999000);
@@ -136,7 +136,7 @@ describe('ripple-cdr-discovery/lib/services/patientService', () => {
       expect(actual).toEqual(expected);
     });
 
-    it('should return patient bundle (patient cache)', async () => {
+    it('should return patient bundle (patient cache)', () => {
       const expected = {
         resourceType: 'Bundle',
         entry: [
@@ -194,7 +194,7 @@ describe('ripple-cdr-discovery/lib/services/patientService', () => {
       patientCache.byNhsNumber.getAllPatientUuids.and.returnValue(patientUuids);
       patientCache.byPatientUuid.getByPatientUuids.and.returnValue(patients);
 
-      const actual = await patientService.getPatientBundle(nhsNumber);
+      const actual = patientService.getPatientBundle(nhsNumber);
 
       expect(patientBundleCache.exists).toHaveBeenCalled();
       expect(patientCache.byNhsNumber.getAllPatientUuids).toHaveBeenCalledWith(9999999000);
@@ -208,13 +208,13 @@ describe('ripple-cdr-discovery/lib/services/patientService', () => {
   });
 
   describe('#updatePatientBundle', () => {
-    it('should import data to patient bundle cache', async () => {
+    it('should import data to patient bundle cache', () => {
       const data = {
         foo: 'bar'
       };
       patientCache.export.and.returnValue(data);
 
-      await patientService.updatePatientBundle();
+      patientService.updatePatientBundle();
 
       expect(patientCache.export).toHaveBeenCalled();
       expect(patientBundleCache.import).toHaveBeenCalledWith(data);

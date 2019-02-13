@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 February 2019
+  13 February 2019
 
 */
 
@@ -55,7 +55,7 @@ describe('ripple-cdr-discovery/lib/services/headingService', () => {
   });
 
   describe('#create (static)', () => {
-    it('should initialize a new instance', async () => {
+    it('should initialize a new instance', () => {
       const actual = HeadingService.create(ctx, ctx.serversConfig.api);
 
       expect(actual).toEqual(jasmine.any(HeadingService));
@@ -74,7 +74,7 @@ describe('ripple-cdr-discovery/lib/services/headingService', () => {
       sourceId = 'Discovery-AllergyIntolerance_eaf394a9-5e05-49c0-9c69-c710c77eda76';
     });
 
-    it('should return heading details by source id', async () => {
+    it('should return heading details by source id', () => {
       const expected = {
         cause: 'AGENT_VALUE',
         causeCode: 'AGENT_CODE',
@@ -121,7 +121,7 @@ describe('ripple-cdr-discovery/lib/services/headingService', () => {
       };
       resourceService.getPractitioner.and.returnValue(practitioner);
 
-      const actual = await headingService.getBySourceId(nhsNumber, heading, sourceId);
+      const actual = headingService.getBySourceId(nhsNumber, heading, sourceId);
 
       expect(resourceCache.byUuid.get).toHaveBeenCalledWith('AllergyIntolerance', 'eaf394a9-5e05-49c0-9c69-c710c77eda76');
       expect(resourceService.getPractitioner).toHaveBeenCalledWith('AllergyIntolerance', 'eaf394a9-5e05-49c0-9c69-c710c77eda76');
@@ -139,7 +139,7 @@ describe('ripple-cdr-discovery/lib/services/headingService', () => {
       heading = 'allergies';
     });
 
-    it('should return heading summary', async () => {
+    it('should return heading summary', () => {
       const expected = [
         {
           cause: 'AGENT_VALUE_1',
@@ -237,7 +237,7 @@ describe('ripple-cdr-discovery/lib/services/headingService', () => {
       resourceCache.byUuid.get.and.returnValues(...resources);
       resourceService.getPractitioner.and.returnValues(...practitioners);
 
-      const actual = await headingService.getSummary(nhsNumber, heading);
+      const actual = headingService.getSummary(nhsNumber, heading);
 
       expect(patientCache.byResource.getUuidsByResourceName).toHaveBeenCalledWith(9999999000, 'AllergyIntolerance');
 

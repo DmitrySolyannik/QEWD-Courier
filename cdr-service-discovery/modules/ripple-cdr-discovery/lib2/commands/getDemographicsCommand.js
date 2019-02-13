@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  11 February 2018
+  13 February 2018
 
 */
 
@@ -47,7 +47,7 @@ class GetDemographicsCommand extends BaseCommand {
 
   /**
    * @param  {string} patientId
-   * @return {Object}
+   * @return {Promise.<Object>}
    */
   async execute(patientId) {
     logger.info('commands/getDemographics|execute', { patientId });
@@ -64,7 +64,7 @@ class GetDemographicsCommand extends BaseCommand {
     }
 
     const { cacheService } = this.ctx.services;
-    const cachedObj = await cacheService.getDemographics(patientId);
+    const cachedObj = cacheService.getDemographics(patientId);
     debug('cached response: %j', cachedObj);
     if (cachedObj) {
       return cachedObj;
@@ -73,7 +73,7 @@ class GetDemographicsCommand extends BaseCommand {
     const { resourceService, demographicService } = this.ctx.services;
     await resourceService.fetchPatients(patientId);
     await resourceService.fetchPatientResources(patientId, ResourceName.PATIENT);
-    const responseObj = await demographicService.getByPatientId(patientId);
+    const responseObj = demographicService.getByPatientId(patientId);
     debug('response: %j', responseObj);
 
     return responseObj;

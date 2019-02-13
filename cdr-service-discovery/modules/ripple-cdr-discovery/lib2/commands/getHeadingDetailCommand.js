@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 February 2018
+  13 February 2018
 
 */
 
@@ -49,7 +49,7 @@ class GetHeadingDetailCommand extends BaseCommand {
    * @param  {string|number} patientId
    * @param  {string} heading
    * @param  {string} sourceId
-   * @return {Object}
+   * @return {Promise.<Object>}
    */
   async execute(patientId, heading, sourceId) {
     logger.info('commands/getHeadingDetail|execute', { patientId, heading, sourceId });
@@ -81,11 +81,11 @@ class GetHeadingDetailCommand extends BaseCommand {
 
     await resourceService.fetchPatients(patientId);
     await resourceService.fetchPatientResources(patientId, resourceName);
-    const result = await headingService.getBySourceId(patientId, heading, sourceId);
+    const resultObj = headingService.getBySourceId(patientId, heading, sourceId);
 
-    debug('result: %j', result);
+    debug('result: %j', resultObj);
 
-    return this.respond(result);
+    return this.respond(resultObj);
   }
 }
 

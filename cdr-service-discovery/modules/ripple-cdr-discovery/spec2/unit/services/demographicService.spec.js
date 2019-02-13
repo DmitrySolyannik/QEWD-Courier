@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 February 2019
+  13 February 2019
 
 */
 
@@ -91,7 +91,7 @@ describe('ripple-cdr-discovery/lib/services/demographicService', () => {
   });
 
   describe('#create (static)', () => {
-    it('should initialize a new instance', async () => {
+    it('should initialize a new instance', () => {
       const actual = DemographicService.create(ctx);
 
       expect(actual).toEqual(jasmine.any(DemographicService));
@@ -100,7 +100,7 @@ describe('ripple-cdr-discovery/lib/services/demographicService', () => {
   });
 
   describe('#getByPatientId', () => {
-    it('should return demographics', async () => {
+    it('should return demographics', () => {
       const expected = {
         demographics: {
           id: 9999999000,
@@ -115,7 +115,7 @@ describe('ripple-cdr-discovery/lib/services/demographicService', () => {
         }
       };
 
-      const actual = await demographicService.getByPatientId(nhsNumber);
+      const actual = demographicService.getByPatientId(nhsNumber);
 
       expect(patientCache.byNhsNumber.getPatientUuid).toHaveBeenCalledWith(9999999000);
       expect(patientCache.byPatientUuid.get).toHaveBeenCalledWith('7bb44952-60dd-4ce8-9bbd-f0b56c80a260');

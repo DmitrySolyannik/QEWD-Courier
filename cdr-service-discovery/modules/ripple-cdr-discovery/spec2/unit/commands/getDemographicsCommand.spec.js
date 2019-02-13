@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  11 February 2019
+  13 February 2019
 
 */
 
@@ -56,7 +56,7 @@ describe('ripple-cdr-discovery/lib/commands/getDemographicsCommand', () => {
       gpAddress: 'California',
       address: 'London'
     };
-    demographicService.getByPatientId.and.resolveValue(responseObj);
+    demographicService.getByPatientId.and.returnValue(responseObj);
   }
 
   beforeEach(() => {
@@ -108,7 +108,7 @@ describe('ripple-cdr-discovery/lib/commands/getDemographicsCommand', () => {
       gpAddress: 'California',
       address: 'London'
     };
-    cacheService.getDemographics.and.resolveValue(responseObj);
+    cacheService.getDemographics.and.returnValue(responseObj);
 
     const command = new GetDemographicsCommand(ctx, session);
     const actual = await command.execute(patientId);
@@ -130,7 +130,7 @@ describe('ripple-cdr-discovery/lib/commands/getDemographicsCommand', () => {
       address: 'London'
     };
 
-    cacheService.getDemographics.and.resolveValue(null);
+    cacheService.getDemographics.and.returnValue(null);
     mockDemographicsService(patientId);
 
     const command = new GetDemographicsCommand(ctx, session);
@@ -159,7 +159,7 @@ describe('ripple-cdr-discovery/lib/commands/getDemographicsCommand', () => {
 
     session.role = Role.PHR_USER;
 
-    cacheService.getDemographics.and.resolveValue();
+    cacheService.getDemographics.and.returnValue();
     mockDemographicsService(session.nhsNumber);
 
     const command = new GetDemographicsCommand(ctx, session);

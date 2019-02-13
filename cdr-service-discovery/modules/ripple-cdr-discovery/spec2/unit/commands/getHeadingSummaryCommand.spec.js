@@ -70,7 +70,7 @@ describe('ripple-cdr-discovery/lib2/commands/getHeadingSummaryCommand', () => {
         patientId: patientId
       }
     ];
-    headingService.getSummary.and.resolveValue(responseObj);
+    headingService.getSummary.and.returnValue(responseObj);
   }
 
   beforeEach(() => {

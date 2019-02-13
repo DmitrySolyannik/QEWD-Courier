@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 February 2019
+  13 February 2019
 
 */
 
@@ -51,7 +51,7 @@ describe('ripple-cdr-discovery/lib/services/cacheService', () => {
   });
 
   describe('#create (static)', () => {
-    it('should initialize a new instance', async () => {
+    it('should initialize a new instance', () => {
       const actual = CacheService.create(ctx);
 
       expect(actual).toEqual(jasmine.any(CacheService));
@@ -60,17 +60,17 @@ describe('ripple-cdr-discovery/lib/services/cacheService', () => {
   });
 
   describe('#getDemographics', () => {
-    it('should return null when error occurred', async () => {
+    it('should return null when error occurred', () => {
       const expected = null;
 
       demographicCache.byNhsNumber.get.and.throwError(new Error('some custom error'));
 
-      const actual = await cacheService.getDemographics(nhsNumber);
+      const actual = cacheService.getDemographics(nhsNumber);
 
       expect(actual).toEqual(expected);
     });
 
-    it('should return cached demographics', async () => {
+    it('should return cached demographics', () => {
       const expected = {
         id: 9999999000,
         nhsNumber: 9999999000,
@@ -96,7 +96,7 @@ describe('ripple-cdr-discovery/lib/services/cacheService', () => {
       };
       demographicCache.byNhsNumber.get.and.returnValue(data);
 
-      const actual = await cacheService.getDemographics(nhsNumber);
+      const actual = cacheService.getDemographics(nhsNumber);
 
       expect(actual).toEqual(expected);
     });

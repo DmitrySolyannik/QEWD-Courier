@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  11 February 2019
+  13 February 2019
 
 */
 
@@ -48,9 +48,9 @@ class DemographicService {
    * Gets demographic data by NHS number
    *
    * @param  {int|string} nhsNumber
-   * @return {Promise.<Object>}
+   * @return {Object}
    */
-  async getByPatientId(nhsNumber) {
+  getByPatientId(nhsNumber) {
     logger.info('services/demographicService|getByPatientId', { nhsNumber });
 
     const { patientCache, resourceCache, demographicCache, discoveryCache } = this.ctx.cache;

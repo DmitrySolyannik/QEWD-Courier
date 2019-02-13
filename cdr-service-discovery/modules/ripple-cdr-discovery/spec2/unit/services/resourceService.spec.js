@@ -227,7 +227,7 @@ describe('ripple-cdr-discovery/lib/services/resourceService', () => {
       const data = {};
 
       patientCache.byResource.exists.and.returnValue(false);
-      patientService.getPatientBundle.and.resolveValue(patientBundle);
+      patientService.getPatientBundle.and.returnValue(patientBundle);
       resourceRestService.getPatientResources.and.resolveValue(data);
 
       const actual = await resourceService.fetchPatientResources(nhsNumber, resourceName);
@@ -269,7 +269,7 @@ describe('ripple-cdr-discovery/lib/services/resourceService', () => {
       };
 
       patientCache.byResource.exists.and.returnValue(false);
-      patientService.getPatientBundle.and.resolveValue(patientBundle);
+      patientService.getPatientBundle.and.returnValue(patientBundle);
       resourceRestService.getPatientResources.and.resolveValue(data);
 
       resourceName = 'Patient';
@@ -323,7 +323,7 @@ describe('ripple-cdr-discovery/lib/services/resourceService', () => {
       };
 
       patientCache.byResource.exists.and.returnValue(false);
-      patientService.getPatientBundle.and.resolveValue(patientBundle);
+      patientService.getPatientBundle.and.returnValue(patientBundle);
       resourceRestService.getPatientResources.and.resolveValue(data);
 
       const actual = await resourceService.fetchPatientResources(nhsNumber, resourceName);
@@ -376,7 +376,7 @@ describe('ripple-cdr-discovery/lib/services/resourceService', () => {
       };
 
       patientCache.byResource.exists.and.returnValue(false);
-      patientService.getPatientBundle.and.resolveValue(patientBundle);
+      patientService.getPatientBundle.and.returnValue(patientBundle);
       resourceRestService.getPatientResources.and.resolveValue(data);
 
       const actual = await resourceService.fetchPatientResources(nhsNumber, resourceName);
@@ -447,7 +447,7 @@ describe('ripple-cdr-discovery/lib/services/resourceService', () => {
 
 
       patientCache.byResource.exists.and.returnValue(false);
-      patientService.getPatientBundle.and.resolveValue(patientBundle);
+      patientService.getPatientBundle.and.returnValue(patientBundle);
       resourceRestService.getPatientResources.and.resolveValue(data);
       spyOn(resourceService, 'fetchPractitioner');
 
