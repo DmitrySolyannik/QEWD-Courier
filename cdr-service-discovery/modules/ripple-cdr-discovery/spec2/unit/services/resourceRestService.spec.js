@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 February 2019
+  13 February 2019
 
 */
 
@@ -114,6 +114,21 @@ describe('ripple-cdr-discovery/lib/services/resourceRestService', () => {
       expect(nock).toHaveBeenDone();
     });
 
+    it('should send request and return empty object when response not json', async () => {
+      const expected = {};
+
+      nock('https://deveds.endeavourhealth.net/data-assurance')
+        .get('/api/fhir/patients?nhsNumber=9999999000')
+        .matchHeader('authorization', 'Bearer testToken')
+        .reply(200, 'foo');
+
+      const nhsNumber = 9999999000;
+      const actual = await resourceRestService.getPatients(nhsNumber, token);
+
+      expect(actual).toEqual(expected);
+      expect(nock).toHaveBeenDone();
+    });
+
     it('should throw error', async () => {
       const expected = {
         message: 'custom error',
@@ -175,6 +190,41 @@ describe('ripple-cdr-discovery/lib/services/resourceRestService', () => {
         }))
         .matchHeader('authorization', 'Bearer testToken')
         .reply(200, JSON.stringify(data));
+
+      const postData = {
+        resources: ['Immunization'],
+        patients: [
+          {
+            resource: {
+              resourceType: 'Patient',
+              id: '9999999111'
+            }
+          }
+        ]
+      };
+      const actual = await resourceRestService.getPatientResources(postData, token);
+
+      expect(actual).toEqual(expected);
+      expect(nock).toHaveBeenDone();
+    });
+
+    it('should send request and return empty object when response not json', async () => {
+      const expected = {};
+
+      nock('https://deveds.endeavourhealth.net/data-assurance')
+        .post('/api/fhir/resources', JSON.stringify({
+          resources: ['Immunization'],
+          patients: [
+            {
+              resource: {
+                resourceType: 'Patient',
+                id: '9999999111'
+              }
+            }
+          ]
+        }))
+        .matchHeader('authorization', 'Bearer testToken')
+        .reply(200, 'foo');
 
       const postData = {
         resources: ['Immunization'],

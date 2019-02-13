@@ -255,6 +255,52 @@ class ResourceService {
       resource
     };
   }
+
+  /**
+   * Gets organization location
+   *
+   * @param  {string} reference
+   * @return {Object}
+   */
+  getOrganisationLocation(reference) {
+    logger.info('cache/resourceService|getOrganisationLocation', { reference });
+
+    const organisationUuid = parseRef(reference).uuid;
+    if (!organisationUuid) return null;
+
+    const { resourceCache } = this.ctx.cache;
+    const organisation = resourceCache.byUuid.get(ResourceName.ORGANIZATION, organisationUuid);
+    debug('organisation: %j', organisation);
+    if (!organisation || !organisation.extension) return null;
+
+    const locationRef = getLocationRef(organisation);
+    const locationUuid = parseRef(locationRef).uuid;
+    const location = resourceCache.byUuid.get(ResourceName.LOCATION, locationUuid);
+    debug('location: %j', location);
+
+    return location;
+  }
+
+  /**
+   * Gets resource practioner
+   *
+   * @param  {string} resourceName
+   * @param  {strijg} uuid
+   * @return {Object}
+   */
+  getPractitioner(resourceName, uuid) {
+    logger.info('cache/resourceService|getPractitioner', { resourceName, uuid });
+
+    const { resourceCache } = this.ctx.cache;
+    const practitionerUuid = resourceCache.byUuid.getPractitionerUuid(resourceName, uuid);
+    if (!practitionerUuid) return null;
+
+    const practitioner = resourceCache.byUuid.get(ResourceName.PRACTITIONER, practitionerUuid);
+    debug('practioner: %j', practitioner);
+
+    return practitioner;
+  }
+
 }
 
 module.exports = ResourceService;

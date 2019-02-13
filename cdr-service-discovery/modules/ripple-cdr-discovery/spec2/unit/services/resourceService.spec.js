@@ -694,4 +694,107 @@ describe('ripple-cdr-discovery/lib/services/resourceService', () => {
       expect(actual).toEqual(expected);
     });
   });
+
+  describe('#getOrganisationLocation', () => {
+    it('should return null when reference has bad format', () => {
+      const expected = null;
+
+      const reference = 'foo';
+      const actual = resourceService.getOrganisationLocation(reference);
+
+      expect(actual).toEqual(expected);
+    });
+
+    it('should return null when no resource found', () => {
+      const expected = null;
+
+      const reference = 'Organization/ad158290-d5e4-45f1-bff7-f50ff14019c2';
+      const actual = resourceService.getOrganisationLocation(reference);
+
+      expect(resourceCache.byUuid.get).toHaveBeenCalledWith('Organization', 'ad158290-d5e4-45f1-bff7-f50ff14019c2');
+      expect(actual).toEqual(expected);
+    });
+
+    it('should return null when no resource extension found', () => {
+      const expected = null;
+
+      const organizationResource = {};
+      resourceCache.byUuid.get.and.returnValue(organizationResource);
+
+      const reference = 'Organization/ad158290-d5e4-45f1-bff7-f50ff14019c2';
+      const actual = resourceService.getOrganisationLocation(reference);
+
+      expect(resourceCache.byUuid.get).toHaveBeenCalledWith('Organization', 'ad158290-d5e4-45f1-bff7-f50ff14019c2');
+      expect(actual).toEqual(expected);
+    });
+
+    it('should return location', () => {
+      const expected = {
+        id: 'ffcf9ca6-9318-4216-a052-370204fd4d59',
+        resourceType: 'Location'
+      };
+
+      const organizationResource = {
+        id: 'ad158290-d5e4-45f1-bff7-f50ff14019c2',
+        resourceType: 'Organization',
+        extension: [
+          {
+            valueReference: {
+              reference: 'Location/ffcf9ca6-9318-4216-a052-370204fd4d59'
+            }
+          }
+        ]
+      };
+      const locationResource = {
+        id: 'ffcf9ca6-9318-4216-a052-370204fd4d59',
+        resourceType: 'Location'
+      };
+      resourceCache.byUuid.get.and.returnValues(organizationResource, locationResource);
+
+      const reference = 'Organization/ad158290-d5e4-45f1-bff7-f50ff14019c2';
+      const actual = resourceService.getOrganisationLocation(reference);
+
+      expect(resourceCache.byUuid.get).toHaveBeenCalledTimes(2);
+      expect(resourceCache.byUuid.get.calls.argsFor(0)).toEqual(['Organization', 'ad158290-d5e4-45f1-bff7-f50ff14019c2']);
+      expect(resourceCache.byUuid.get.calls.argsFor(1)).toEqual(['Location', 'ffcf9ca6-9318-4216-a052-370204fd4d59']);
+
+      expect(actual).toEqual(expected);
+    });
+  });
+
+  describe('#getPractitioner', () => {
+    it('should return null when no practitioner uuid associated with resource', () => {
+      const expected = null;
+
+      const resourceName = 'Immunization';
+      const uuid = '74e224b9-2421-4b32-a113-126b7769f93a';
+      const actual = resourceService.getPractitioner(resourceName, uuid);
+
+      expect(resourceCache.byUuid.getPractitionerUuid).toHaveBeenCalledWith('Immunization', '74e224b9-2421-4b32-a113-126b7769f93a');
+      expect(actual).toEqual(expected);
+    });
+
+    it('should return practitioner', () => {
+      const expected = {
+        id: '178ea9be-0c85-47ff-8464-76257ae3509e',
+        resourceType: 'Practitioner'
+      };
+
+      const practitionerResource = {
+        id: '178ea9be-0c85-47ff-8464-76257ae3509e',
+        resourceType: 'Practitioner'
+      };
+      resourceCache.byUuid.getPractitionerUuid.and.returnValue('65521bb0-60b5-4e5f-9865-313cf9ed42d2');
+      resourceCache.byUuid.get.and.returnValue(practitionerResource);
+
+      const resourceName = 'Immunization';
+      const uuid = '74e224b9-2421-4b32-a113-126b7769f93a';
+      const actual = resourceService.getPractitioner(resourceName, uuid);
+
+      expect(resourceCache.byUuid.getPractitionerUuid).toHaveBeenCalledWith('Immunization', '74e224b9-2421-4b32-a113-126b7769f93a');
+      expect(resourceCache.byUuid.get).toHaveBeenCalledWith('Practitioner', '65521bb0-60b5-4e5f-9865-313cf9ed42d2');
+
+      expect(actual).toEqual(expected);
+    });
+  });
 });

@@ -39,12 +39,15 @@ describe('ripple-cdr-discovery/lib/services/demographicService', () => {
 
   let demographicService;
 
+  let resourceService;
   let demographicCache;
   let discoveryCache;
   let resourceCache;
   let patientCache;
 
   function configureMocks() {
+    resourceService.getOrganisationLocation.and.returnValue({});
+
     patientCache.byNhsNumber.getPatientUuid.and.returnValue('7bb44952-60dd-4ce8-9bbd-f0b56c80a260');
     patientCache.byPatientUuid.get.and.returnValue({
       name: [
@@ -67,7 +70,6 @@ describe('ripple-cdr-discovery/lib/services/demographicService', () => {
         }
       ]
     });
-    resourceCache.getOrganisationLocation.and.returnValue({});
   }
 
   beforeEach(() => {
@@ -76,6 +78,7 @@ describe('ripple-cdr-discovery/lib/services/demographicService', () => {
 
     demographicService = new DemographicService(ctx);
 
+    resourceService = ctx.services.resourceService;
     demographicCache = ctx.cache.demographicCache;
     discoveryCache = ctx.cache.discoveryCache;
     resourceCache = ctx.cache.resourceCache;
@@ -118,7 +121,7 @@ describe('ripple-cdr-discovery/lib/services/demographicService', () => {
       expect(patientCache.byPatientUuid.get).toHaveBeenCalledWith('7bb44952-60dd-4ce8-9bbd-f0b56c80a260');
       expect(patientCache.byPatientUuid.getPractitionerUuid).toHaveBeenCalledWith('7bb44952-60dd-4ce8-9bbd-f0b56c80a260');
       expect(resourceCache.byUuid.get).toHaveBeenCalledWith('Practitioner', '3f2a728b-eda5-4c16-b67d-afeacaacbb1c');
-      expect(resourceCache.getOrganisationLocation).toHaveBeenCalledWith('Organization/1a30d00b-7fe5-44d5-bf18-9909e6fdacd2');
+      expect(resourceService.getOrganisationLocation).toHaveBeenCalledWith('Organization/1a30d00b-7fe5-44d5-bf18-9909e6fdacd2');
 
       expect(discoveryCache.deleteAll).toHaveBeenCalled();
       expect(demographicCache.byNhsNumber.set).toHaveBeenCalledWith(9999999000, {

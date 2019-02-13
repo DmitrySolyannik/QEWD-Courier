@@ -38,6 +38,7 @@ describe('ripple-cdr-discovery/lib/services/headingService', () => {
 
   let headingService;
 
+  let resourceService;
   let resourceCache;
   let patientCache;
 
@@ -45,6 +46,7 @@ describe('ripple-cdr-discovery/lib/services/headingService', () => {
     ctx = new ExecutionContextMock();
     headingService = new HeadingService(ctx);
 
+    resourceService = ctx.services.resourceService;
     resourceCache = ctx.cache.resourceCache;
     patientCache = ctx.cache.patientCache;
 
@@ -117,12 +119,12 @@ describe('ripple-cdr-discovery/lib/services/headingService', () => {
           text: 'Jane Doe'
         }
       };
-      resourceCache.getPractitioner.and.returnValue(practitioner);
+      resourceService.getPractitioner.and.returnValue(practitioner);
 
       const actual = await headingService.getBySourceId(nhsNumber, heading, sourceId);
 
       expect(resourceCache.byUuid.get).toHaveBeenCalledWith('AllergyIntolerance', 'eaf394a9-5e05-49c0-9c69-c710c77eda76');
-      expect(resourceCache.getPractitioner).toHaveBeenCalledWith('AllergyIntolerance', 'eaf394a9-5e05-49c0-9c69-c710c77eda76');
+      expect(resourceService.getPractitioner).toHaveBeenCalledWith('AllergyIntolerance', 'eaf394a9-5e05-49c0-9c69-c710c77eda76');
 
       expect(actual).toEqual(expected);
     });
@@ -233,7 +235,7 @@ describe('ripple-cdr-discovery/lib/services/headingService', () => {
         '2ebc4af8-e0d5-41fd-b32b-52af5c678fec'
       ]);
       resourceCache.byUuid.get.and.returnValues(...resources);
-      resourceCache.getPractitioner.and.returnValues(...practitioners);
+      resourceService.getPractitioner.and.returnValues(...practitioners);
 
       const actual = await headingService.getSummary(nhsNumber, heading);
 
@@ -244,9 +246,9 @@ describe('ripple-cdr-discovery/lib/services/headingService', () => {
       expect(resourceCache.byUuid.get.calls.argsFor(1)).toEqual(['AllergyIntolerance', '2ebc4af8-e0d5-41fd-b32b-52af5c678fec']);
 
 
-      expect(resourceCache.getPractitioner).toHaveBeenCalledTimes(2);
-      expect(resourceCache.getPractitioner.calls.argsFor(0)).toEqual(['AllergyIntolerance', 'c8e4606d-e59e-4863-843a-5e66deb2e841']);
-      expect(resourceCache.getPractitioner.calls.argsFor(1)).toEqual(['AllergyIntolerance', '2ebc4af8-e0d5-41fd-b32b-52af5c678fec']);
+      expect(resourceService.getPractitioner).toHaveBeenCalledTimes(2);
+      expect(resourceService.getPractitioner.calls.argsFor(0)).toEqual(['AllergyIntolerance', 'c8e4606d-e59e-4863-843a-5e66deb2e841']);
+      expect(resourceService.getPractitioner.calls.argsFor(1)).toEqual(['AllergyIntolerance', '2ebc4af8-e0d5-41fd-b32b-52af5c678fec']);
 
       expect(actual).toEqual(expected);
     });

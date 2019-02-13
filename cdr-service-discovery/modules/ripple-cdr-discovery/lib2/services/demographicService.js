@@ -54,6 +54,7 @@ class DemographicService {
     logger.info('services/demographicService|getByPatientId', { nhsNumber });
 
     const { patientCache, resourceCache, demographicCache, discoveryCache } = this.ctx.cache;
+    const { resourceService } = this.ctx.services;
 
     const patientUuid = patientCache.byNhsNumber.getPatientUuid(nhsNumber);
     const patient = patientCache.byPatientUuid.get(patientUuid);
@@ -61,7 +62,7 @@ class DemographicService {
     const practitioner = resourceCache.byUuid.get(ResourceName.PRACTITIONER, practitionerUuid);
 
     const organisationRef = getOrganisationRef(practitioner);
-    const location = resourceCache.getOrganisationLocation(organisationRef);
+    const location = resourceService.getOrganisationLocation(organisationRef);
     if (location.address && location.address.text) {
       practitioner.address = location.address.text;
     }

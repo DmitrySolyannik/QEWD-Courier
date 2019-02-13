@@ -24,17 +24,13 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 February 2019
+  13 February 2019
 
 */
 
 'use strict';
 
-const { logger } = require('../core');
-const { ResourceName } = require('../shared/enums');
-const { getLocationRef, parseRef } = require('../shared/utils');
 const { byUuid } = require('./mixins/resource');
-const debug = require('debug')('ripple-cdr-discovery:cache:resource');
 
 class ResourceCache {
   constructor(adapter) {
@@ -45,50 +41,6 @@ class ResourceCache {
   static create(adapter) {
     return new ResourceCache(adapter);
   }
-
-  /**
-   * Gets organization location
-   *
-   * @param  {string} reference
-   * @return {Object}
-   */
-  getOrganisationLocation(reference) {
-    logger.info('cache/resourceCache|getOrganisationLocation', { reference });
-
-    const organisationUuid = parseRef(reference).uuid;
-    if (!organisationUuid) return null;
-
-    const organisation = this.byUuid.get(ResourceName.ORGANIZATION, organisationUuid);
-    debug('organisation: %j', organisation);
-    if (!organisation || !organisation.extension) return null;
-
-    const locationRef = getLocationRef(organisation);
-    const locationUuid = parseRef(locationRef).uuid;
-    const location = this.byUuid.get(ResourceName.LOCATION, locationUuid);
-    debug('location: %j', location);
-
-    return location;
-  }
-
-  /**
-   * Gets resource practioner
-   *
-   * @param  {string} resourceName
-   * @param  {strijg} uuid
-   * @return {Object}
-   */
-  getPractitioner(resourceName, uuid) {
-    logger.info('cache/resourceCache|getPractitioner', { resourceName, uuid });
-
-    const practitionerUuid = this.byUuid.getPractitionerUuid(resourceName, uuid);
-    if (!practitionerUuid) return null;
-
-    const practitioner = this.byUuid.get(ResourceName.PRACTITIONER, practitionerUuid);
-    debug('practioner: %j', practitioner);
-
-    return practitioner;
-  }
-
 }
 
 module.exports = ResourceCache;

@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 February 2018
+  13 February 2018
 
 */
 
@@ -58,13 +58,14 @@ class HeadingService {
   async getBySourceId(nhsNumber, heading, sourceId, format = ResourceFormat.PULSETILE) {
     logger.info('services/headingService|getBySourceId', { nhsNumber, heading, sourceId, format });
 
-    const headingRef = sourceId.split('Discovery-')[1];
-    const { resourceName, uuid } = parseRef(headingRef, { separator: '_' });
+    const reference = sourceId.split('Discovery-')[1];
+    const { resourceName, uuid } = parseRef(reference, { separator: '_' });
 
     const { resourceCache } = this.ctx.cache;
+    const { resourceService } = this.ctx.services;
 
     const resource = resourceCache.byUuid.get(resourceName, uuid);
-    const practitioner = resourceCache.getPractitioner(resourceName, uuid);
+    const practitioner = resourceService.getPractitioner(resourceName, uuid);
     resource.nhsNumber = nhsNumber;
     resource.practitionerName = practitioner
       ? practitioner.name.text
@@ -98,13 +99,14 @@ class HeadingService {
     const helpers = headingHelpers();
 
     const { patientCache, resourceCache } = this.ctx.cache;
+    const { resourceService } = this.ctx.services;
 
     const results = [];
     const uuids = patientCache.byResource.getUuidsByResourceName(nhsNumber, resourceName);
 
     uuids.forEach((uuid) => {
       const resource = resourceCache.byUuid.get(resourceName, uuid);
-      const practitioner = resourceCache.getPractitioner(resourceName, uuid);
+      const practitioner = resourceService.getPractitioner(resourceName, uuid);
 
       resource.nhsNumber = nhsNumber;
       resource.practitionerName = practitioner
