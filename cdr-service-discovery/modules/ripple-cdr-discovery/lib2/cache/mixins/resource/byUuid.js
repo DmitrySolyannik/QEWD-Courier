@@ -64,7 +64,7 @@ module.exports = (adapter) => {
     setPractitionerUuid: async (resourceName, uuid, practitionerUuid) => {
       logger.info('mixins/resource|byUuid|setPractitionerUuid', { resourceName, uuid, practitionerUuid });
 
-      const key = ['Discovery', resourceName, 'by_uuid', uuid, 'practitioner', practitionerUuid];
+      const key = ['Discovery', resourceName, 'by_uuid', uuid, 'practitioner'];
 
       adapter.put(key, practitionerUuid);
     },

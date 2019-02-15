@@ -204,9 +204,28 @@ class ResourceService {
     const { resourceCache } = this.ctx.cache;
 
     const organisationUuid = parseRef(reference).uuid;
+    
+    
+    console.log('======================================================');
+    
+    console.log('organisationUuid', organisationUuid);
+    
+    console.log('======================================================');
+    
+    
+    
     if (!organisationUuid) return null;
 
     const organisation = await resourceCache.byUuid.get(ResourceName.ORGANIZATION, organisationUuid);
+    
+    
+    console.log('======================================================');
+    
+    console.log('organisation', organisation);
+    
+    console.log('======================================================');
+    
+    
     debug('organisation: %j', organisation);
     if (!organisation || !organisation.extension) return null;
 

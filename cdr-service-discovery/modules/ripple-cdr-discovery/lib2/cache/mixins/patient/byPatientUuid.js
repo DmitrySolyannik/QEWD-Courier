@@ -53,7 +53,7 @@ module.exports = (adapter) => {
     get: async(patientUuid) => {
       logger.info('mixins/patient|byPatientUuid|get', { patientUuid });
 
-      const key = ['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid];
+      const key = ['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid, 'data'];
 
       return adapter.getObjectWithArrays(key);
     },

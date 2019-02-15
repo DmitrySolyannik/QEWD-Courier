@@ -64,7 +64,8 @@ class DemographicService {
 
     const organisationRef = getOrganisationRef(practitioner);
     const location = await resourceService.getOrganisationLocation(organisationRef);
-    if (location.address && location.address.text) {
+
+    if (location && location.address && location.address.text) {
       practitioner.address = location.address.text;
     }
 

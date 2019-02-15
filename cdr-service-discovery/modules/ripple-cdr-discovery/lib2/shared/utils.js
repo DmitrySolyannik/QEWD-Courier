@@ -178,8 +178,8 @@ function getName(nameObj) {
 
 function getOrganisationRef(resource) {
   return resource.practitionerRole && resource.practitionerRole[0]
-    && resource.practitionerRole[0].managingOrganisation && resource.practitionerRole[0].managingOrganisation.reference
-    ? resource.practitionerRole[0].managingOrganisation.reference
+    && resource.practitionerRole[0].managingOrganization && resource.practitionerRole[0].managingOrganization.reference
+    ? resource.practitionerRole[0].managingOrganization.reference
     : null;
 }
 
@@ -212,6 +212,14 @@ function parseAddress(pAddress) {
       }
     }
   }
+  
+  console.log('======================================================');
+  
+  console.log('address ====', address);
+  
+  console.log('======================================================');
+  
+  
 
   return address;
 }
