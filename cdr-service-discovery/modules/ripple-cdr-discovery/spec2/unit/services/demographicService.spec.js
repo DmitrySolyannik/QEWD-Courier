@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  13 February 2019
+  15 February 2019
 
 */
 
@@ -64,7 +64,7 @@ describe('ripple-cdr-discovery/lib/services/demographicService', () => {
       },
       practitionerRole: [
         {
-          managingOrganisation: {
+          managingOrganization: {
             reference: 'Organization/1a30d00b-7fe5-44d5-bf18-9909e6fdacd2'
           }
         }

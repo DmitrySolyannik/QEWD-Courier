@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 February 2019
+  15 February 2019
 
 */
 
@@ -59,13 +59,18 @@ describe('ripple-cdr-discovery/lib/cache/patientCache', () => {
       },
       'by_uuid': {
         '888c1383-c07c-400d-99aa-f30350bdb984': {
-          foo: 'bar',
+          'data': {
+            foo: 'bar',
+            testArray: [3, 4]
+          },
           practitioner: 'ed8489c4-ca57-4c8c-8349-d96ada1da244'
         },
         'ce437b97-4f6e-4c96-89bb-0b58b29a79cb': {
-          bar: 'quux',
+          data: {
+            bar: 'quux',
+            testArray: [1, 2]
+          },
           practitioner: 'f24bb154-2155-4cfd-b3bf-af1c3fa95c3b',
-          testArray: [1, 2]
         }
       },
       resources: {
@@ -125,13 +130,18 @@ describe('ripple-cdr-discovery/lib/cache/patientCache', () => {
         },
         by_uuid: {
           '888c1383-c07c-400d-99aa-f30350bdb984': {
-            foo: 'bar',
+            'data': {
+              foo: 'bar',
+              testArray: [3, 4]
+            },
             practitioner: 'ed8489c4-ca57-4c8c-8349-d96ada1da244'
           },
           'ce437b97-4f6e-4c96-89bb-0b58b29a79cb': {
-            bar: 'quux',
+            data: {
+              bar: 'quux',
+              testArray: [1, 2]
+            },
             practitioner: 'f24bb154-2155-4cfd-b3bf-af1c3fa95c3b',
-            testArray: [1, 2]
           }
         },
         resources: {
@@ -282,7 +292,7 @@ describe('ripple-cdr-discovery/lib/cache/patientCache', () => {
       it('should get patient data', () => {
         const expected = {
           foo: 'bar',
-          practitioner: 'ed8489c4-ca57-4c8c-8349-d96ada1da244'
+          testArray: [3, 4]
         };
 
         seeds();
@@ -337,7 +347,6 @@ describe('ripple-cdr-discovery/lib/cache/patientCache', () => {
         const expected = [
           {
             bar: 'quux',
-            practitioner: 'f24bb154-2155-4cfd-b3bf-af1c3fa95c3b',
             testArray: [1, 2]
           }
         ];

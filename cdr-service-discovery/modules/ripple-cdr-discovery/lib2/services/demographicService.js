@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  13 February 2019
+  15 February 2019
 
 */
 
@@ -63,7 +63,7 @@ class DemographicService {
 
     const organisationRef = getOrganisationRef(practitioner);
     const location = resourceService.getOrganisationLocation(organisationRef);
-    if (location.address && location.address.text) {
+    if (location && location.address && location.address.text) {
       practitioner.address = location.address.text;
     }
 

@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  11 February 2019
+  15 February 2019
 
 */
 
@@ -151,9 +151,7 @@ describe('ripple-cdr-discovery/lib/cache/resourceCache', () => {
     describe('#setPractitionerUuid', () => {
       it('should set practitioner uuid', () => {
         const expected = {
-          'practitioner': {
-            'bb64855d-e99d-403c-9e8a-b4c8ce30c345': 'bb64855d-e99d-403c-9e8a-b4c8ce30c345'
-          }
+          'practitioner': 'bb64855d-e99d-403c-9e8a-b4c8ce30c345'
         };
 
         const practitionerUuid = 'bb64855d-e99d-403c-9e8a-b4c8ce30c345';

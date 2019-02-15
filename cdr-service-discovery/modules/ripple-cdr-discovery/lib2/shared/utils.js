@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  11 February 2019
+  15 February 2019
 
 */
 
@@ -178,8 +178,8 @@ function getName(nameObj) {
 
 function getOrganisationRef(resource) {
   return resource.practitionerRole && resource.practitionerRole[0]
-    && resource.practitionerRole[0].managingOrganisation && resource.practitionerRole[0].managingOrganisation.reference
-    ? resource.practitionerRole[0].managingOrganisation.reference
+    && resource.practitionerRole[0].managingOrganization && resource.practitionerRole[0].managingOrganization.reference
+    ? resource.practitionerRole[0].managingOrganization.reference
     : null;
 }
 

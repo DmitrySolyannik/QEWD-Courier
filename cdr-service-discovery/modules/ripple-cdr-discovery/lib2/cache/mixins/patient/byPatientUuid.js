@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  13 February 2019
+  15 February 2019
 
 */
 
@@ -73,7 +73,7 @@ module.exports = (adapter) => {
     get: (patientUuid) => {
       logger.info('mixins/patient|byPatientUuid|get', { patientUuid });
 
-      const key = ['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid];
+      const key = ['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid, 'data'];
 
       return adapter.getObjectWithArrays(key);
     },
@@ -131,7 +131,7 @@ module.exports = (adapter) => {
       logger.info('mixins/patient|byPatientUuid|getByPatientUuids', { patientUuids });
 
       const patients = patientUuids.map((patientUuid) => {
-        return adapter.getObjectWithArrays(['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid]);
+        return adapter.getObjectWithArrays(['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid, 'data']);
       });
 
      return patients;
