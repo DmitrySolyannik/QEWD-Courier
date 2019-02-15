@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 January 2019
+  13 February 2019
 
 */
 
@@ -41,7 +41,6 @@ class ResourceCache {
   static create(adapter) {
     return new ResourceCache(adapter);
   }
-
 }
 
 module.exports = ResourceCache;

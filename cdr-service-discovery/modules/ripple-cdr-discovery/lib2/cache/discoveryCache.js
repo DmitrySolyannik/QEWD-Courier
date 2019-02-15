@@ -1,9 +1,9 @@
 /*
 
  ----------------------------------------------------------------------------
- | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
+ | ripple-cdr-discovery: Ripple Discovery Interface                         |
  |                                                                          |
- | Copyright (c) 2018-19 Ripple Foundation Community Interest Company       |
+ | Copyright (c) 2017-19 Ripple Foundation Community Interest Company       |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -30,4 +30,29 @@
 
 'use strict';
 
-require('jasmine-spy-matchers');
+const { logger } = require('../core');
+
+class DiscoveryCache {
+  constructor(adapter) {
+    this.adapter = adapter;
+  }
+
+  static create(adapter) {
+    return new DiscoveryCache(adapter);
+  }
+
+  /**
+   * Deletes all cache in discovery
+   *
+   * @return {void}
+   */
+  deleteAll() {
+    logger.info('cache/discoveryCache|deleteAll');
+
+    const key = ['Discovery'];
+    this.adapter.delete(key);
+  }
+
+}
+
+module.exports = DiscoveryCache;

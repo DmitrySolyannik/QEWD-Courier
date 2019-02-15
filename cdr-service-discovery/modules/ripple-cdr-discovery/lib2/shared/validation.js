@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 January 2019
+  11 February 2019
 
 */
 
@@ -55,11 +55,11 @@ function isPatientIdValid(patientId) {
 }
 
 /**
- * Returns true if heading valid. Otherwise throw an error
+ * Returns ok object if heading is valid. Otherwise returns error object
  *
- * @param  {Object}  headingsConfig
- * @param  {string}  heading
- * @return {Boolean | Object}
+ * @param  {Object} headingsConfig
+ * @param  {string} heading
+ * @return {Object}
  */
 function isHeadingValid(headingsConfig, heading) {
   if (!heading || !headingsConfig[heading]) {
@@ -72,7 +72,7 @@ function isHeadingValid(headingsConfig, heading) {
 }
 
 function isSourceIdValid(sourceId) {
-  const isValid = sourceId ? sourceId.indexOf('Discovery-') === -1 : false;
+  const isValid = sourceId? sourceId.indexOf('Discovery-') > -1 : false;
 
   return {
     ok: isValid

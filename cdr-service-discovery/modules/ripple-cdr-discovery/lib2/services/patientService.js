@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 January 2018
+  13 February 2018
 
 */
 
@@ -41,31 +41,45 @@ class PatientService {
     return new PatientService(ctx);
   }
 
-  async getPatientBundle(nhsNumber) {
+  /**
+   * Gets patient bundle by NHS number
+   *
+   * @param  {int|string} nhsNumber
+   * @return {Object}
+   */
+  getPatientBundle(nhsNumber) {
     logger.info('services/patientService|getPatientBundle', { nhsNumber });
 
-    const { patientCache, bundleCache } = this.ctx.cache;
+    const { patientCache, patientBundleCache } = this.ctx.cache;
 
-    const exists = await bundleCache.exists();
-    const targetCache = exists
-      ? bundleCache
+    const bundleCache = patientBundleCache.exists()
+      ? patientBundleCache
       : patientCache;
 
-    const patientUuids = await targetCache.byNhsNumber.getAllPatientUuids(nhsNumber);
-    const patients = await targetCache.byPatientUuid.getByPatientUuids(patientUuids);
+    const patientUuids = bundleCache.byNhsNumber.getAllPatientUuids(nhsNumber);
+    const patients = bundleCache.byPatientUuid.getByPatientUuids(patientUuids);
+    const entry = patients.map(x => ({
+      resource: x
+    }));
 
     return {
       resourceType: 'Bundle',
-      entry: patients
+      entry,
     };
   }
 
-  async updateBundle() {
-    logger.info('services/patientService|updateBundle');
+  /**
+   * Updates patient bundle
+   *
+   * @return {void}
+   */
+  updatePatientBundle() {
+    logger.info('services/patientService|updatePatientBundle');
 
-    const { patientCache, bundleCache } = this.ctx.cache;
-    const data = await patientCache.export();
-    await bundleCache.import(data);
+    const { patientCache, patientBundleCache } = this.ctx.cache;
+    const data = patientCache.export();
+
+    patientBundleCache.import(data);
   }
 }
 

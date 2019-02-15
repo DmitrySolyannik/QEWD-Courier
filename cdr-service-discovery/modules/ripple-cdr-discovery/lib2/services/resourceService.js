@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 January 2018
+  13 February 2018
 
 */
 
@@ -34,7 +34,7 @@ const P = require('bluebird');
 const { logger } = require('../core');
 const { ResourceName } = require('../shared/enums');
 const { getLocationRef, getPractitionerRef, parseRef, getPatientUuid } = require('../shared/utils');
-const debug = require('debug');
+const debug = require('debug')('ripple-cdr-discovery:services:resource');
 
 class ResourceService {
   constructor(ctx) {
@@ -46,51 +46,69 @@ class ResourceService {
   }
 
   /**
-   * @param {string|int} nhsNumber
+   * Fetch patients
+   *
+   * @param {int|string} nhsNumber
    * @returns {Promise}
    */
   async fetchPatients(nhsNumber) {
     logger.info('services/resourceService|fetchPatients', { nhsNumber });
 
     const { patientCache } = this.ctx.cache;
-    const exists = await patientCache.byNhsNumber.exists(nhsNumber);
-    logger.info('fetchPatients | exists', { exists });
 
-    // if (exists) return { ok: false }; //@TODO Debugging , remove after
-    const { resourceRestService, tokenService } = this.ctx.services;
-    try {
-      const token = await tokenService.get();
-      logger.info('fetchPatients | token', { token });
+    const exists = patientCache.byNhsNumber.exists(nhsNumber);
+    debug('exists: %s', exists);
 
-      debug('token: %j', token);
-
-      let data = await resourceRestService.getPatients(nhsNumber, token);
-      data = JSON.parse(data);
-      logger.info('fetchPatients | getPatients', { data });
-
-      debug('data: %j', data);
-
-      if (!data || !data.entry) return false;
-
-      await P.each(data.entry, async (x) => {
-        const patient = x.resource;
-        const patientUuid = patient.id;
-
-        const exists = await patientCache.byPatientUuid.exists(patientUuid);
-        if (exists) return;
-
-        await patientCache.byPatientUuid.set(patientUuid, patient);
-        await patientCache.byPatientUuid.setNhsNumber(patientUuid, nhsNumber); //@TODO check
-        await patientCache.byNhsNumber.setPatientUuid(nhsNumber, patientUuid);
-      });
-    } catch (err) {
-      throw err;
+    if (exists) {
+      return {
+        ok: false,
+        exists: true
+      };
     }
+
+    const { resourceRestService, tokenService } = this.ctx.services;
+
+    const token = await tokenService.get();
+    debug('token: %j', token);
+
+    const data = await resourceRestService.getPatients(nhsNumber, token);
+    debug('data: %j', data);
+
+    if (!data || !data.entry) {
+      return {
+        ok: false,
+        entry: false
+      };
+    }
+
+    const result = {
+      ok: true,
+      totalCount: data.entry.length,
+      processedCount: 0
+    };
+
+    data.entry.forEach((x) => {
+      const patient = x.resource;
+      const patientUuid = patient.id;
+
+      const exists = patientCache.byPatientUuid.exists(patientUuid);
+      if (exists) return;
+
+      patientCache.byPatientUuid.set(patientUuid, patient);
+      //@TODO check if we really need it.
+      // patientCache.byPatientUuid.setNhsNumber(patientUuid, nhsNumber);
+      patientCache.byNhsNumber.setPatientUuid(nhsNumber, patientUuid);
+
+      result.processedCount++;
+    });
+
+    return result;
   }
 
   /**
+   * Fetch patient resources
    *
-   * @param {string|number} nhsNumber
+   * @param {int|string} nhsNumber
    * @param {string} resourceName
    * @returns {Promise}
    */
@@ -98,54 +116,80 @@ class ResourceService {
     logger.info('services/resourceService|fetchPatientResources', { nhsNumber, resourceName });
 
     const { patientCache } = this.ctx.cache;
-    const exists = await patientCache.byResource.exists(nhsNumber, resourceName);
-    if (exists) return false;
+    const exists = patientCache.byResource.exists(nhsNumber, resourceName);
+
+    if (exists) return {
+      ok: false,
+      exists: true
+    };
 
     const { resourceCache, fetchCache } = this.ctx.cache;
     const { resourceRestService, patientService, tokenService } = this.ctx.services;
-    const patientBundle = await patientService.getPatientBundle(nhsNumber);
-    const data = {
+
+    const patientBundle = patientService.getPatientBundle(nhsNumber);
+    const postData = {
       resources: [resourceName],
       patients: patientBundle
     };
     const token = await tokenService.get();
+    debug('post data: %j', postData);
 
-    let response = await resourceRestService.getPatientResources(data, token);
-    response = JSON.parse(response);
+    const responseData = await resourceRestService.getPatientResources(postData, token);
+    debug('response data: %j', responseData);
 
-    debug('response: %j', response);
-    if (!response || !response.entry) return false;
-
-    if (resourceName === ResourceName.PATIENT) {
-      await patientService.updateBundle();
-      await patientCache.byPatientUuid.deleteAll();
+    if (!responseData || !responseData.entry) {
+      return {
+        ok: false,
+        entry: false
+      };
     }
 
-    await fetchCache.deleteAll();
+    if (resourceName === ResourceName.PATIENT) {
+      patientService.updatePatientBundle();
+      patientCache.byPatientUuid.deleteAll();
+    }
 
-    await P.each(response.entry, async (x) => {
+    fetchCache.deleteAll();
+
+    const result = {
+      ok: true,
+      totalCount: responseData.entry.length,
+      processedCount: 0
+    };
+
+    await P.each(responseData.entry, async (x) => {
       if (x.resource.resourceType !== resourceName) return;
 
       const resource = x.resource;
       const uuid = resource.id;
       const patientUuid = getPatientUuid(resource);
 
-      await resourceCache.byUuid.set(resourceName, uuid, resource);
-      await patientCache.byResource.set(nhsNumber, patientUuid, resourceName, uuid);
-      await patientCache.byNhsNumber.setResourceUuid(nhsNumber, resourceName, uuid);
+      resourceCache.byUuid.set(resourceName, uuid, resource);
+      patientCache.byResource.set(nhsNumber, patientUuid, resourceName, uuid);
+      patientCache.byNhsNumber.setResourceUuid(nhsNumber, resourceName, uuid);
 
       const practitionerRef = getPractitionerRef(resource);
       if (practitionerRef) {
         const practitionerUuid = parseRef(practitionerRef).uuid;
-        await resourceCache.byUuid.setPractitionerUuid(resourceName, uuid, practitionerUuid);
-        await this.fetchPractitioner(practitionerRef, resourceName);
+        resourceCache.byUuid.setPractitionerUuid(resourceName, uuid, practitionerUuid);
+        await this.fetchPractitioner(resourceName, practitionerRef);
       }
+
+      result.processedCount++;
     });
+
+    return result;
   }
 
-  //@TODO think about how to remove resourceName
-  async fetchPractitioner(reference, resourceName) {
-    logger.info('services/resourceService|fetchPractitioner', { reference, resourceName });
+  /**
+   * Fetch a resource practioner
+   *
+   * @param  {string} resourceName
+   * @param  {string} reference
+   * @return {Promise}
+   */
+  async fetchPractitioner(resourceName, reference) {
+    logger.info('services/resourceService|fetchPractitioner', { resourceName, reference });
 
     // resource will be null if either:
     // - the practitioner is already cached; or
@@ -155,8 +199,6 @@ class ResourceService {
     debug('resource: %j', resource);
     if (!resource) return;
 
-    // console.log('resource.practitionerRole =====', resource.practitionerRole);
-
     // ensure organisation records for practitioner are also fetched and cached
     await P.each(resource.practitionerRole, async (role) => {
       const organisationRef = role.managingOrganisation.reference;
@@ -165,32 +207,48 @@ class ResourceService {
 
       if (resourceName === ResourceName.PATIENT) {
         const locationRef = getLocationRef(resource);
-
-        return await this.fetchResource(locationRef);
+        await this.fetchResource(locationRef);
       }
     });
   }
 
+  /**
+   * Fetch a resource
+   *
+   * @param  {string} reference
+   * @return {Promise.<Object>}
+   */
   async fetchResource(reference) {
     logger.info('services/resourceService|fetchResource', { reference });
 
     const { resourceName, uuid } = parseRef(reference);
     const { fetchCache, resourceCache } = this.ctx.cache;
 
-    const cached  = await resourceCache.byUuid.exists(resourceName, uuid);
-    if (cached) return { ok: false, cached: true };
+    const exists  = resourceCache.byUuid.exists(resourceName, uuid);
+    if (exists) {
+      return {
+        ok: false,
+        exists: true
+      };
+    }
 
-    const fetching = await fetchCache.exists(reference);
-    if (fetching) return { ok: false, fetching: true };
+    const fetching = fetchCache.exists(reference);
+    if (fetching) {
+      return {
+        ok: false,
+        fetching: true
+      };
+    }
 
     const { tokenService, resourceRestService } = this.ctx.services;
     const token = await tokenService.get();
-    let resource = await resourceRestService.getResource(reference, token);
-    resource = JSON.parse(resource);
+
+    fetchCache.set(reference);
+    const resource = await resourceRestService.getResource(reference, token);
 
     debug('resource: %j', resource);
 
-    await resourceCache.byUuid.set(resourceName, uuid, resource, {});
+    resourceCache.byUuid.set(resourceName, uuid, resource);
 
     return {
       ok: true,
@@ -198,41 +256,51 @@ class ResourceService {
     };
   }
 
-  async getOrganisationLocation(reference) {
-    logger.info('services/resourceService|getOrganisationLocation', { reference });
-
-    const { resourceCache } = this.ctx.cache;
+  /**
+   * Gets organization location
+   *
+   * @param  {string} reference
+   * @return {Object}
+   */
+  getOrganisationLocation(reference) {
+    logger.info('cache/resourceService|getOrganisationLocation', { reference });
 
     const organisationUuid = parseRef(reference).uuid;
-
     if (!organisationUuid) return null;
 
-    const organisation = await resourceCache.byUuid.get(ResourceName.ORGANIZATION, organisationUuid);
-
+    const { resourceCache } = this.ctx.cache;
+    const organisation = resourceCache.byUuid.get(ResourceName.ORGANIZATION, organisationUuid);
     debug('organisation: %j', organisation);
     if (!organisation || !organisation.extension) return null;
 
     const locationRef = getLocationRef(organisation);
     const locationUuid = parseRef(locationRef).uuid;
-    const location = await resourceCache.byUuid.get(ResourceName.LOCATION, locationUuid);
+    const location = resourceCache.byUuid.get(ResourceName.LOCATION, locationUuid);
     debug('location: %j', location);
 
     return location;
   }
 
-  async getPractitioner(resourceName, uuid) {
-    logger.info('services/resourceService|getPractitioner', { resourceName, uuid });
+  /**
+   * Gets resource practioner
+   *
+   * @param  {string} resourceName
+   * @param  {strijg} uuid
+   * @return {Object}
+   */
+  getPractitioner(resourceName, uuid) {
+    logger.info('cache/resourceService|getPractitioner', { resourceName, uuid });
 
     const { resourceCache } = this.ctx.cache;
-
-    const practitionerUuid = await resourceCache.byUuid.getPractitionerUuid(resourceName, uuid);
+    const practitionerUuid = resourceCache.byUuid.getPractitionerUuid(resourceName, uuid);
     if (!practitionerUuid) return null;
 
-    const practitioner = await resourceCache.byUuid.get(ResourceName.PRACTITIONER, practitionerUuid);
+    const practitioner = resourceCache.byUuid.get(ResourceName.PRACTITIONER, practitionerUuid);
     debug('practioner: %j', practitioner);
 
     return practitioner;
   }
+
 }
 
 module.exports = ResourceService;

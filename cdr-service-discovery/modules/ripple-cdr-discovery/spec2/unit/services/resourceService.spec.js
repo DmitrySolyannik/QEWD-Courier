@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 January 2018
+  13 February 2019
 
 */
 
@@ -33,13 +33,10 @@
 const { ExecutionContextMock } = require('../../mocks');
 const ResourceService = require('../../../lib2/services/resourceService');
 
-describe('ripple-cdr-discovery/lib2/services/resourceService', () => {
+describe('ripple-cdr-discovery/lib/services/resourceService', () => {
   let ctx;
-  let nhsNumber;
-  let resourceName;
-  let reference;
-
   let resourceService;
+
   let tokenService;
   let resourceRestService;
   let patientService;
@@ -48,13 +45,8 @@ describe('ripple-cdr-discovery/lib2/services/resourceService', () => {
   let resourceCache;
   let fetchCache;
 
-
   beforeEach(() => {
     ctx = new ExecutionContextMock();
-    nhsNumber = 9999999000;
-    resourceName = 'Patient';
-    reference = 'bar/58583011345';
-
     resourceService = new ResourceService(ctx);
 
     patientCache = ctx.cache.patientCache;
@@ -65,105 +57,11 @@ describe('ripple-cdr-discovery/lib2/services/resourceService', () => {
     patientService = ctx.services.patientService;
     resourceRestService = ctx.services.resourceRestService;
 
+    tokenService.get.and.resolveValue('foo.bar.baz');
+
     ctx.cache.freeze();
     ctx.services.freeze();
   });
-
-  function seeds() {
-    const token = {
-      jwt: 'jwt-token',
-      createdAt: new Date().getTime()
-    };
-    const patients = {
-      entry: [
-        {
-          resource: {
-              id: 8111143494
-          }
-        },
-        {
-          resource: {
-              id: 8111123469
-          }
-        }
-      ]
-    };
-    const patientBundle = {
-      resource: ['Patient'],
-      patients: {
-        resourceType: 'Bundle',
-        entry: [
-          {
-            resource: {
-              patientId: 8111149212,
-              name: 'Patient#1'
-            }
-          },
-          {
-            resource : {
-              patientId: 8111119593,
-              name: 'Patient#2'
-            }
-          }
-        ]
-      }
-    };
-
-    const patientResource = {
-      entry: [
-        {
-          resource: {
-            id: 44444455555,
-            uuid: 8111160534,
-            resourceType: 'Patient',
-            informationSource: {
-              reference: 'foo/5900049117'
-            }
-          }
-        },
-        {
-          resource: {
-            id: 3333355555,
-            uuid: 5900049116,
-            resourceType: 'Patient',
-            informationSource: {
-              reference: 'bar/5900049118'
-            }
-          }
-        },
-        {
-          resource: {
-            id: 3333355556,
-            uuid: 5900049119,
-            resourceType: 'Patient',
-          }
-        }
-      ]
-    };
-    const resource = {
-        practitionerRole: [
-          {
-            managingOrganisation: {
-              reference: 'foo/5900049117'
-            }
-          },
-          {
-            managingOrganisation: {
-              reference: 'bar/5900049118'
-            }
-          }
-        ],
-        extension: [
-          {
-            valueReference: {
-              reference: 'foobar/6567744554'
-            }
-          }
-        ]
-    };
-
-    return { token, patients, patientBundle, patientResource, resource };
-  }
 
   describe('#create (static)', () => {
     it('should initialize a new instance', async () => {
@@ -174,403 +72,729 @@ describe('ripple-cdr-discovery/lib2/services/resourceService', () => {
     });
   });
 
-  it('should call fetchPatients and cache data', async () => {
-    const { token , patients } = seeds();
+  describe('#fetchPatients', () => {
+    let nhsNumber;
 
-    patientCache.byNhsNumber.exists.and.resolveValue(false);
-    tokenService.get.and.resolveValue(token);
-    resourceRestService.getPatients.and.resolveValue(patients);
-    patientCache.byPatientUuid.exists.and.resolveValue(false);
-    patientCache.byPatientUuid.set.and.resolveValue();
-    patientCache.byPatientUuid.setNhsNumber.and.resolveValue();
-    patientCache.byNhsNumber.setPatientUuid.and.resolveValue();
-
-    await resourceService.fetchPatients(nhsNumber);
-
-    expect(patientCache.byNhsNumber.exists).toHaveBeenCalledWith(nhsNumber);
-    expect(tokenService.get).toHaveBeenCalled();
-    expect(resourceRestService.getPatients).toHaveBeenCalledWith(nhsNumber, token);
-
-    expect(patientCache.byPatientUuid.exists).toHaveBeenCalledTimes(2);
-    expect(patientCache.byPatientUuid.exists.calls.argsFor(0)).toEqual([8111143494]);
-    expect(patientCache.byPatientUuid.exists.calls.argsFor(1)).toEqual([8111123469]);
-
-    expect(patientCache.byPatientUuid.set).toHaveBeenCalledTimes(2);
-    expect(patientCache.byPatientUuid.set.calls.argsFor(0)).toEqual([8111143494, { id: 8111143494 }]);
-    expect(patientCache.byPatientUuid.set.calls.argsFor(1)).toEqual([8111123469, { id: 8111123469 }]);
-
-    expect(patientCache.byPatientUuid.setNhsNumber).toHaveBeenCalledTimes(2);
-    expect(patientCache.byPatientUuid.setNhsNumber.calls.argsFor(0)).toEqual([8111143494, 9999999000]);
-    expect(patientCache.byPatientUuid.setNhsNumber.calls.argsFor(1)).toEqual([8111123469, 9999999000]);
-
-    expect(patientCache.byNhsNumber.setPatientUuid).toHaveBeenCalledTimes(2);
-    expect(patientCache.byNhsNumber.setPatientUuid.calls.argsFor(0)).toEqual([9999999000, 8111143494]);
-    expect(patientCache.byNhsNumber.setPatientUuid.calls.argsFor(1)).toEqual([9999999000, 8111123469]);
-  });
-
-  it('should call fetchPatients with existing patient cache', async () => {
-    patientCache.byNhsNumber.exists.and.resolveValue(true);
-
-    const actual = await resourceService.fetchPatients(nhsNumber);
-
-    expect(patientCache.byNhsNumber.exists).toHaveBeenCalledWith(nhsNumber);
-    expect(actual).toEqual({
-      ok: false
-    });
-  });
-
-  it('should call fetchPatients with existing cache by patient uuid', async () => {
-    const { token , patients } = seeds();
-    patientCache.byNhsNumber.exists.and.resolveValue(false);
-    tokenService.get.and.resolveValue(token);
-    resourceRestService.getPatients.and.resolveValue(patients);
-    patientCache.byPatientUuid.exists.and.resolveValue(true);
-
-    await resourceService.fetchPatients(nhsNumber);
-
-    expect(patientCache.byNhsNumber.exists).toHaveBeenCalled();
-
-    expect(tokenService.get).toHaveBeenCalled();
-    expect(resourceRestService.getPatients).toHaveBeenCalledWith(nhsNumber, token);
-
-    expect(patientCache.byPatientUuid.exists).toHaveBeenCalledTimes(2);
-    expect(patientCache.byPatientUuid.exists.calls.argsFor(0)).toEqual([8111143494]);
-    expect(patientCache.byPatientUuid.exists.calls.argsFor(1)).toEqual([8111123469]);
-
-  });
-
-  it('should call fetchPatient without patients from resource service', async () => {
-    const { token } = seeds();
-    patientCache.byNhsNumber.exists.and.resolveValue(false);
-    tokenService.get.and.resolveValue(token);
-    resourceRestService.getPatients.and.resolveValue(null);
-
-    await resourceService.fetchPatients(nhsNumber);
-
-    expect(patientCache.byNhsNumber.exists).toHaveBeenCalledWith(nhsNumber);
-    expect(tokenService.get).toHaveBeenCalled();
-    expect(resourceRestService.getPatients).toHaveBeenCalledWith(nhsNumber, token);
-  });
-
-  it('should call fetchPatient with error', async () => {
-    const expectError = 'Sorry, something went wrong';
-    patientCache.byNhsNumber.exists.and.resolveValue(false);
-    tokenService.get.and.rejectValue(new Error(expectError));
-
-    try {
-      await resourceService.fetchPatients(nhsNumber);
-    } catch(e) {
-      expect(e).toEqual(new Error(expectError));
-    }
-
-    expect(patientCache.byNhsNumber.exists).toHaveBeenCalledWith(nhsNumber);
-    expect(tokenService.get).toHaveBeenCalled();
-  });
-
-  it('should call fetchPatientResources with success response and one of cases without practitioner ref', async () => {
-    const { patientBundle, patientResource, token } = seeds();
-
-
-    patientCache.byResource.exists.and.resolveValue(false);
-    patientService.getPatientBundle.and.resolveValue(patientBundle.patients);
-    tokenService.get.and.resolveValue(token);
-    resourceRestService.getPatientResources.and.resolveValue(patientResource);
-    patientService.updateBundle.and.resolveValue();
-    patientCache.byPatientUuid.deleteAll.and.resolveValue();
-    fetchCache.deleteAll.and.resolveValue();
-    resourceCache.byUuid.set.and.resolveValue();
-    patientCache.byResource.set.and.resolveValue();
-    patientCache.byNhsNumber.setResourceUuid.and.resolveValue();
-    resourceCache.byUuid.setPractitionerUuid.and.resolveValue();
-    spyOn(resourceService, 'fetchPractitioner').and.resolveValue();
-
-    await resourceService.fetchPatientResources(nhsNumber, resourceName);
-
-    expect(patientCache.byResource.exists).toHaveBeenCalledWith(nhsNumber, resourceName);
-    expect(patientService.getPatientBundle).toHaveBeenCalledWith(nhsNumber);
-    expect(tokenService.get).toHaveBeenCalled();
-    expect(resourceRestService.getPatientResources).toHaveBeenCalledWith(patientBundle, token);
-    expect(patientService.updateBundle).toHaveBeenCalled();
-    expect(patientCache.byPatientUuid.deleteAll).toHaveBeenCalled();
-    expect(fetchCache.deleteAll).toHaveBeenCalled();
-
-    expect(resourceCache.byUuid.set).toHaveBeenCalledTimes(3);
-    expect(resourceCache.byUuid.set.calls.argsFor(0)).toEqual(['Patient', 8111160534, {
-      id: 44444455555,
-      uuid: 8111160534,
-      resourceType: 'Patient',
-      informationSource: {
-        reference: 'foo/5900049117'
-      }
-    }]);
-    expect(resourceCache.byUuid.set.calls.argsFor(1)).toEqual(['Patient', 5900049116, {
-      id: 3333355555,
-      uuid: 5900049116,
-      resourceType: 'Patient',
-      informationSource: {
-        reference: 'bar/5900049118'
-      }
-    }]);
-    expect(resourceCache.byUuid.set.calls.argsFor(2)).toEqual(['Patient', 5900049119, {
-      id: 3333355556,
-      uuid: 5900049119,
-      resourceType: 'Patient',
-    }]);
-
-
-    expect(patientCache.byResource.set).toHaveBeenCalledTimes(3);
-    expect(patientCache.byResource.set.calls.argsFor(0)).toEqual([9999999000, 44444455555, 'Patient', 8111160534]);
-    expect(patientCache.byResource.set.calls.argsFor(1)).toEqual([9999999000, 3333355555, 'Patient', 5900049116]);
-
-    expect(patientCache.byNhsNumber.setResourceUuid).toHaveBeenCalledTimes(3);
-    expect(patientCache.byNhsNumber.setResourceUuid.calls.argsFor(0)).toEqual([9999999000, 'Patient', 8111160534]);
-    expect(patientCache.byNhsNumber.setResourceUuid.calls.argsFor(1)).toEqual([9999999000, 'Patient', 5900049116]);
-
-    expect(resourceCache.byUuid.setPractitionerUuid).toHaveBeenCalledTimes(2);
-    expect(resourceCache.byUuid.setPractitionerUuid.calls.argsFor(0)).toEqual(['Patient', 8111160534, '5900049117']);
-    expect(resourceCache.byUuid.setPractitionerUuid.calls.argsFor(1)).toEqual(['Patient', 5900049116, '5900049118']);
-
-
-    expect(resourceService.fetchPractitioner).toHaveBeenCalledTimes(2);
-    expect(resourceService.fetchPractitioner.calls.argsFor(0)).toEqual(['foo/5900049117', 'Patient']);
-    expect(resourceService.fetchPractitioner.calls.argsFor(1)).toEqual(['bar/5900049118', 'Patient']);
-  });
-
-  it('should try to fetch practitioner without patient resource', async () => {
-    const { patientBundle, token } = seeds();
-    patientCache.byResource.exists.and.resolveValue(false);
-    patientService.getPatientBundle.and.resolveValue(patientBundle.patients);
-    tokenService.get.and.resolveValue(token);
-    resourceRestService.getPatientResources.and.resolveValue(null);
-
-    await resourceService.fetchPatientResources(nhsNumber, resourceName);
-
-    expect(patientCache.byResource.exists).toHaveBeenCalledWith(nhsNumber, resourceName);
-    expect(patientService.getPatientBundle).toHaveBeenCalledWith(nhsNumber);
-    expect(tokenService.get).toHaveBeenCalled();
-    expect(resourceRestService.getPatientResources).toHaveBeenCalledWith(patientBundle, token);
-  });
-
-  it('should call fetch patient resource with exsisting patient cache', async () => {
-    patientCache.byResource.exists.and.resolveValue(true);
-
-    const actual = await resourceService.fetchPatientResources(nhsNumber, resourceName);
-
-    expect(patientCache.byResource.exists).toHaveBeenCalledWith(nhsNumber, resourceName);
-    expect(actual).toEqual(false);
-  });
-
-  it('should call fetch patient resource without data from get patient resource', async () => {
-    const { patientBundle, token } = seeds();
-
-    patientCache.byResource.exists.and.resolveValue(false);
-    patientService.getPatientBundle.and.resolveValue(patientBundle);
-    tokenService.get.and.resolveValue(token);
-    resourceRestService.getPatientResources.and.resolveValue({
-      entry: null
+    beforeEach(() => {
+      nhsNumber = 9999999000;
     });
 
-    const actual = await resourceService.fetchPatientResources(nhsNumber, resourceName);
+    it('should return non ok when patients exists', async () => {
+      const expected = {
+        ok: false,
+        exists: true
+      };
 
-    expect(patientCache.byResource.exists).toHaveBeenCalled();
-    expect(patientService.getPatientBundle).toHaveBeenCalledWith(nhsNumber);
-    expect(tokenService.get).toHaveBeenCalled();
-    expect(resourceRestService.getPatientResources).toHaveBeenCalled();
-    expect(actual).toEqual(false);
-  });
+      patientCache.byNhsNumber.exists.and.returnValue(true);
 
-  it('should call fetch patient resources with wrong resource type ', async () => {
-    const { patientBundle, patientResource, token } = seeds();
+      const actual = await resourceService.fetchPatients(nhsNumber);
 
-
-    patientCache.byResource.exists.and.resolveValue(false);
-    patientService.getPatientBundle.and.resolveValue(patientBundle.patients);
-    tokenService.get.and.resolveValue(token);
-    resourceRestService.getPatientResources.and.resolveValue(patientResource);
-
-    await resourceService.fetchPatientResources(nhsNumber, 'ResourceName');
-
-    expect(patientCache.byResource.exists).toHaveBeenCalledWith(nhsNumber, 'ResourceName');
-    expect(patientService.getPatientBundle).toHaveBeenCalledWith(nhsNumber);
-    expect(tokenService.get).toHaveBeenCalled();
-    patientBundle.resource = ['ResourceName'];
-    expect(resourceRestService.getPatientResources).toHaveBeenCalledWith(patientBundle, token);
-  });
-
-  it('should call fetch practitioner with resource', async () => {
-    const { resource } = seeds();
-    spyOn(resourceService, 'fetchResource').and.resolveValue({
-      resource : resource
+      expect(patientCache.byNhsNumber.exists).toHaveBeenCalledWith(9999999000);
+      expect(actual).toEqual(expected);
     });
 
-    await resourceService.fetchPractitioner(reference, resourceName);
-    expect(resourceService.fetchResource).toHaveBeenCalledTimes(5);
-    expect(resourceService.fetchResource.calls.argsFor(0)).toEqual(['bar/58583011345']);
-    expect(resourceService.fetchResource.calls.argsFor(1)).toEqual(['foo/5900049117']);
-    expect(resourceService.fetchResource.calls.argsFor(2)).toEqual(['foobar/6567744554']);
-    expect(resourceService.fetchResource.calls.argsFor(3)).toEqual(['bar/5900049118']);
-    expect(resourceService.fetchResource.calls.argsFor(4)).toEqual(['foobar/6567744554']);
-  });
+    it('should return non ok when no data entry', async () => {
+      const expected = {
+         ok: false,
+         entry: false
+      };
 
-  it('should call fetch practitioner without resource', async () => {
-    spyOn(resourceService, 'fetchResource').and.resolveValue({
-      resource: null
+      const data = {};
+
+      patientCache.byNhsNumber.exists.and.returnValue(false);
+      resourceRestService.getPatients.and.resolveValue(data);
+
+      const actual = await resourceService.fetchPatients(nhsNumber);
+
+      expect(patientCache.byNhsNumber.exists).toHaveBeenCalledWith(9999999000);
+      expect(tokenService.get).toHaveBeenCalled();
+      expect(resourceRestService.getPatients).toHaveBeenCalledWith(9999999000, 'foo.bar.baz');
+
+      expect(actual).toEqual(expected);
     });
-    await resourceService.fetchPractitioner(reference, resourceName);
-    expect(resourceService.fetchResource).toHaveBeenCalledWith(reference);
-  });
 
-  it('should call fetch practitioner without organization ref', async () => {
-    spyOn(resourceService, 'fetchResource').and.returnValues({
-        resource: {
-          practitionerRole: [
-            {
-              managingOrganisation: {
-                reference: 'foo/5900049117'
-              }
-            },
-            {
-              managingOrganisation: {
-                reference: 'bar/58583011345'
-              }
-            }
-          ],
-        }
-      }, {
-        resource: {
-          practitionerRole: [
-            {
-              managingOrganisation: {
-                reference: 'bar/58583011345'
-              }
-            }
-          ],
-        }
-      }, {
-        resource: null
-      }
-    );
-    await resourceService.fetchPractitioner(reference, 'resourceName');
-    expect(resourceService.fetchResource).toHaveBeenCalledTimes(3);
-    expect(resourceService.fetchResource.calls.argsFor(0)).toEqual([reference]);
-    expect(resourceService.fetchResource.calls.argsFor(1)).toEqual(['foo/5900049117']);
-    expect(resourceService.fetchResource.calls.argsFor(2)).toEqual(['bar/58583011345']);
-  });
+    it('should fetch and do not cache existing patients', async () => {
+      const expected = {
+        ok: true,
+        totalCount: 1,
+        processedCount: 0
+      };
 
-  it('should call fetch resource with resource', async () => {
-    const { token, resource } = seeds();
-    resourceCache.byUuid.exists.and.resolveValue(false);
-    fetchCache.exists.and.resolveValue(false);
-    tokenService.get.and.resolveValue(token.jwt);
-    resourceRestService.getResource.and.resolveValue(resource);
-    resourceCache.byUuid.set.and.resolveValue();
-
-   const actual = await resourceService.fetchResource(reference);
-
-
-    expect(resourceCache.byUuid.exists).toHaveBeenCalledWith('bar', '58583011345');
-    expect(fetchCache.exists).toHaveBeenCalledWith(reference);
-    expect(tokenService.get).toHaveBeenCalled();
-    expect(resourceRestService.getResource).toHaveBeenCalledWith(reference, token.jwt);
-    expect(resourceCache.byUuid.set).toHaveBeenCalledWith('bar', '58583011345', resource, {});
-    expect(actual).toEqual({
-      ok: true,
-      resource
-    });
-  });
-
-  it('should call fetch resource with already cached resource', async () => {
-    resourceCache.byUuid.exists.and.resolveValue(true);
-    const actual = await resourceService.fetchResource(reference);
-
-    expect(resourceCache.byUuid.exists).toHaveBeenCalledWith('bar', '58583011345');
-    expect(actual).toEqual({
-      ok: false,
-      cached: true
-    });
-  });
-
-  it('should call fetch with already cached fetch', async () => {
-    resourceCache.byUuid.exists.and.resolveValue(false);
-    fetchCache.exists.and.resolveValue(true);
-
-    const actual = await resourceService.fetchResource(reference);
-    expect(resourceCache.byUuid.exists).toHaveBeenCalledWith('bar', '58583011345');
-    expect(fetchCache.exists).toHaveBeenCalledWith(reference);
-    expect(actual).toEqual({
-      ok: false,
-      fetching: true
-    });
-  });
-
-  it('should call get organization location with success response', async () => {
-    resourceCache.byUuid.get.and.resolveValues({
-        extension: [
+      const data = {
+        entry: [
           {
-            valueReference: {
-              reference: 'foobar/6567744554'
-            }
-          },
-          {
-            valueReference: {
-              reference: 'barfoo/6567744321'
+            resource: {
+              id: 'e22f0105-279d-4871-bde2-9e18684d69ec'
             }
           }
         ]
-    },{
-      address: {
-        text: 'California'
-      }
+      };
+
+      patientCache.byNhsNumber.exists.and.returnValue(false);
+      resourceRestService.getPatients.and.resolveValue(data);
+      patientCache.byPatientUuid.exists.and.returnValue(true);
+
+      const actual = await resourceService.fetchPatients(nhsNumber);
+
+      expect(patientCache.byNhsNumber.exists).toHaveBeenCalledWith(9999999000);
+      expect(tokenService.get).toHaveBeenCalled();
+      expect(resourceRestService.getPatients).toHaveBeenCalledWith(9999999000, 'foo.bar.baz');
+      expect(patientCache.byPatientUuid.exists).toHaveBeenCalledWith('e22f0105-279d-4871-bde2-9e18684d69ec');
+
+      expect(actual).toEqual(expected);
     });
 
-    const actual = await resourceService.getOrganisationLocation(reference);
+    it('should fetch and cache patients', async () => {
+      const expected = {
+        ok: true,
+        totalCount: 1,
+        processedCount: 1
+      };
 
-    expect(resourceCache.byUuid.get).toHaveBeenCalledWith('Organization', '58583011345');
-    expect(resourceCache.byUuid.get).toHaveBeenCalledWith('Location', '6567744554');
-    expect(actual).toEqual({
-      address: {
-        text: 'California'
-      }
+      const data = {
+        entry: [
+          {
+            resource: {
+              id: 'e22f0105-279d-4871-bde2-9e18684d69ec'
+            }
+          }
+        ]
+      };
+
+      patientCache.byNhsNumber.exists.and.returnValue(false);
+      resourceRestService.getPatients.and.resolveValue(data);
+      patientCache.byPatientUuid.exists.and.returnValue(false);
+
+      const actual = await resourceService.fetchPatients(nhsNumber);
+
+      expect(patientCache.byNhsNumber.exists).toHaveBeenCalledWith(9999999000);
+      expect(tokenService.get).toHaveBeenCalled();
+      expect(resourceRestService.getPatients).toHaveBeenCalledWith(9999999000, 'foo.bar.baz');
+      expect(patientCache.byPatientUuid.exists).toHaveBeenCalledWith('e22f0105-279d-4871-bde2-9e18684d69ec');
+
+      expect(patientCache.byPatientUuid.set).toHaveBeenCalledWith(
+        'e22f0105-279d-4871-bde2-9e18684d69ec',
+        {
+          id: 'e22f0105-279d-4871-bde2-9e18684d69ec'
+        }
+      );
+      expect(patientCache.byNhsNumber.setPatientUuid).toHaveBeenCalledWith(9999999000, 'e22f0105-279d-4871-bde2-9e18684d69ec');
+
+      expect(actual).toEqual(expected);
     });
   });
 
-  it('should call get organization with invalid reference', async() => {
-    const actual = await resourceService.getOrganisationLocation('foo');
-    expect(actual).toEqual(null);
-  });
+  describe('#fetchPatientResources', () => {
+    let nhsNumber;
+    let resourceName;
 
-  it('should call get organization location without organization', async () => {
-    resourceCache.byUuid.get.and.resolveValue(null);
-    const actual = await resourceService.getOrganisationLocation(reference);
-    expect(actual).toEqual(null);
-  });
-
-  it('should call get practitioner with success response', async () => {
-    resourceCache.byUuid.getPractitionerUuid.and.resolveValue(9999999003);
-    resourceCache.byUuid.get.and.resolveValue({
-      address: {
-        text: 'California'
-      },
-      name: 'Dr.House'
+    beforeEach(() => {
+      nhsNumber = 9999999000;
+      resourceName = 'Immunization';
     });
 
-    const actual = await resourceService.getPractitioner(resourceName, '58583011345');
-    expect(resourceCache.byUuid.getPractitionerUuid).toHaveBeenCalledWith(resourceName, '58583011345');
-    expect(resourceCache.byUuid.get).toHaveBeenCalledWith('Practitioner', 9999999003);
-    expect(actual).toEqual({
-      address: {
-        text: 'California'
-      },
-      name: 'Dr.House'
+    it('should return non ok when resources exists', async () => {
+      const expected = {
+        ok: false,
+        exists: true
+      };
+
+      patientCache.byResource.exists.and.returnValue(true);
+
+      const actual = await resourceService.fetchPatientResources(nhsNumber, resourceName);
+
+      expect(patientCache.byResource.exists).toHaveBeenCalledWith(9999999000, 'Immunization');
+      expect(actual).toEqual(expected);
+    });
+
+    it('should return non ok when no data entry', async () => {
+      const expected = {
+        ok: false,
+        entry: false
+      };
+
+      const patientBundle = {
+        resources: ['Immunization'],
+        patients: [
+          {
+            resource: {
+              resourceType: 'Patient',
+              id: 9999999111
+            }
+          }
+        ]
+      };
+      const data = {};
+
+      patientCache.byResource.exists.and.returnValue(false);
+      patientService.getPatientBundle.and.returnValue(patientBundle);
+      resourceRestService.getPatientResources.and.resolveValue(data);
+
+      const actual = await resourceService.fetchPatientResources(nhsNumber, resourceName);
+
+      expect(patientCache.byResource.exists).toHaveBeenCalledWith(9999999000, 'Immunization');
+      expect(tokenService.get).toHaveBeenCalled();
+      expect(resourceRestService.getPatientResources).toHaveBeenCalledWith(
+        {
+          resources: ['Immunization'],
+          patients: patientBundle
+        },
+        'foo.bar.baz'
+      );
+
+      expect(actual).toEqual(expected);
+    });
+
+    it('should update patient bundle after fetching when resource name is Patient', async () => {
+      const expected = {
+        ok: true,
+        totalCount: 0,
+        processedCount: 0
+      };
+
+      const patientBundle = {
+        resources: ['Patient'],
+        patients: [
+          {
+            resource: {
+              resourceType: 'Patient',
+              id: 9999999111
+            }
+          }
+        ]
+      };
+      const data = {
+        resourceType: 'Bundle',
+        entry: []
+      };
+
+      patientCache.byResource.exists.and.returnValue(false);
+      patientService.getPatientBundle.and.returnValue(patientBundle);
+      resourceRestService.getPatientResources.and.resolveValue(data);
+
+      resourceName = 'Patient';
+      const actual = await resourceService.fetchPatientResources(nhsNumber, resourceName);
+
+      expect(patientCache.byResource.exists).toHaveBeenCalledWith(9999999000, 'Patient');
+      expect(tokenService.get).toHaveBeenCalled();
+      expect(resourceRestService.getPatientResources).toHaveBeenCalledWith(
+        {
+          resources: ['Patient'],
+          patients: patientBundle
+        },
+        'foo.bar.baz'
+      );
+
+      expect(patientService.updatePatientBundle).toHaveBeenCalled();
+      expect(patientCache.byPatientUuid.deleteAll).toHaveBeenCalled();
+      expect(fetchCache.deleteAll).toHaveBeenCalled();
+
+      expect(actual).toEqual(expected);
+    });
+
+    it('should fetch and ignore resources with another resource type', async () => {
+      const expected = {
+        ok: true,
+        totalCount: 1,
+        processedCount: 0
+      };
+
+      const patientBundle = {
+        resources: ['Immunization'],
+        patients: [
+          {
+            resource: {
+              resourceType: 'Patient',
+              id: 9999999111
+            }
+          }
+        ]
+      };
+      const data = {
+        resourceType: 'Bundle',
+        entry: [
+          {
+            resource: {
+              id: '0adc9b7f-d33d-4447-970f-ef295328eb29',
+              resourceType: 'Condition'
+            }
+          }
+        ]
+      };
+
+      patientCache.byResource.exists.and.returnValue(false);
+      patientService.getPatientBundle.and.returnValue(patientBundle);
+      resourceRestService.getPatientResources.and.resolveValue(data);
+
+      const actual = await resourceService.fetchPatientResources(nhsNumber, resourceName);
+
+      expect(patientCache.byResource.exists).toHaveBeenCalledWith(9999999000, 'Immunization');
+      expect(tokenService.get).toHaveBeenCalled();
+      expect(resourceRestService.getPatientResources).toHaveBeenCalledWith(
+        {
+          resources: ['Immunization'],
+          patients: patientBundle
+        },
+        'foo.bar.baz'
+      );
+      expect(fetchCache.deleteAll).toHaveBeenCalled();
+
+      expect(actual).toEqual(expected);
+    });
+
+    it('should fetch and cache resources with same resource type', async () => {
+      const expected = {
+        ok: true,
+        totalCount: 1,
+        processedCount: 1
+      };
+
+      const patientBundle = {
+        resources: ['Immunization'],
+        patients: [
+          {
+            resource: {
+              resourceType: 'Patient',
+              id: 9999999111
+            }
+          }
+        ]
+      };
+      const data = {
+        resourceType: 'Bundle',
+        entry: [
+          {
+            resource: {
+              id: '0adc9b7f-d33d-4447-970f-ef295328eb29',
+              resourceType: 'Immunization',
+              patient: {
+                reference: 'Patient/93e4dcc0-409c-446d-a58a-f04cdfb9cd7d'
+              }
+            }
+          }
+        ]
+      };
+
+      patientCache.byResource.exists.and.returnValue(false);
+      patientService.getPatientBundle.and.returnValue(patientBundle);
+      resourceRestService.getPatientResources.and.resolveValue(data);
+
+      const actual = await resourceService.fetchPatientResources(nhsNumber, resourceName);
+
+      expect(patientCache.byResource.exists).toHaveBeenCalledWith(9999999000, 'Immunization');
+      expect(tokenService.get).toHaveBeenCalled();
+      expect(resourceRestService.getPatientResources).toHaveBeenCalledWith(
+        {
+          resources: ['Immunization'],
+          patients: patientBundle
+        },
+        'foo.bar.baz'
+      );
+
+      expect(fetchCache.deleteAll).toHaveBeenCalled();
+      expect(resourceCache.byUuid.set).toHaveBeenCalledWith('Immunization', '0adc9b7f-d33d-4447-970f-ef295328eb29', {
+        id: '0adc9b7f-d33d-4447-970f-ef295328eb29',
+        resourceType: 'Immunization',
+        patient: {
+          reference: 'Patient/93e4dcc0-409c-446d-a58a-f04cdfb9cd7d'
+        }
+      });
+      expect(patientCache.byResource.set).toHaveBeenCalledWith(
+        9999999000, '93e4dcc0-409c-446d-a58a-f04cdfb9cd7d', 'Immunization', '0adc9b7f-d33d-4447-970f-ef295328eb29'
+      );
+      expect(patientCache.byNhsNumber.setResourceUuid).toHaveBeenCalledWith(
+        9999999000, 'Immunization', '0adc9b7f-d33d-4447-970f-ef295328eb29'
+      );
+
+      expect(actual).toEqual(expected);
+    });
+
+    it('should fetch and cache resources with with same resource type (practitioner reference)', async () => {
+      const expected = {
+        ok: true,
+        totalCount: 1,
+        processedCount: 1
+      };
+
+      const patientBundle = {
+        resources: ['Immunization'],
+        patients: [
+          {
+            resource: {
+              resourceType: 'Patient',
+              id: 9999999111
+            }
+          }
+        ]
+      };
+      const data = {
+        resourceType: 'Bundle',
+        entry: [
+          {
+            resource: {
+              id: '0adc9b7f-d33d-4447-970f-ef295328eb29',
+              resourceType: 'Immunization',
+              patient: {
+                reference: 'Patient/93e4dcc0-409c-446d-a58a-f04cdfb9cd7d'
+              },
+              informationSource: {
+                reference: 'Practitioner/f08a49e4-8bf4-4beb-9837-dc26fe78111e'
+              }
+            }
+          }
+        ]
+      };
+
+
+      patientCache.byResource.exists.and.returnValue(false);
+      patientService.getPatientBundle.and.returnValue(patientBundle);
+      resourceRestService.getPatientResources.and.resolveValue(data);
+      spyOn(resourceService, 'fetchPractitioner');
+
+      const actual = await resourceService.fetchPatientResources(nhsNumber, resourceName);
+
+      expect(patientCache.byResource.exists).toHaveBeenCalledWith(9999999000, 'Immunization');
+      expect(tokenService.get).toHaveBeenCalled();
+      expect(resourceRestService.getPatientResources).toHaveBeenCalledWith(
+        {
+          resources: ['Immunization'],
+          patients: patientBundle
+        },
+        'foo.bar.baz'
+      );
+
+      expect(fetchCache.deleteAll).toHaveBeenCalled();
+      expect(resourceCache.byUuid.set).toHaveBeenCalledWith('Immunization', '0adc9b7f-d33d-4447-970f-ef295328eb29', {
+        id: '0adc9b7f-d33d-4447-970f-ef295328eb29',
+        resourceType: 'Immunization',
+        patient: {
+          reference: 'Patient/93e4dcc0-409c-446d-a58a-f04cdfb9cd7d'
+        },
+        informationSource: {
+          reference: 'Practitioner/f08a49e4-8bf4-4beb-9837-dc26fe78111e'
+        }
+      });
+      // expect(patientCache.byResource.set).toHaveBeenCalledWith(
+      //   9999999000, '93e4dcc0-409c-446d-a58a-f04cdfb9cd7d', 'Immunization', '0adc9b7f-d33d-4447-970f-ef295328eb29'
+      // );
+      // expect(patientCache.byNhsNumber.setResourceUuid).toHaveBeenCalledWith(
+      //   9999999000, 'Immunization', '0adc9b7f-d33d-4447-970f-ef295328eb29'
+      // );
+      // expect(resourceService.fetchPractitioner).toHaveBeenCalledWith(
+      //   'Immunization', 'Practitioner/f08a49e4-8bf4-4beb-9837-dc26fe78111e'
+      // );
+
+      expect(actual).toEqual(expected);
     });
   });
 
-  it('should call practitioner and returns null', async() => {
-    resourceCache.byUuid.getPractitionerUuid.and.resolveValue(null);
+  describe('#fetchPractitioner', () => {
+    let resourceName;
+    let reference;
 
-    const actual = await resourceService.getPractitioner(resourceName, '58583011345');
-    expect(resourceCache.byUuid.getPractitionerUuid).toHaveBeenCalledWith(resourceName, '58583011345');
-    expect(actual).toEqual(null);
+    beforeEach(() => {
+      resourceName = 'Immunization';
+      reference = 'Practitioner/f08a49e4-8bf4-4beb-9837-dc26fe78111e';
+    });
 
+    it('should fetch practitioner', async () => {
+      spyOn(resourceService, 'fetchResource').and.resolveValue(
+        {
+          resource: null
+        }
+      );
+
+      await resourceService.fetchPractitioner(resourceName, reference);
+
+      expect(resourceService.fetchResource).toHaveBeenCalledTimes(1);
+      expect(resourceService.fetchResource).toHaveBeenCalledWith('Practitioner/f08a49e4-8bf4-4beb-9837-dc26fe78111e');
+    });
+
+    it('should ignore fetching practitioner organization', async () => {
+      spyOn(resourceService, 'fetchResource').and.resolveValues(
+        {
+          resource: {
+            id: '2a5ad06f-2e15-4fcf-9ff5-584e9570fc54',
+            practitionerRole: [
+              {
+                managingOrganisation: {
+                  reference: 'Organization/f34c12b1-749e-4c26-9621-a986d67ecd44'
+                }
+              }
+            ]
+          }
+        },
+        {
+          resource: null
+        }
+      );
+
+      await resourceService.fetchPractitioner(resourceName, reference);
+
+      expect(resourceService.fetchResource).toHaveBeenCalledTimes(2);
+      expect(resourceService.fetchResource.calls.argsFor(0)).toEqual(['Practitioner/f08a49e4-8bf4-4beb-9837-dc26fe78111e']);
+      expect(resourceService.fetchResource.calls.argsFor(1)).toEqual(['Organization/f34c12b1-749e-4c26-9621-a986d67ecd44']);
+    });
+
+    it('should fetch practitioner organization', async () => {
+      spyOn(resourceService, 'fetchResource').and.resolveValues(
+        {
+          resource: {
+            id: '2a5ad06f-2e15-4fcf-9ff5-584e9570fc54',
+            practitionerRole: [
+              {
+                managingOrganisation: {
+                  reference: 'Organization/f34c12b1-749e-4c26-9621-a986d67ecd44'
+                }
+              }
+            ]
+          }
+        },
+        {
+          resource: {}
+        }
+      );
+
+      await resourceService.fetchPractitioner(resourceName, reference);
+
+      expect(resourceService.fetchResource).toHaveBeenCalledTimes(2);
+      expect(resourceService.fetchResource.calls.argsFor(0)).toEqual(['Practitioner/f08a49e4-8bf4-4beb-9837-dc26fe78111e']);
+      expect(resourceService.fetchResource.calls.argsFor(1)).toEqual(['Organization/f34c12b1-749e-4c26-9621-a986d67ecd44']);
+    });
+
+    it('should ignore fetching practitioner organization location', async () => {
+      spyOn(resourceService, 'fetchResource').and.resolveValues(
+        {
+          resource: {
+            id: '2a5ad06f-2e15-4fcf-9ff5-584e9570fc54',
+            practitionerRole: [
+              {
+                managingOrganisation: {
+                  reference: 'Organization/f34c12b1-749e-4c26-9621-a986d67ecd44'
+                }
+              }
+            ]
+          }
+        },
+        {
+          resource: null
+        }
+      );
+
+      await resourceService.fetchPractitioner(resourceName, reference);
+
+      expect(resourceService.fetchResource).toHaveBeenCalledTimes(2);
+      expect(resourceService.fetchResource.calls.argsFor(0)).toEqual(['Practitioner/f08a49e4-8bf4-4beb-9837-dc26fe78111e']);
+      expect(resourceService.fetchResource.calls.argsFor(1)).toEqual(['Organization/f34c12b1-749e-4c26-9621-a986d67ecd44']);
+    });
+
+    it('should fetch practitioner organization location when resource name is Patient', async () => {
+      spyOn(resourceService, 'fetchResource').and.resolveValues(
+        {
+          resource: {
+            id: '2a5ad06f-2e15-4fcf-9ff5-584e9570fc54',
+            practitionerRole: [
+              {
+                managingOrganisation: {
+                  reference: 'Organization/f34c12b1-749e-4c26-9621-a986d67ecd44',
+                }
+              }
+            ]
+          }
+        },
+        {
+          resource: {
+            id: 'a231c6a1-3f46-4518-8771-2a69155920ff',
+            extension: [
+              {
+                valueReference: {
+                  reference: 'Location/bf6cc6ca-3d2f-468f-8025-15d71b2b00d2',
+                }
+              }
+            ]
+          }
+        }
+      );
+
+      const resourceName = 'Patient';
+      await resourceService.fetchPractitioner(resourceName, reference);
+
+      expect(resourceService.fetchResource).toHaveBeenCalledTimes(3);
+      expect(resourceService.fetchResource.calls.argsFor(0)).toEqual(['Practitioner/f08a49e4-8bf4-4beb-9837-dc26fe78111e']);
+      expect(resourceService.fetchResource.calls.argsFor(1)).toEqual(['Organization/f34c12b1-749e-4c26-9621-a986d67ecd44']);
+      expect(resourceService.fetchResource.calls.argsFor(2)).toEqual(['Location/bf6cc6ca-3d2f-468f-8025-15d71b2b00d2']);
+    });
+  });
+
+  describe('#fetchResource', () => {
+    let reference;
+
+    beforeEach(() => {
+      reference = 'Immunization/f08a49e4-8bf4-4beb-9837-dc26fe78111e';
+    });
+
+    it('should return non-ok when resource exists', async () => {
+      const expected = {
+        ok: false,
+        exists: true
+      };
+
+      resourceCache.byUuid.exists.and.returnValue(true);
+
+      const actual = await resourceService.fetchResource(reference);
+
+      expect(resourceCache.byUuid.exists).toHaveBeenCalledWith('Immunization', 'f08a49e4-8bf4-4beb-9837-dc26fe78111e');
+      expect(actual).toEqual(expected);
+    });
+
+    it('should return non-ok when resource fetching', async () => {
+      const expected = {
+        ok: false,
+        fetching: true
+      };
+
+      resourceCache.byUuid.exists.and.returnValue(false);
+      fetchCache.exists.and.returnValue(true);
+
+      const actual = await resourceService.fetchResource(reference);
+
+      expect(resourceCache.byUuid.exists).toHaveBeenCalledWith('Immunization', 'f08a49e4-8bf4-4beb-9837-dc26fe78111e');
+      expect(fetchCache.exists).toHaveBeenCalledWith('Immunization/f08a49e4-8bf4-4beb-9837-dc26fe78111e');
+
+      expect(actual).toEqual(expected);
+    });
+
+    it('should fetch and cache ressource', async () => {
+      const expected = {
+        ok: true,
+        resource: {
+          id: 'f08a49e4-8bf4-4beb-9837-dc26fe78111e',
+          foo: 'bar'
+        }
+      };
+
+      resourceCache.byUuid.exists.and.returnValue(false);
+      fetchCache.exists.and.returnValue(false);
+      resourceRestService.getResource.and.resolveValue({
+        id: 'f08a49e4-8bf4-4beb-9837-dc26fe78111e',
+        foo: 'bar'
+      });
+
+      const actual = await resourceService.fetchResource(reference);
+
+      expect(resourceCache.byUuid.exists).toHaveBeenCalledWith('Immunization', 'f08a49e4-8bf4-4beb-9837-dc26fe78111e');
+      expect(fetchCache.exists).toHaveBeenCalledWith('Immunization/f08a49e4-8bf4-4beb-9837-dc26fe78111e');
+      expect(tokenService.get).toHaveBeenCalled();
+      expect(resourceRestService.getResource).toHaveBeenCalledWith('Immunization/f08a49e4-8bf4-4beb-9837-dc26fe78111e', 'foo.bar.baz');
+      expect(resourceCache.byUuid.set).toHaveBeenCalledWith('Immunization', 'f08a49e4-8bf4-4beb-9837-dc26fe78111e', {
+        id: 'f08a49e4-8bf4-4beb-9837-dc26fe78111e',
+        foo: 'bar'
+      });
+
+      expect(actual).toEqual(expected);
+    });
+  });
+
+  describe('#getOrganisationLocation', () => {
+    it('should return null when reference has bad format', () => {
+      const expected = null;
+
+      const reference = 'foo';
+      const actual = resourceService.getOrganisationLocation(reference);
+
+      expect(actual).toEqual(expected);
+    });
+
+    it('should return null when no resource found', () => {
+      const expected = null;
+
+      const reference = 'Organization/ad158290-d5e4-45f1-bff7-f50ff14019c2';
+      const actual = resourceService.getOrganisationLocation(reference);
+
+      expect(resourceCache.byUuid.get).toHaveBeenCalledWith('Organization', 'ad158290-d5e4-45f1-bff7-f50ff14019c2');
+      expect(actual).toEqual(expected);
+    });
+
+    it('should return null when no resource extension found', () => {
+      const expected = null;
+
+      const organizationResource = {};
+      resourceCache.byUuid.get.and.returnValue(organizationResource);
+
+      const reference = 'Organization/ad158290-d5e4-45f1-bff7-f50ff14019c2';
+      const actual = resourceService.getOrganisationLocation(reference);
+
+      expect(resourceCache.byUuid.get).toHaveBeenCalledWith('Organization', 'ad158290-d5e4-45f1-bff7-f50ff14019c2');
+      expect(actual).toEqual(expected);
+    });
+
+    it('should return location', () => {
+      const expected = {
+        id: 'ffcf9ca6-9318-4216-a052-370204fd4d59',
+        resourceType: 'Location'
+      };
+
+      const organizationResource = {
+        id: 'ad158290-d5e4-45f1-bff7-f50ff14019c2',
+        resourceType: 'Organization',
+        extension: [
+          {
+            valueReference: {
+              reference: 'Location/ffcf9ca6-9318-4216-a052-370204fd4d59'
+            }
+          }
+        ]
+      };
+      const locationResource = {
+        id: 'ffcf9ca6-9318-4216-a052-370204fd4d59',
+        resourceType: 'Location'
+      };
+      resourceCache.byUuid.get.and.returnValues(organizationResource, locationResource);
+
+      const reference = 'Organization/ad158290-d5e4-45f1-bff7-f50ff14019c2';
+      const actual = resourceService.getOrganisationLocation(reference);
+
+      expect(resourceCache.byUuid.get).toHaveBeenCalledTimes(2);
+      expect(resourceCache.byUuid.get.calls.argsFor(0)).toEqual(['Organization', 'ad158290-d5e4-45f1-bff7-f50ff14019c2']);
+      expect(resourceCache.byUuid.get.calls.argsFor(1)).toEqual(['Location', 'ffcf9ca6-9318-4216-a052-370204fd4d59']);
+
+      expect(actual).toEqual(expected);
+    });
+  });
+
+  describe('#getPractitioner', () => {
+    it('should return null when no practitioner uuid associated with resource', () => {
+      const expected = null;
+
+      const resourceName = 'Immunization';
+      const uuid = '74e224b9-2421-4b32-a113-126b7769f93a';
+      const actual = resourceService.getPractitioner(resourceName, uuid);
+
+      expect(resourceCache.byUuid.getPractitionerUuid).toHaveBeenCalledWith('Immunization', '74e224b9-2421-4b32-a113-126b7769f93a');
+      expect(actual).toEqual(expected);
+    });
+
+    it('should return practitioner', () => {
+      const expected = {
+        id: '178ea9be-0c85-47ff-8464-76257ae3509e',
+        resourceType: 'Practitioner'
+      };
+
+      const practitionerResource = {
+        id: '178ea9be-0c85-47ff-8464-76257ae3509e',
+        resourceType: 'Practitioner'
+      };
+      resourceCache.byUuid.getPractitionerUuid.and.returnValue('65521bb0-60b5-4e5f-9865-313cf9ed42d2');
+      resourceCache.byUuid.get.and.returnValue(practitionerResource);
+
+      const resourceName = 'Immunization';
+      const uuid = '74e224b9-2421-4b32-a113-126b7769f93a';
+      const actual = resourceService.getPractitioner(resourceName, uuid);
+
+      expect(resourceCache.byUuid.getPractitionerUuid).toHaveBeenCalledWith('Immunization', '74e224b9-2421-4b32-a113-126b7769f93a');
+      expect(resourceCache.byUuid.get).toHaveBeenCalledWith('Practitioner', '65521bb0-60b5-4e5f-9865-313cf9ed42d2');
+
+      expect(actual).toEqual(expected);
+    });
   });
 });

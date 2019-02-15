@@ -24,13 +24,14 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 January 2018
+  13 February 2018
 
 */
 
 'use strict';
 
 const { BadRequestError } = require('../errors');
+const { logger } = require('../core');
 const { isPatientIdValid } = require('../shared/validation');
 const { Role, ResourceName } = require('../shared/enums');
 const BaseCommand = require('./baseCommand');
@@ -46,10 +47,11 @@ class GetDemographicsCommand extends BaseCommand {
 
   /**
    * @param  {string} patientId
-   * @return {Object}
+   * @return {Promise.<Object>}
    */
   async execute(patientId) {
-    debug('patientId: %s', patientId);
+    logger.info('commands/getDemographics|execute', { patientId });
+
     debug('role: %s', this.session.role);
 
     if (this.session.role === Role.PHR_USER) {
@@ -62,7 +64,7 @@ class GetDemographicsCommand extends BaseCommand {
     }
 
     const { cacheService } = this.ctx.services;
-    const cachedObj = await cacheService.getDemographics(patientId);
+    const cachedObj = cacheService.getDemographics(patientId);
     debug('cached response: %j', cachedObj);
     if (cachedObj) {
       return cachedObj;
@@ -71,7 +73,7 @@ class GetDemographicsCommand extends BaseCommand {
     const { resourceService, demographicService } = this.ctx.services;
     await resourceService.fetchPatients(patientId);
     await resourceService.fetchPatientResources(patientId, ResourceName.PATIENT);
-    const responseObj = await demographicService.getByPatientId(patientId);
+    const responseObj = demographicService.getByPatientId(patientId);
     debug('response: %j', responseObj);
 
     return responseObj;

@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  31 December 2018
+  11 February 2019
 
 */
 
@@ -33,26 +33,44 @@
 const { ExecutionContextMock } = require('../../mocks');
 const { DemographicCache } = require('../../../lib2/cache');
 
-
-describe('ripple-cdr-discovery/lib2/cache/demographicsCache', () => {
+describe('ripple-cdr-discovery/lib/cache/demographicsCache', () => {
   let ctx;
-
   let nhsNumber;
+
   let demographicsCache;
   let qewdSession;
 
+  function seeds() {
+    qewdSession.data.$(['Demographics', 'by_nhsNumber', nhsNumber]).setDocument({
+      id: nhsNumber,
+      nhsNumber: nhsNumber,
+      gender: 'female',
+      phone : '+44 58584 5475477',
+      name: 'Megan',
+      dateOfBirth: 1546300800000,
+      gpName: 'Fox',
+      gpAddress: 'California',
+      address: 'London'
+    });
+  }
 
   beforeEach(() => {
     ctx = new ExecutionContextMock();
+
     demographicsCache = new DemographicCache(ctx.adapter);
     qewdSession = ctx.adapter.qewdSession;
-    nhsNumber = 999999000;
+
+    nhsNumber = 9999999000;
+
     ctx.cache.freeze();
   });
 
+  afterEach(() => {
+    ctx.worker.db.reset();
+  });
 
   describe('#create (static)', () => {
-    it('should initialize a new instance', async () => {
+    it('should initialize a new instance', () => {
       const actual = DemographicCache.create(ctx.adapter);
 
       expect(actual).toEqual(jasmine.any(DemographicCache));
@@ -62,65 +80,61 @@ describe('ripple-cdr-discovery/lib2/cache/demographicsCache', () => {
   });
 
   describe('byNhsNumber', () => {
-    function seeds() {
-      qewdSession.data.$(['Demographics', 'by_nhsNumber', nhsNumber]).setDocument({
-        id: nhsNumber,
-        nhsNumber: nhsNumber,
-        gender: 'female',
-        phone : '+44 58584 5475477',
-        name: 'Megan',
-        dateOfBirth: 1546300800000,
-        gpName: 'Fox',
-        gpAddress: 'California',
-        address: 'London'
+    describe('#get', () => {
+      it('should get demographics cache', () => {
+        const expected = {
+          id: 9999999000,
+          nhsNumber: 9999999000,
+          gender: 'female',
+          phone : '+44 58584 5475477',
+          name: 'Megan',
+          dateOfBirth: 1546300800000,
+          gpName: 'Fox',
+          gpAddress: 'California',
+          address: 'London'
+        };
+
+        seeds();
+
+        demographicsCache.byNhsNumber.get(nhsNumber);
+
+        const actual = qewdSession.data.$(['Demographics', 'by_nhsNumber', 9999999000]).getDocument(true);
+
+        expect(actual).toEqual(expected);
       });
-    }
-
-    it('should get cache from demographics', async () => {
-      seeds();
-      const expected = {
-        id: nhsNumber,
-        nhsNumber: nhsNumber,
-        gender: 'female',
-        phone : '+44 58584 5475477',
-        name: 'Megan',
-        dateOfBirth: 1546300800000,
-        gpName: 'Fox',
-        gpAddress: 'California',
-        address: 'London'
-      };
-      await demographicsCache.byNhsNumber.get(nhsNumber);
-      const actual = qewdSession.data.$(['Demographics', 'by_nhsNumber', nhsNumber]).getDocument(true);
-
-      expect(actual).toEqual(expected);
     });
 
-    it('should set cache to demographics', async () => {
+    describe('#set', () => {
+      it('should set demographics cache', () => {
+        const expected = {
+          id: 9999999000,
+          nhsNumber: 9999999000,
+          gender: 'male',
+          phone : '+44 58000 5478901',
+          name: 'Brad',
+          dateOfBirth: 1546300800000,
+          gpName: 'Pitt',
+          gpAddress: 'California',
+          address: '90210 Beverly Hills'
+        };
 
-      const expected = {
-        id: nhsNumber,
-        nhsNumber: nhsNumber,
-        gender: 'female',
-        phone : '+44 58584 5475477',
-        name: 'Megan',
-        dateOfBirth: 1546300800000,
-        gpName: 'Fox',
-        gpAddress: 'California',
-        address: 'London'
-      };
-      await demographicsCache.byNhsNumber.set(nhsNumber, expected);
-      const actual = qewdSession.data.$(['Demographics', 'by_nhsNumber', nhsNumber]).getDocument(true);
-      expect(actual).toEqual(expected);
-    });
+        const data = {
+          id: 9999999000,
+          nhsNumber: 9999999000,
+          gender: 'male',
+          phone : '+44 58000 5478901',
+          name: 'Brad',
+          dateOfBirth: 1546300800000,
+          gpName: 'Pitt',
+          gpAddress: 'California',
+          address: '90210 Beverly Hills'
+        };
+        demographicsCache.byNhsNumber.set(nhsNumber, data);
 
-    it('should delete cache from demographics', async () => {
-      qewdSession.data.$(['Discovery']).setDocument({
-        foo: 'bar'
+        const actual = qewdSession.data.$(['Demographics', 'by_nhsNumber', nhsNumber]).getDocument(true);
+
+        expect(actual).toEqual(expected);
       });
-
-      await demographicsCache.byNhsNumber.delete();
-      const actual = qewdSession.data.$(['Discovery']).getDocument(true);
-      expect(actual).toEqual([]);
     });
   });
 });

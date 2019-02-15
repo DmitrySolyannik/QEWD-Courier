@@ -3,7 +3,7 @@
  ----------------------------------------------------------------------------
  | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
  |                                                                          |
- | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
+ | Copyright (c) 2018-19 Ripple Foundation Community Interest Company       |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  18 December 2018
+  11 February 2019
 
 */
 
@@ -32,6 +32,7 @@
 
 const { ExecutionContextMock } = require('../../mocks');
 const { GetHeadingSummaryCommand } = require('../../../lib2/commands');
+const { Role } = require('../../../lib2/shared/enums');
 const { BadRequestError } = require('../../../lib2/errors');
 
 describe('ripple-cdr-discovery/lib2/commands/getHeadingSummaryCommand', () => {
@@ -44,14 +45,43 @@ describe('ripple-cdr-discovery/lib2/commands/getHeadingSummaryCommand', () => {
   let resourceService;
   let headingService;
 
+  function mockHeadingService(patientId) {
+    const responseObj = [
+      {
+        vaccinationName: 'Rotavirus',
+        comment: 'Vaccination for 18 yrs old patient',
+        series: 'Inactivated poliovirus',
+        vaccinationDateTime: 1546400900000,
+        author: 'Dr. House',
+        dateCreated: 1546300800000,
+        source: 'openEHR_to_Pulsetile.json',
+        sourceId: 'eaf394a9-5e05-49c0-9c69-c710c77eda76',
+        patientId: patientId
+      },
+      {
+        vaccinationName: 'Varicella',
+        comment: 'Vaccination for 20 yrs old patient',
+        series: 'Influenza',
+        vaccinationDateTime: 1546400900000,
+        author: 'Dr. Wilson',
+        dateCreated: 1546300800000,
+        source: 'openEHR_to_Pulsetile.json',
+        sourceId: 'eaf394a9-5e05-49c0-9c69-c710c77eda76',
+        patientId: patientId
+      }
+    ];
+    headingService.getSummary.and.returnValue(responseObj);
+  }
+
   beforeEach(() => {
     ctx = new ExecutionContextMock();
+    session = {
+      role : 'IDCR',
+      nhsNumber: 9999999111
+    };
+
     patientId = 5558526784;
     heading = 'vaccinations';
-    session = {
-      role : 'phrUser',
-      nhsNumber: 5558526784
-    };
 
     resourceService = ctx.services.resourceService;
     headingService = ctx.services.headingService;
@@ -59,67 +89,109 @@ describe('ripple-cdr-discovery/lib2/commands/getHeadingSummaryCommand', () => {
     ctx.services.freeze();
   });
 
-  it('should call execute command with valid data', async () => {
-    const expected = {
-    responseFrom: 'discovery_service',
-    results: [{
-      'vaccinationName': 'Rotavirus',
-      'comment': 'Vaccination for 18 yrs old patient',
-      'series': 'Inactivated poliovirus',
-      'vaccinationDateTime': new Date().getTime(),
-      'author': 'Dr. House',
-      'dateCreated': new Date().getTime(),
-      'source': 'openEHR_to_Pulsetile.json',
-      'sourceId': 'eaf394a9-5e05-49c0-9c69-c710c77eda76',
-      'patientId': patientId
-    },
-      {
-        'vaccinationName': 'Varicella',
-        'comment': 'Vaccination for 20 yrs old patient',
-        'series': 'Influenza',
-        'vaccinationDateTime': new Date().getTime(),
-        'author': 'Dr. Wilson',
-        'dateCreated': new Date().getTime(),
-        'source': 'openEHR_to_Pulsetile.json',
-        'sourceId': 'eaf394a9-5e05-49c0-9c69-c710c77eda76',
-        'patientId': patientId
-      }]
-  };
-
-    headingService.getSummary.and.resolveValue(expected.results);
-
-    const command = new GetHeadingSummaryCommand(ctx, session);
-    const actual = await command.execute(patientId, heading);
-
-    expect(resourceService.fetchPatients).toHaveBeenCalledWith(patientId);
-    expect(resourceService.fetchPatientResources).toHaveBeenCalledWith(patientId, 'Immunization');
-    expect(headingService.getSummary).toHaveBeenCalledWith(patientId, heading);
-    expect(actual).toEqual(expected);
-  });
-
-  it('should call execute command with not valid patientId', async () => {
-
-    patientId = 'pId';
-    session.role = 'patient';
+  it('should throw patientId is not valid error', async () => {
+    patientId = 'foo';
 
     const command = new GetHeadingSummaryCommand(ctx, session);
     const actual = command.execute(patientId, heading);
 
-    await expectAsync(actual).toBeRejectedWith(new BadRequestError('patientId pId is invalid'));
-
+    await expectAsync(actual).toBeRejectedWith(new BadRequestError('patientId foo is invalid'));
   });
 
-  it('should call execute command with not valid heading', async () => {
-    heading = undefined;
-    session.role = 'patient';
+  it('should return no results when invalid or missing heading error', async () => {
+    const expected = {
+      responseFrom: 'discovery_service',
+      results: []
+    };
+
+    heading = 'foo';
+
     const command = new GetHeadingSummaryCommand(ctx, session);
     const actual = await command.execute(patientId, heading);
 
-    await expect(actual).toEqual({
-      responseFrom: 'discovery_service',
-      results: []
-    });
+    expect(actual).toEqual(expected);
   });
 
+  it('should return heading summary data', async () => {
+    const expected = {
+      responseFrom: 'discovery_service',
+      results: [
+        {
+          vaccinationName: 'Rotavirus',
+          comment: 'Vaccination for 18 yrs old patient',
+          series: 'Inactivated poliovirus',
+          vaccinationDateTime: 1546400900000,
+          author: 'Dr. House',
+          dateCreated: 1546300800000,
+          source: 'openEHR_to_Pulsetile.json',
+          sourceId: 'eaf394a9-5e05-49c0-9c69-c710c77eda76',
+          patientId: 5558526784
+        },
+        {
+          vaccinationName: 'Varicella',
+          comment: 'Vaccination for 20 yrs old patient',
+          series: 'Influenza',
+          vaccinationDateTime: 1546400900000,
+          author: 'Dr. Wilson',
+          dateCreated: 1546300800000,
+          source: 'openEHR_to_Pulsetile.json',
+          sourceId: 'eaf394a9-5e05-49c0-9c69-c710c77eda76',
+          patientId: 5558526784
+        }
+      ]
+    };
 
+    mockHeadingService(patientId);
+
+    const command = new GetHeadingSummaryCommand(ctx, session);
+    const actual = await command.execute(patientId, heading);
+
+    expect(resourceService.fetchPatients).toHaveBeenCalledWith(5558526784);
+    expect(resourceService.fetchPatientResources).toHaveBeenCalledWith(5558526784, 'Immunization');
+    expect(headingService.getSummary).toHaveBeenCalledWith(5558526784, 'vaccinations');
+
+    expect(actual).toEqual(expected);
+  });
+
+  it('should return heading summary data (phr user)', async () => {
+    const expected = {
+      responseFrom: 'discovery_service',
+      results: [
+        {
+          vaccinationName: 'Rotavirus',
+          comment: 'Vaccination for 18 yrs old patient',
+          series: 'Inactivated poliovirus',
+          vaccinationDateTime: 1546400900000,
+          author: 'Dr. House',
+          dateCreated: 1546300800000,
+          source: 'openEHR_to_Pulsetile.json',
+          sourceId: 'eaf394a9-5e05-49c0-9c69-c710c77eda76',
+          patientId: 9999999111
+        },
+        {
+          vaccinationName: 'Varicella',
+          comment: 'Vaccination for 20 yrs old patient',
+          series: 'Influenza',
+          vaccinationDateTime: 1546400900000,
+          author: 'Dr. Wilson',
+          dateCreated: 1546300800000,
+          source: 'openEHR_to_Pulsetile.json',
+          sourceId: 'eaf394a9-5e05-49c0-9c69-c710c77eda76',
+          patientId: 9999999111
+        }
+      ]
+    };
+
+    session.role = Role.PHR_USER;
+    mockHeadingService(session.nhsNumber);
+
+    const command = new GetHeadingSummaryCommand(ctx, session);
+    const actual = await command.execute(patientId, heading);
+
+    expect(resourceService.fetchPatients).toHaveBeenCalledWith(9999999111);
+    expect(resourceService.fetchPatientResources).toHaveBeenCalledWith(9999999111, 'Immunization');
+    expect(headingService.getSummary).toHaveBeenCalledWith(9999999111, 'vaccinations');
+
+    expect(actual).toEqual(expected);
+  });
 });

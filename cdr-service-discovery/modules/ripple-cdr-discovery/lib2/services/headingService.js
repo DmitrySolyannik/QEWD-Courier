@@ -24,13 +24,12 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 January 2018
+  13 February 2018
 
 */
 
 'use strict';
 
-const P = require('bluebird');
 const transform = require('qewd-transform-json').transform;
 const { logger } = require('../core');
 const { ResourceFormat } = require('../shared/enums');
@@ -54,19 +53,19 @@ class HeadingService {
    * @param {string} heading
    * @param {string} sourceId
    * @param {string|null} format
-   * @returns {Promise.<Object>}
+   * @returns {Object}
    */
-  async getBySourceId(nhsNumber, heading, sourceId, format = ResourceFormat.PULSETILE) {
+  getBySourceId(nhsNumber, heading, sourceId, format = ResourceFormat.PULSETILE) {
     logger.info('services/headingService|getBySourceId', { nhsNumber, heading, sourceId, format });
 
-    const headingRef = sourceId.split('Discovery-')[1];
-    const { resourceName, uuid } = parseRef(headingRef, { separator: '_' });
+    const reference = sourceId.split('Discovery-')[1];
+    const { resourceName, uuid } = parseRef(reference, { separator: '_' });
 
     const { resourceCache } = this.ctx.cache;
     const { resourceService } = this.ctx.services;
 
-    const resource = await resourceCache.byUuid.get(resourceName, uuid);
-    const practitioner = await resourceService.getPractitioner(resourceName, uuid);
+    const resource = resourceCache.byUuid.get(resourceName, uuid);
+    const practitioner = resourceService.getPractitioner(resourceName, uuid);
     resource.nhsNumber = nhsNumber;
     resource.practitionerName = practitioner
       ? practitioner.name.text
@@ -88,9 +87,9 @@ class HeadingService {
    * @param {string|number} nhsNumber
    * @param {string} heading
    * @param {string|null} format
-   * @returns {Promise<[]>}
+   * @returns {Object[]}
    */
-  async getSummary(nhsNumber, heading, format = ResourceFormat.PULSETILE) {
+  getSummary(nhsNumber, heading, format = ResourceFormat.PULSETILE) {
     logger.info('services/headingService|getSummary', { nhsNumber, heading, format });
 
     const resourceName = this.ctx.headingsConfig[heading];
@@ -103,22 +102,21 @@ class HeadingService {
     const { resourceService } = this.ctx.services;
 
     const results = [];
-    const uuids = await patientCache.byResource.getAllResourceUuids(nhsNumber, resourceName);
+    const uuids = patientCache.byResource.getUuidsByResourceName(nhsNumber, resourceName);
 
-    await P.each(uuids, async (uuid) => {
-      const resource = await resourceCache.byUuid.get(resourceName, uuid);
-      const practitioner = await resourceService.getPractitioner(resourceName, uuid);
+    uuids.forEach((uuid) => {
+      const resource = resourceCache.byUuid.get(resourceName, uuid);
+      const practitioner = resourceService.getPractitioner(resourceName, uuid);
 
       resource.nhsNumber = nhsNumber;
       resource.practitionerName = practitioner
         ? practitioner.name.text
         : 'Not known';
 
-      const transformResult = transform(template, resource, helpers);
+      const result = transform(template, resource, helpers);
+      debug('uuid: %s, result: %j', uuid, result);
 
-      debug('uuid: %s, result: %j', uuid, transformResult);
-
-      results.push(transformResult);
+      results.push(result);
     });
 
     return results;

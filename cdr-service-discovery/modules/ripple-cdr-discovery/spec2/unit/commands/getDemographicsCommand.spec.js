@@ -3,7 +3,7 @@
  ----------------------------------------------------------------------------
  | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
  |                                                                          |
- | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
+ | Copyright (c) 2018-19 Ripple Foundation Community Interest Company       |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  18 December 2018
+  13 February 2019
 
 */
 
@@ -32,93 +32,144 @@
 
 const { ExecutionContextMock } = require('../../mocks');
 const { GetDemographicsCommand } = require('../../../lib2/commands');
+const { Role } = require('../../../lib2/shared/enums');
 const { BadRequestError } = require('../../../lib2/errors');
 
-describe('ripple-cdr-discovery/lib2/commands/getDemographicsCommand', () => {
+describe('ripple-cdr-discovery/lib/commands/getDemographicsCommand', () => {
   let ctx;
   let session;
-
   let patientId;
 
   let cacheService;
-
   let resourceService;
   let demographicService;
 
+  function mockDemographicsService(patientId) {
+    const responseObj = {
+      id: patientId,
+      nhsNumber: patientId,
+      gender: 'female',
+      phone : '+44 58584 5475477',
+      name: 'Megan',
+      dateOfBirth: 1546300800000,
+      gpName: 'Fox',
+      gpAddress: 'California',
+      address: 'London'
+    };
+    demographicService.getByPatientId.and.returnValue(responseObj);
+  }
+
   beforeEach(() => {
     ctx = new ExecutionContextMock();
-    patientId = 5558526784;
+
+    patientId = 9999999000;
     session = {
-      role : 'phrUser',
-      nhsNumber: 5558526784
+      role: 'IDCR',
+      nhsNumber: 9999999111
     };
 
     cacheService = ctx.services.cacheService;
-
-    cacheService.getDemographics.and.resolveValue(null);
-
     resourceService = ctx.services.resourceService;
     demographicService = ctx.services.demographicService;
 
     ctx.services.freeze();
   });
 
-  it('should call execute command with valid data', async () => {
-    const expected = {
-      id: patientId,
-      nhsNumber: session.nhsNumber,
-      gender: 'female',
-      phone : '+44 58584 5475477',
-      name: 'Megan',
-      dateOfBirth: new Date().getTime(),
-      gpName: 'Fox',
-      gpAddress: 'California',
-      address: 'London'
-    };
-
-    demographicService.getByPatientId.and.resolveValue(expected);
-
-    const command = new GetDemographicsCommand(ctx, session);
-    const actual = await command.execute(patientId);
-
-    expect(resourceService.fetchPatients).toHaveBeenCalledWith(patientId);
-    expect(resourceService.fetchPatientResources).toHaveBeenCalledWith(patientId, 'Patient');
-    expect(demographicService.getByPatientId).toHaveBeenCalledWith(patientId);
-    expect(actual).toEqual(expected);
-  });
-
-  it('should call execute command with not valid patientId', async () => {
-
-    patientId = undefined;
-    session.role = 'patient';
+  it('should throw patientId is invalid error', async () => {
+    patientId = 'foo';
 
     const command = new GetDemographicsCommand(ctx, session);
     const actual = command.execute(patientId);
 
-    await expectAsync(actual).toBeRejectedWith(new BadRequestError('patientId undefined must be defined'));
-
+    await expectAsync(actual).toBeRejectedWith(new BadRequestError('patientId foo is invalid'));
   });
 
-  it('should call execute command already cached data', async () => {
-    session.role = 'patient';
-    const now = new Date().getTime();
+  it('should return cached demographics', async () => {
     const expected = {
-      id: patientId,
-      nhsNumber: session.nhsNumber,
+      id: 9999999000,
+      nhsNumber: 9999999000,
       gender: 'female',
       phone : '+44 58584 5475477',
       name: 'Megan',
-      dateOfBirth: now,
+      dateOfBirth: 1546300800000,
       gpName: 'Fox',
       gpAddress: 'California',
       address: 'London'
     };
-    cacheService.getDemographics.and.resolveValue(expected);
+
+    const responseObj = {
+      id: 9999999000,
+      nhsNumber: 9999999000,
+      gender: 'female',
+      phone : '+44 58584 5475477',
+      name: 'Megan',
+      dateOfBirth: 1546300800000,
+      gpName: 'Fox',
+      gpAddress: 'California',
+      address: 'London'
+    };
+    cacheService.getDemographics.and.returnValue(responseObj);
+
     const command = new GetDemographicsCommand(ctx, session);
     const actual = await command.execute(patientId);
 
-    await expect(actual).toEqual(expected);
+    expect(cacheService.getDemographics).toHaveBeenCalledWith(patientId);
+    expect(actual).toEqual(expected);
   });
 
+  it('should return demographics', async () => {
+    const expected = {
+      id: 9999999000,
+      nhsNumber: 9999999000,
+      gender: 'female',
+      phone : '+44 58584 5475477',
+      name: 'Megan',
+      dateOfBirth: 1546300800000,
+      gpName: 'Fox',
+      gpAddress: 'California',
+      address: 'London'
+    };
 
+    cacheService.getDemographics.and.returnValue(null);
+    mockDemographicsService(patientId);
+
+    const command = new GetDemographicsCommand(ctx, session);
+    const actual = await command.execute(patientId);
+
+    expect(cacheService.getDemographics).toHaveBeenCalledWith(9999999000);
+    expect(resourceService.fetchPatients).toHaveBeenCalledWith(9999999000);
+    expect(resourceService.fetchPatientResources).toHaveBeenCalledWith(9999999000, 'Patient');
+    expect(demographicService.getByPatientId).toHaveBeenCalledWith(9999999000);
+
+    expect(actual).toEqual(expected);
+  });
+
+  it('should return demographics (phr user)', async () => {
+    const expected = {
+      id: 9999999111,
+      nhsNumber: 9999999111,
+      gender: 'female',
+      phone : '+44 58584 5475477',
+      name: 'Megan',
+      dateOfBirth: 1546300800000,
+      gpName: 'Fox',
+      gpAddress: 'California',
+      address: 'London'
+    };
+
+    session.role = Role.PHR_USER;
+
+    cacheService.getDemographics.and.returnValue();
+    mockDemographicsService(session.nhsNumber);
+
+    const command = new GetDemographicsCommand(ctx, session);
+    const actual = await command.execute(patientId);
+
+    expect(cacheService.getDemographics).toHaveBeenCalledWith(9999999111);
+    expect(resourceService.fetchPatients).toHaveBeenCalledWith(9999999111);
+    expect(resourceService.fetchPatientResources).toHaveBeenCalledWith(9999999111, 'Patient');
+    expect(demographicService.getByPatientId).toHaveBeenCalledWith(9999999111);
+
+    expect(actual).toEqual(expected);
+  });
 });

@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  2 January 2019
+  11 February 2019
 
 */
 
@@ -54,10 +54,7 @@ class TokenService {
     const { tokenCache } = this.ctx.cache;
     const now = Date.now();
 
-    const token = await tokenCache.get();
-
-    logger.info('/tokenService1|get', { token });
-
+    const token = tokenCache.get();
     if (token && token.jwt) {
       if ((now - token.createdAt) < config.auth.tokenTimeout) {
         return token.jwt;
@@ -68,12 +65,9 @@ class TokenService {
 
     try {
       const data = await authRestService.authenticate();
-
-      logger.info('/tokenService1|data', { data });
-
       debug('data: %j', data);
 
-      await tokenCache.set({
+      tokenCache.set({
         jwt: data.access_token,
         createdAt: now
       });
@@ -83,7 +77,7 @@ class TokenService {
       logger.error('authenticate/get|err: ' + err.message);
       logger.error('authenticate/get|stack: ' + err.stack);
 
-      await tokenCache.delete();
+      tokenCache.delete();
       throw err;
     }
   }

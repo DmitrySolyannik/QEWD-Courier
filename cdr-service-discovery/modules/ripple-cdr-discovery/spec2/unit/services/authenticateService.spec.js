@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 January 2018
+  12 February 2019
 
 */
 
@@ -34,15 +34,12 @@ const { ExecutionContextMock } = require('../../mocks');
 const AuthRestService = require('../../../lib2/services/authRestService');
 const nock = require('nock');
 
-describe('ripple-cdr-discovery/lib2/services/authRestService', () => {
+describe('ripple-cdr-discovery/lib/services/authRestService', () => {
   let ctx;
-  let body;
   let authService;
 
   beforeEach(() => {
     ctx = new ExecutionContextMock();
-    body = 'username=xxxxxxx&password=yyyyyyyyyyyyyyy&client_id=eds-data-checker&grant_type=password';
-
     authService = new AuthRestService(ctx, ctx.serversConfig.auth);
   });
 
@@ -55,40 +52,48 @@ describe('ripple-cdr-discovery/lib2/services/authRestService', () => {
     });
   });
 
-  it('should call authService.authenticate() for token', async () => {
-    const now = Date.now();
+  it('should return token', async () => {
     const expected = {
-      jwt: 'some-token',
-      createdAt: now
+      access_token: 'foo.bar.baz'
     };
+
     nock('https://devauth.endeavourhealth.net')
-      .post('/auth/realms/endeavour/protocol/openid-connect/token', body)
+      .post('/auth/realms/endeavour/protocol/openid-connect/token', [
+        'username=xxxxxxx',
+        'password=yyyyyyyyyyyyyyy',
+        'client_id=eds-data-checker',
+        'grant_type=password'
+      ].join('&'))
       .reply(200, {
-        jwt: 'some-token',
-        createdAt: now
+        access_token: 'foo.bar.baz'
       });
+
     const actual = await authService.authenticate();
+
     expect(nock).toHaveBeenDone();
     expect(actual).toEqual(expected);
   });
 
-  it('should call authService.authenticate() with error', async () => {
-    const expected = {
-      'message': 'Error while trying to get auth token',
-      'code': 401
-    };
-
+  it('should throw error', async () => {
     nock('https://devauth.endeavourhealth.net')
-      .post('/auth/realms/endeavour/protocol/openid-connect/token', body)
+      .post('/auth/realms/endeavour/protocol/openid-connect/token', [
+        'username=xxxxxxx',
+        'password=yyyyyyyyyyyyyyy',
+        'client_id=eds-data-checker',
+        'grant_type=password'
+      ].join('&'))
       .replyWithError({
-        'message': 'Error while trying to get auth token',
-        'code': 401
+        message: 'Error while trying to get auth token',
+        code: 401
       });
-    try {
-      await authService.authenticate();
-    } catch (err) {
-      expect(err).toEqual(expected);
-    }
+
+    const actual = authService.authenticate();
+
+    await expectAsync(actual).toBeRejectedWith({
+      message: 'Error while trying to get auth token',
+      code: 401
+    });
+
     expect(nock).toHaveBeenDone();
   });
 });

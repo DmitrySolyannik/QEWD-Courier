@@ -3,7 +3,7 @@
  ----------------------------------------------------------------------------
  | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
  |                                                                          |
- | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
+ | Copyright (c) 2018-19 Ripple Foundation Community Interest Company       |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,16 +24,14 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  18 December 2018
+  11 February 2018
 
 */
 
 'use strict';
 
 const BadRequestError = require('./BadRequestError');
-// const ForbiddenError = require('./ForbiddenError');
-// const NotFoundError = require('./NotFoundError');
-// const UnprocessableEntityError = require('./UnprocessableEntityError');
+
 
 function qewdifyError(err) {
   return {
@@ -47,9 +45,5 @@ function getResponseError(err = new Error('Unknown error')) {
 
 module.exports = {
   BadRequestError,
-  getResponseError,
-  // ForbiddenError,
-  // NotFoundError,
-  // UnprocessableEntityError,
-  // qewdifyError
+  getResponseError
 };

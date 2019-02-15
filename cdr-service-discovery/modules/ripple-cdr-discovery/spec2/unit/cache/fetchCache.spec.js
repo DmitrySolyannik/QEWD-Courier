@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  31 December 2018
+  11 February 2019
 
 */
 
@@ -33,29 +33,35 @@
 const { ExecutionContextMock } = require('../../mocks');
 const { FetchCache } = require('../../../lib2/cache');
 
-
-describe('ripple-cdr-discovery/lib2/cache/fetchCache', () => {
+describe('ripple-cdr-discovery/lib/cache/fetchCache', () => {
   let ctx;
+  let reference;
+
   let fetchCache;
   let qewdSession;
 
   function seeds() {
-    qewdSession.data.$(['fetchingResource', 'foo-bar']).setDocument({
-      foo: 'bar'
-    });
+    qewdSession.data.$(['fetchingResource', 'Immunization/05659867-d811-40c7-beb9-e51fa6fdb033']).value = true;
+    qewdSession.data.$(['fetchingResource', 'AllergyIntolerance/e0bf8e94-6f99-4862-b34e-a86e0f223543']).value = true;
   }
 
   beforeEach(() => {
     ctx = new ExecutionContextMock();
+
     fetchCache = new FetchCache(ctx.adapter);
     qewdSession = ctx.adapter.qewdSession;
+
+    reference = 'Immunization/05659867-d811-40c7-beb9-e51fa6fdb033';
 
     ctx.cache.freeze();
   });
 
+  afterEach(() => {
+    ctx.worker.db.reset();
+  });
 
   describe('#create (static)', () => {
-    it('should initialize a new instance', async () => {
+    it('should initialize a new instance', () => {
       const actual = FetchCache.create(ctx.adapter);
 
       expect(actual).toEqual(jasmine.any(FetchCache));
@@ -63,17 +69,44 @@ describe('ripple-cdr-discovery/lib2/cache/fetchCache', () => {
     });
   });
 
-  it('should check if bundle cache exists', async () => {
-    seeds();
-    const actual = await fetchCache.exists('foo-bar');
+  describe('#exists', () => {
+    it('should return false', () => {
+      const expected = false;
 
-    expect(actual).toEqual(true);
+      const actual = fetchCache.exists(reference);
+
+      expect(actual).toEqual(expected);
+    });
+
+    it('should return true when fetch cache for reference exists', () => {
+      const expected = true;
+
+      seeds();
+      const actual = fetchCache.exists(reference);
+
+      expect(actual).toEqual(expected);
+    });
   });
 
-  it('should remove data from cache', async () => {
-    await fetchCache.deleteAll();
-    const actual = qewdSession.data.$(['fetchingResource', 'foo-bar']).exists;
-    expect(actual).toEqual(false);
+  describe('#set', () => {
+    it('should set fetch cache for a reference', () => {
+      const expected = true;
+
+      fetchCache.set(reference);
+
+      const actual = qewdSession.data.$(['fetchingResource', reference]).value;
+      expect(actual).toEqual(expected);
+    });
   });
 
+  describe('#deleteAll', () => {
+    it('should delete all fetching cache for all references', () => {
+      const expected = {};
+
+      fetchCache.deleteAll();
+
+      const actual = qewdSession.data.$(['fetchingResource']).getDocument();
+      expect(actual).toEqual(expected);
+    });
+  });
 });

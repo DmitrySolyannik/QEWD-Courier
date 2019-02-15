@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 January 2019
+  11 February 2019
 
 */
 
@@ -44,9 +44,9 @@ class TokenCache {
   /**
    * Gets token
    *
-   * @return {Promise.<Object|null>}
+   * @return {Object|null}
    */
-  async get() {
+  get() {
     logger.info('cache/tokenCache|get');
 
     const key = ['discoveryToken'];
@@ -58,9 +58,9 @@ class TokenCache {
    * Sets a token
    *
    * @param  {Object} data
-   * @return {Promise}
+   * @return {void}
    */
-  async set(data) {
+  set(data) {
     logger.info('cache/tokenCache|set', { data });
 
     const key = ['discoveryToken'];
@@ -71,9 +71,9 @@ class TokenCache {
    * Deletes a token
    *
    * @param  {string} host
-   * @return {Promise}
+   * @return {void}
    */
-  async delete() {
+  delete() {
     logger.info('cache/tokenCache|delete');
 
     const key = ['discoveryToken'];

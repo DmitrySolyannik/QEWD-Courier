@@ -24,14 +24,14 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 January 2019
+  15 February 2019
 
 */
 
 'use strict';
 
-const { ResourceName } = require('./enums');
 const traverse = require('traverse');
+const { ResourceName } = require('./enums');
 const { isNumeric } = require('./validation');
 
 function flatten(obj) {
@@ -212,14 +212,6 @@ function parseAddress(pAddress) {
       }
     }
   }
-  
-  console.log('======================================================');
-  
-  console.log('address ====', address);
-  
-  console.log('======================================================');
-  
-  
 
   return address;
 }

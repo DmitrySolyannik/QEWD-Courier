@@ -24,13 +24,14 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 January 2018
+  13 February 2018
 
 */
 
 'use strict';
 
 const { BadRequestError } = require('../errors');
+const { logger } = require('../core');
 const { isHeadingValid, isPatientIdValid, isSourceIdValid } = require('../shared/validation');
 const { Role } = require('../shared/enums');
 const BaseCommand = require('./baseCommand');
@@ -45,13 +46,14 @@ class GetHeadingDetailCommand extends BaseCommand {
   }
 
   /**
-   * @param  {string | number} patientId
+   * @param  {string|number} patientId
    * @param  {string} heading
    * @param  {string} sourceId
-   * @return {Object}
+   * @return {Promise.<Object>}
    */
   async execute(patientId, heading, sourceId) {
-    debug('patientId: %s, heading: %s, sourceId: %s', patientId, heading, sourceId);
+    logger.info('commands/getHeadingDetail|execute', { patientId, heading, sourceId });
+
     debug('role: %s', this.session.role);
 
     // override patientId for PHR Users - only allowed to see their own data
@@ -79,11 +81,11 @@ class GetHeadingDetailCommand extends BaseCommand {
 
     await resourceService.fetchPatients(patientId);
     await resourceService.fetchPatientResources(patientId, resourceName);
-    const result = await headingService.getBySourceId(patientId, heading, sourceId);
+    const resultObj = headingService.getBySourceId(patientId, heading, sourceId);
 
-    debug('result: %j', result);
+    debug('result: %j', resultObj);
 
-    return this.respond(result);
+    return this.respond(resultObj);
   }
 }
 

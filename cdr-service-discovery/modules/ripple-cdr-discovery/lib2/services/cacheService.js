@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 January 2018
+  13 February 2018
 
 */
 
@@ -41,12 +41,18 @@ class CacheService {
     return new CacheService(ctx);
   }
 
-  async getDemographics(nhsNumber) {
+  /**
+   * Gets cached demographics
+   *
+   * @param  {int|string} nhsNumber
+   * @return {Object}
+   */
+  getDemographics(nhsNumber) {
     logger.info('services/cacheService|getDemographics', { nhsNumber });
 
     try {
       const { demographicCache } = this.ctx.cache;
-      const cachedObj = await demographicCache.byNhsNumber.get(nhsNumber);
+      const cachedObj = demographicCache.byNhsNumber.get(nhsNumber);
 
       return cachedObj;
     } catch(err) {

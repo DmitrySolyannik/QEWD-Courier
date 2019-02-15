@@ -23,11 +23,9 @@
       }
     ],
     "new-cap": 2,
-    "newline-before-return": "error",
     "no-caller": 2,
     "no-empty": 2,
     "no-new": 2,
-    "object-curly-spacing": ["error", "always"],
     "quotes": [
       2,
       "single"

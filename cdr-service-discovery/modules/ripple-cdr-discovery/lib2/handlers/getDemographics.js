@@ -24,13 +24,13 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 January 2018
+  11 February 2018
 
 */
 
 'use strict';
 
-const GetDemographicsCommand = require('../commands/getDemographicsCommand');
+const { GetDemographicsCommand } = require('../commands');
 const { getResponseError } = require('../errors');
 
 /**

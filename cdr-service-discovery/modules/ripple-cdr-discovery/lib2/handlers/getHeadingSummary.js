@@ -24,13 +24,13 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 January 2018
+  11 February 2018
 
 */
 
 'use strict';
 
-const GetHeadingSummaryCommand = require('../commands/getHeadingSummaryCommand');
+const { GetHeadingSummaryCommand } = require('../commands');
 const { getResponseError } = require('../errors');
 
 /**

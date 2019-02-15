@@ -3,7 +3,7 @@
  ----------------------------------------------------------------------------
  | ripple-cdr-openehr: Ripple MicroServices for OpenEHR                     |
  |                                                                          |
- | Copyright (c) 2018 Ripple Foundation Community Interest Company          |
+ | Copyright (c) 2018-19 Ripple Foundation Community Interest Company       |
  | All rights reserved.                                                     |
  |                                                                          |
  | http://rippleosi.org                                                     |
@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  18 December 2018
+  11 February 2019
 
 */
 
@@ -33,11 +33,10 @@
 const mockery = require('mockery');
 const { ExecutionContextMock, CommandMock } = require('../../mocks');
 
-describe('ripple-cdr-discovery/lib2/handlers/getHeadingDetail', () => {
+describe('ripple-cdr-discovery/lib/handlers/getHeadingDetail', () => {
   let args;
   let finished;
   let command;
-
 
   let handler;
   let GetHeadingDetailCommand;
@@ -68,7 +67,7 @@ describe('ripple-cdr-discovery/lib2/handlers/getHeadingDetail', () => {
 
     command = new CommandMock();
     GetHeadingDetailCommand = jasmine.createSpy().and.returnValue(command);
-    mockery.registerMock('../commands/getHeadingDetailCommand', GetHeadingDetailCommand );
+    mockery.registerMock('../commands', { GetHeadingDetailCommand });
 
     delete require.cache[require.resolve('../../../lib2/handlers/getHeadingDetail')];
     handler = require('../../../lib2/handlers/getHeadingDetail');

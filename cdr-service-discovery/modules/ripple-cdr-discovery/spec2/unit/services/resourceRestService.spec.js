@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 January 2018
+  13 February 2019
 
 */
 
@@ -34,103 +34,314 @@ const { ExecutionContextMock } = require('../../mocks');
 const ResourceRestService = require('../../../lib2/services/resourceRestService');
 const nock = require('nock');
 
-describe('ripple-cdr-discovery/lib2/services/resourceRestService', () => {
+describe('ripple-cdr-discovery/lib/services/resourceRestService', () => {
   let ctx;
-  let body;
-  let patientId;
   let token;
 
+  let hostConfig;
   let resourceRestService;
 
   beforeEach(() => {
     ctx = new ExecutionContextMock();
-    patientId = 5558526784;
+    token = 'testToken';
 
-    resourceRestService = new ResourceRestService(ctx, ctx.serversConfig.api);
+    hostConfig = {
+      host: 'https://deveds.endeavourhealth.net/data-assurance',
+      paths: {
+        getPatientsByNhsNumber: '/api/fhir/patients',
+        getPatientResources: '/api/fhir/resources',
+        getResource: '/api/fhir/reference'
+      }
+    };
 
-    body = 'nhsNumber=5558526784';
-    token = 'testTOken';
+    resourceRestService = new ResourceRestService(ctx, hostConfig);
   });
 
   describe('#create (static)', () => {
     it('should initialize a new instance', async () => {
-      const actual = ResourceRestService.create(ctx, ctx.serversConfig.api);
+      const actual = ResourceRestService.create(ctx);
 
       expect(actual).toEqual(jasmine.any(ResourceRestService));
       expect(actual.ctx).toBe(ctx);
+      expect(actual.hostConfig).toBe(ctx.serversConfig.api);
     });
   });
 
-  it('should call getPatients()', async () => {
-    const expected = [{
-      patientId: 5558526785,
-      name: 'Patient#1'
-    }, {
-      patientId: 5558526786,
-      name: 'Patient#2'
-    }];
+  describe('#getPatients', () => {
+    it('should send request and return patients', async () => {
+      const expected = {
+        resourceType: 'Bundle',
+        entry: [
+          {
+            resource: {
+              resourceType: 'Patient',
+              id: '9999999111',
+              name: [
+                {
+                  text: 'John Doe'
+                }
+              ]
+            }
+          }
+        ]
+      };
 
-    nock('https://deveds.endeavourhealth.net/data-assurance')
-      .get(`/api/fhir/patients?${body}`)
-      .reply(200, expected);
-    const actual = await resourceRestService.getPatients(patientId, token);
-    expect(nock).toHaveBeenDone();
-    expect(actual).toEqual(expected);
+      const data = {
+        resourceType: 'Bundle',
+        entry: [
+          {
+            resource: {
+              resourceType: 'Patient',
+              id: '9999999111',
+              name: [
+                {
+                  text: 'John Doe'
+                }
+              ]
+            }
+          }
+        ]
+      };
+      nock('https://deveds.endeavourhealth.net/data-assurance')
+        .get('/api/fhir/patients?nhsNumber=9999999000')
+        .matchHeader('authorization', 'Bearer testToken')
+        .reply(200, JSON.stringify(data));
+
+      const nhsNumber = 9999999000;
+      const actual = await resourceRestService.getPatients(nhsNumber, token);
+
+      expect(actual).toEqual(expected);
+      expect(nock).toHaveBeenDone();
+    });
+
+    it('should send request and return empty object when response not json', async () => {
+      const expected = {};
+
+      nock('https://deveds.endeavourhealth.net/data-assurance')
+        .get('/api/fhir/patients?nhsNumber=9999999000')
+        .matchHeader('authorization', 'Bearer testToken')
+        .reply(200, 'foo');
+
+      const nhsNumber = 9999999000;
+      const actual = await resourceRestService.getPatients(nhsNumber, token);
+
+      expect(actual).toEqual(expected);
+      expect(nock).toHaveBeenDone();
+    });
+
+    it('should throw error', async () => {
+      const expected = {
+        message: 'custom error',
+        code: 500
+      };
+
+      nock('https://deveds.endeavourhealth.net/data-assurance')
+        .get('/api/fhir/patients?nhsNumber=9999999000')
+        .matchHeader('authorization', 'Bearer testToken')
+        .replyWithError({
+          message: 'custom error',
+          code: 500
+        });
+
+      const nhsNumber = 9999999000;
+      const actual = resourceRestService.getPatients(nhsNumber, token);
+
+      await expectAsync(actual).toBeRejectedWith(expected);
+      expect(nock).toHaveBeenDone();
+    });
   });
 
-  it('should call getPatients() with error', async () => {
-    const expected = {
-      'message': 'Error while trying to patients',
-      'code': 503
-    };
+  describe('#getPatientResources', () => {
+    it('should send request and return patient resources', async () => {
+      const expected = {
+        resourceType: 'Bundle',
+        entry: [
+          {
+            resource: {
+              resourceType: 'Immunization',
+              uuid: 'Immunization/48f8c9e3-7bae-4418-b896-2423957f3c33'
+            }
+          }
+        ]
+      };
 
-    nock('https://deveds.endeavourhealth.net/data-assurance')
-      .get(`/api/fhir/patients?${body}`)
-      .replyWithError(expected);
-    try {
-      await resourceRestService.getPatients(patientId, token);
-    } catch (err) {
-      expect(err).toEqual(expected);
-    }
-    expect(nock).toHaveBeenDone();
+      const data = {
+        resourceType: 'Bundle',
+        entry: [
+          {
+            resource: {
+              resourceType: 'Immunization',
+              uuid: 'Immunization/48f8c9e3-7bae-4418-b896-2423957f3c33'
+            }
+          }
+        ]
+      };
+      nock('https://deveds.endeavourhealth.net/data-assurance')
+        .post('/api/fhir/resources', JSON.stringify({
+          resources: ['Immunization'],
+          patients: [
+            {
+              resource: {
+                resourceType: 'Patient',
+                id: '9999999111'
+              }
+            }
+          ]
+        }))
+        .matchHeader('authorization', 'Bearer testToken')
+        .reply(200, JSON.stringify(data));
 
+      const postData = {
+        resources: ['Immunization'],
+        patients: [
+          {
+            resource: {
+              resourceType: 'Patient',
+              id: '9999999111'
+            }
+          }
+        ]
+      };
+      const actual = await resourceRestService.getPatientResources(postData, token);
+
+      expect(actual).toEqual(expected);
+      expect(nock).toHaveBeenDone();
+    });
+
+    it('should send request and return empty object when response not json', async () => {
+      const expected = {};
+
+      nock('https://deveds.endeavourhealth.net/data-assurance')
+        .post('/api/fhir/resources', JSON.stringify({
+          resources: ['Immunization'],
+          patients: [
+            {
+              resource: {
+                resourceType: 'Patient',
+                id: '9999999111'
+              }
+            }
+          ]
+        }))
+        .matchHeader('authorization', 'Bearer testToken')
+        .reply(200, 'foo');
+
+      const postData = {
+        resources: ['Immunization'],
+        patients: [
+          {
+            resource: {
+              resourceType: 'Patient',
+              id: '9999999111'
+            }
+          }
+        ]
+      };
+      const actual = await resourceRestService.getPatientResources(postData, token);
+
+      expect(actual).toEqual(expected);
+      expect(nock).toHaveBeenDone();
+    });
+
+    it('should throw error', async () => {
+      const expected = {
+        message: 'custom error',
+        code: 500
+      };
+
+      nock('https://deveds.endeavourhealth.net/data-assurance')
+        .post('/api/fhir/resources', JSON.stringify({
+          resources: ['Immunization'],
+          patients: [
+            {
+              resource: {
+                resourceType: 'Patient',
+                id: '9999999111'
+              }
+            }
+          ]
+        }))
+        .matchHeader('authorization', 'Bearer testToken')
+        .replyWithError({
+          message: 'custom error',
+          code: 500
+        });
+
+      const postData = {
+        resources: ['Immunization'],
+        patients: [
+          {
+            resource: {
+              resourceType: 'Patient',
+              id: '9999999111'
+            }
+          }
+        ]
+      };
+      const actual = resourceRestService.getPatientResources(postData, token);
+
+      await expectAsync(actual).toBeRejectedWith(expected);
+      expect(nock).toHaveBeenDone();
+    });
   });
 
-  it('should call getPatientResource()', async () => {
+  describe('#getResource', () => {
+    it('should send request and return resource', async () => {
+      const expected = {
+        resourceType: 'Immunization',
+        uuid: 'Immunization/48f8c9e3-7bae-4418-b896-2423957f3c33'
+      };
 
-    //@TODO change test data to closely related patient data, should I add expected values for each service method ???
-    const data = {
-      resource: 'Bundle',
-      patients: {
-        patientId: 5558526786,
-        name: 'Patient#2'
-      }
-    };
+      const data = {
+        resourceType: 'Immunization',
+        uuid: 'Immunization/48f8c9e3-7bae-4418-b896-2423957f3c33'
+      };
+      nock('https://deveds.endeavourhealth.net/data-assurance')
+        .get('/api/fhir/reference?reference=Immunization%2F48f8c9e3-7bae-4418-b896-2423957f3c33')
+        .matchHeader('authorization', 'Bearer testToken')
+        .reply(200, JSON.stringify(data));
 
-    nock('https://deveds.endeavourhealth.net/data-assurance')
-      .post('/api/fhir/resources', data)
-      .reply(200, data);
+      const reference = 'Immunization/48f8c9e3-7bae-4418-b896-2423957f3c33';
+      const actual = await resourceRestService.getResource(reference, token);
 
-    await resourceRestService.getPatientResources(data , token);
-    expect(nock).toHaveBeenDone();
+      expect(actual).toEqual(expected);
+      expect(nock).toHaveBeenDone();
+    });
 
+    it('should send request and return empty object', async () => {
+      const expected = {};
+
+      nock('https://deveds.endeavourhealth.net/data-assurance')
+        .get('/api/fhir/reference?reference=Immunization%2F48f8c9e3-7bae-4418-b896-2423957f3c33')
+        .matchHeader('authorization', 'Bearer testToken')
+        .reply(200, '');
+
+      const reference = 'Immunization/48f8c9e3-7bae-4418-b896-2423957f3c33';
+      const actual = await resourceRestService.getResource(reference, token);
+
+      expect(actual).toEqual(expected);
+      expect(nock).toHaveBeenDone();
+    });
+
+    it('should throw error', async () => {
+      const expected = {
+        message: 'custom error',
+        code: 500
+      };
+
+      nock('https://deveds.endeavourhealth.net/data-assurance')
+        .get('/api/fhir/reference?reference=Immunization%2F48f8c9e3-7bae-4418-b896-2423957f3c33')
+        .matchHeader('authorization', 'Bearer testToken')
+        .replyWithError({
+          message: 'custom error',
+          code: 500
+        });
+
+      const reference = 'Immunization/48f8c9e3-7bae-4418-b896-2423957f3c33';
+      const actual = resourceRestService.getResource(reference, token);
+
+      await expectAsync(actual).toBeRejectedWith(expected);
+      expect(nock).toHaveBeenDone();
+    });
   });
-
-  it('should call getResource()', async () => {
-
-    //@TODO change reference data to similar real data
-
-    const reference = 'some-reference';
-
-    nock('https://deveds.endeavourhealth.net/data-assurance')
-      .get(`/api/fhir/reference?reference=${reference}`)
-      .reply(200, {
-        test: 'some-data'
-      });
-
-    await resourceRestService.getResource(reference , 'AllergyIntolerance');
-    expect(nock).toHaveBeenDone();
-
-  });
-
 });

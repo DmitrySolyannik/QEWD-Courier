@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 January 2019
+  11 February 2019
 
 */
 
@@ -34,16 +34,37 @@ const { logger } = require('../core');
 const request = require('request');
 const debug = require('debug')('ripple-cdr-discovery:services:resource-rest');
 
-function requestAsync(options) {
+function parseJsonFormatter(result) {
+  let jsonResult;
+
+  try {
+    jsonResult = JSON.parse(result);
+  } catch (err) {
+    jsonResult = {};
+  }
+
+  return jsonResult;
+}
+
+function requestAsync(args, { formatter } = {}) {
   return new Promise((resolve, reject) => {
-    request(options, (err, response, body) => {
+    request(args, (err, response, body) => {
       if (err) return reject(err);
+
+      debug('body: %s', body);
+
+      if (formatter) {
+        return resolve(formatter(body));
+      }
 
       return resolve(body);
     });
   });
 }
 
+/**
+ * Discovery API REST service
+ */
 class ResourceRestService {
   constructor(ctx, hostConfig) {
     this.ctx = ctx;
@@ -54,34 +75,48 @@ class ResourceRestService {
     return new ResourceRestService(ctx, ctx.serversConfig.api);
   }
 
-  async getPatients(patientId, token) {
-    logger.info('services/resourceRestService|getPatients', { patientId, token: typeof token });
+  /**
+   * Sends a request to get patients for NHS number
+   *
+   * @param  {int|string} nhsNumber
+   * @param  {string} token
+   * @return {Promise.<Object>}
+   */
+  async getPatients(nhsNumber, token) {
+    logger.info('services/resourceRestService|getPatients', { nhsNumber, token: typeof token });
 
     debug('token: %s', token);
 
-    const options = {
+    const args = {
       url: `${this.hostConfig.host}/api/fhir/patients`,
       method: 'GET',
       headers: {
         Authorization: `Bearer ${token}`
       },
       qs: {
-        nhsNumber: 5558526785
+        nhsNumber: nhsNumber
       }
     };
 
-    logger.info('options get patients', { options });
+    debug('args: %j', args);
 
-    return requestAsync(options);
+    return requestAsync(args, { formatter: parseJsonFormatter });
   }
 
+  /**
+   * Sends a request to get resources for patients
+   *
+   * @param  {Object} data
+   * @param  {string} token
+   * @return {Promise.<Object>}
+   */
   async getPatientResources(data, token) {
     logger.info('services/resourceRestService|getPatientResources', { data: typeof data, token: typeof token });
 
     debug('data: %j', data);
     debug('token: %s', token);
 
-    const options = {
+    const args = {
       url: `${this.hostConfig.host}/api/fhir/resources`,
       method: 'POST',
       headers: {
@@ -89,16 +124,25 @@ class ResourceRestService {
       },
       body: JSON.stringify(data)
     };
-    console.log('** getPatientResources: ' + JSON.stringify(options, null, 2));
-    return requestAsync(options);
+
+    debug('args: %j', args);
+
+    return requestAsync(args, { formatter: parseJsonFormatter });
   }
 
+  /**
+   * Sends a request to get referenced resource
+   *
+   * @param  {string} reference
+   * @param  {string} token
+   * @return {Promise.<Object>}
+   */
   async getResource(reference, token) {
     logger.info('services/resourceRestService|getResource', { reference, token: typeof token });
 
     debug('token: %s', token);
 
-    const options = {
+    const args = {
       url: `${this.hostConfig.host}/api/fhir/reference`,
       method: 'GET',
       headers: {
@@ -109,10 +153,13 @@ class ResourceRestService {
       }
     };
 
-    // @TODO: AK make sure that body === '' handled in getResource
-    // see original code for reference
+    debug('args: %j', args);
 
-    return requestAsync(options);
+    const result = await requestAsync(args);
+
+    return result === ''
+      ? {}
+      : parseJsonFormatter(result);
   }
 }
 

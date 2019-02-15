@@ -24,7 +24,7 @@
  |  limitations under the License.                                          |
  ----------------------------------------------------------------------------
 
-  12 January 2019
+  15 February 2019
 
 */
 
@@ -35,7 +35,14 @@ const { ResourceName } = require('../../../shared/enums');
 
 module.exports = (adapter) => {
   return {
-    exists: async (patientUuid) => {
+
+    /**
+     * Checks if data exists by patient uuid or not
+     *
+     * @param  {string} patientUuid
+     * @return {bool}
+     */
+    exists: (patientUuid) => {
       logger.info('mixins/patient|byPatientUuid|exists', { patientUuid });
 
       const key = ['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid];
@@ -43,14 +50,27 @@ module.exports = (adapter) => {
       return adapter.exists(key);
     },
 
-    set: async (patientUuid, patient) => {
+    /**
+     * Sets patient data
+     *
+     * @param  {string} patientUuid
+     * @param  {Object} patient
+     * @return {void}
+     */
+    set: (patientUuid, patient) => {
       logger.info('mixins/patient|byPatientUuid|exists', { patientUuid, patient });
 
       const key = ['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid];
       adapter.putObject(key, patient);
     },
 
-    get: async(patientUuid) => {
+    /**
+     * Gets patient by patient uuid
+     *
+     * @param  {string} patientUuid
+     * @return {Object}
+     */
+    get: (patientUuid) => {
       logger.info('mixins/patient|byPatientUuid|get', { patientUuid });
 
       const key = ['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid, 'data'];
@@ -58,21 +78,42 @@ module.exports = (adapter) => {
       return adapter.getObjectWithArrays(key);
     },
 
-    setNhsNumber: async (patientUuid, nhsNumber) => {
+    /**
+     * Sets NHS number for patient
+     *
+     * @param  {string} patientUuid
+     * @param  {int|string} nhsNumber
+     * @return {void}
+     */
+    setNhsNumber: (patientUuid, nhsNumber) => {
       logger.info('mixins/patient|byPatientUuid|setNhsNumber', { patientUuid, nhsNumber });
+
+      //@TODO: remove this method because I think it's not needed
+      //See reference in resourceService.getPatients
 
       const key = ['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid, 'nhsNumber', nhsNumber];
       adapter.put(key, nhsNumber);
     },
 
-    deleteAll: async () => {
+    /**
+     * Deletes all patients data
+     *
+     * @return {[type]} [description]
+     */
+    deleteAll: () => {
       logger.info('mixins/patient|byPatientUuid|deleteAll');
 
       const key = ['Discovery', ResourceName.PATIENT, 'by_uuid'];
       adapter.delete(key);
     },
 
-    getPractitionerUuid: async (patientUuid) => {
+    /**
+     * Gets practitioner uuid for patient
+     *
+     * @param  string} patientUuid
+     * @return {string}
+     */
+    getPractitionerUuid: (patientUuid) => {
       logger.info('mixins/patient|byPatientUuid|getPractitionerUuid', { patientUuid });
 
       const key = ['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid, 'practitioner'];
@@ -80,15 +121,18 @@ module.exports = (adapter) => {
       return adapter.get(key);
     },
 
-    getByPatientUuids: async (patientUuids) => {
+    /**
+     * Gets patients data by patient uuids
+     *
+     * @param  {string[]} patientUuids
+     * @return {Object[]}
+     */
+    getByPatientUuids: (patientUuids) => {
       logger.info('mixins/patient|byPatientUuid|getByPatientUuids', { patientUuids });
-      const patients = patientUuids.map(
-        (patientUuid) => {
-          return {
-            resource: adapter.getObjectWithArrays(['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid])
-          }
-        }
-      );
+
+      const patients = patientUuids.map((patientUuid) => {
+        return adapter.getObjectWithArrays(['Discovery', ResourceName.PATIENT, 'by_uuid', patientUuid, 'data']);
+      });
 
      return patients;
     }
