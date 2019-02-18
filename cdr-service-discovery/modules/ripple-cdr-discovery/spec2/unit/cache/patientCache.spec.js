@@ -344,12 +344,12 @@ describe('ripple-cdr-discovery/lib/cache/patientCache', () => {
 
     describe('#getByPatientUuids', () => {
       it('should return data by patient uuids', () => {
-        const expected = [
-          {
-            bar: 'quux',
-            testArray: [1, 2]
-          }
-        ];
+        const expected = [{
+          data: {
+            bar: 'quux', testArray: [1, 2]
+          },
+          practitioner: 'f24bb154-2155-4cfd-b3bf-af1c3fa95c3b'
+        }];
 
         seeds();
 

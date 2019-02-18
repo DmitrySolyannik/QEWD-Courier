@@ -96,7 +96,7 @@ class ResourceService {
 
       patientCache.byPatientUuid.set(patientUuid, patient);
       //@TODO check if we really need it.
-      // patientCache.byPatientUuid.setNhsNumber(patientUuid, nhsNumber);
+      patientCache.byPatientUuid.setNhsNumber(patientUuid, nhsNumber);
       patientCache.byNhsNumber.setPatientUuid(nhsNumber, patientUuid);
 
       result.processedCount++;
